@@ -1,0 +1,14 @@
+import { create } from 'zustand'
+import { mockOrders } from '@/products/megaprice/mocks/orders.mocks'
+import type { Order } from '@/products/megaprice/pages/orders/types'
+
+interface OrdersState {
+  orders: Order[]
+  addOrder: (order: Order) => void
+}
+
+export const useOrdersStore = create<OrdersState>((set) => ({
+  orders: [...mockOrders],
+  addOrder: (order) =>
+    set(state => ({ orders: [order, ...state.orders] })),
+}))
