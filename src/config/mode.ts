@@ -16,7 +16,7 @@ function modeFromOverride(value: Exclude<Override, 'reset'>): AppMode {
 }
 
 function fromHostname(host: string): AppMode {
-  if (host.includes('platform.lekko')) return { mode: 'portal', productId: null }
+  if (host.includes('platform.lekko') || host.includes('github.io')) return { mode: 'portal', productId: null }
   if (host.includes('apteka'))    return { mode: 'standalone', productId: 'apteka' }
   if (host.includes('analytic'))  return { mode: 'standalone', productId: 'analytic' }
   if (host.includes('megaprice')) return { mode: 'standalone', productId: 'megaprice' }
