@@ -4,7 +4,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  base: process.env.GITHUB_ACTIONS ? '/Megaprice-original/' : '/',
+  base: process.env.GITHUB_ACTIONS ? '/Lekko/' : '/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
