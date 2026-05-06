@@ -297,7 +297,7 @@ export function Header() {
               showProfile ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
             )}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white shadow-sm dark:bg-white dark:text-gray-900">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white shadow-sm">
               {user.avatar}
             </div>
             <div className="hidden text-left lg:block">
@@ -309,7 +309,7 @@ export function Header() {
           {showProfile && (
             <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[220px] rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
               <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3 dark:border-[#333333]">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white dark:bg-white dark:text-gray-900">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white">
                   {user.avatar}
                 </div>
                 <div className="min-w-0">
