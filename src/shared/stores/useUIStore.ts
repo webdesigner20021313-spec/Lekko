@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import i18n from '@/shared/i18n'
 
 interface UIState {
   language: 'uz' | 'ru' | 'en'
@@ -7,5 +8,8 @@ interface UIState {
 
 export const useUIStore = create<UIState>((set) => ({
   language: 'ru',
-  setLanguage: (lang) => set({ language: lang }),
+  setLanguage: (lang) => {
+    i18n.changeLanguage(lang)
+    set({ language: lang })
+  },
 }))

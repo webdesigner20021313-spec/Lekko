@@ -1,0 +1,34 @@
+{
+  "search_placeholder": "Sahifalar va bo'limlarni qidiring...",
+  "search_not_found": "Hech narsa topilmadi",
+  "notifications": "Bildirishnomalar",
+  "read_all": "Barchasini o'qish",
+  "all_notifications": "Barcha bildirishnomalar →",
+  "logout": "Chiqish",
+  "logout_toast_title": "Tizimdan chiqdingiz",
+  "logout_toast_desc": "Xayr!",
+
+  "search_section_procurement": "Xaridlar",
+  "search_section_orders": "Buyurtmalar",
+  "search_section_references": "Ma'lumotnomalar",
+  "search_page_purchase": "Narxlar ro'yxati",
+  "search_page_need": "Ehtiyoj",
+  "search_page_cart": "Savat",
+  "search_page_orders": "Buyurtmalar tarixi",
+  "search_page_wholesalers": "Distribyutorlar",
+
+  "sidebar_expand": "Bo'limlarni ochish",
+  "sidebar_collapse": "Bo'limlarni yopish",
+  "sidebar_sections_label": "BO'LIMLAR",
+  "sidebar_in_development": "Bo'lim ishlab chiqilmoqda",
+  "sidebar_no_sections": "Bo'limlar yo'q",
+  "sidebar_open_domain": "{{domain}} saytini ochish",
+
+  "nav_purchase": "Narxlar ro'yxati",
+  "nav_need": "Ehtiyoj",
+  "nav_cart": "Savat",
+  "nav_orders": "Buyurtmalar",
+  "nav_wholesalers": "Distribyutorlar",
+  "nav_users": "Foydalanuvchilar",
+  "nav_roles": "Rollar"
+}

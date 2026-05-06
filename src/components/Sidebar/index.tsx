@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Store,
   ClipboardList,
@@ -41,6 +42,7 @@ interface SidebarProps {
 
 interface StandaloneNavItem {
   label: string
+  slug: string
   path: string
   iconName: string
   end: boolean
@@ -48,6 +50,7 @@ interface StandaloneNavItem {
 
 interface PortalSubItem {
   label: string
+  slug: string
   path: string
 }
 
@@ -73,6 +76,7 @@ function buildPortalCategories(): PortalCategory[] {
       matchPrefix: products.megaprice.basePath,
       subItems: products.megaprice.sections.map((s) => ({
         label: s.label,
+        slug: s.slug,
         path: `${products.megaprice.basePath}/${s.slug}`,
       })),
     },
@@ -84,7 +88,6 @@ function buildPortalCategories(): PortalCategory[] {
       defaultPath: products.analytic.basePath,
       matchPrefix: products.analytic.basePath,
       subItems: [],
-      emptyMessage: 'Раздел в разработке',
     },
     {
       id: 'apteka',
@@ -94,17 +97,16 @@ function buildPortalCategories(): PortalCategory[] {
       defaultPath: products.apteka.basePath,
       matchPrefix: products.apteka.basePath,
       subItems: [],
-      emptyMessage: 'Раздел в разработке',
     },
     {
       id: 'users',
-      label: 'Пользователи',
+      label: 'users',
       iconName: 'Users',
       defaultPath: '/users',
       matchPrefix: '/users',
       subItems: [
-        { label: 'Пользователи', path: '/users' },
-        { label: 'Роли',             path: '/users/roles' },
+        { label: 'users', slug: 'users',  path: '/users' },
+        { label: 'roles', slug: 'roles',  path: '/users/roles' },
       ],
     },
   ]
@@ -122,11 +124,13 @@ function findActiveCategory(
 }
 
 function StandaloneSidebar({ productId }: { productId: ProductId }) {
+  const { t } = useTranslation()
   const location = useLocation()
   const product = products[productId]
 
   const items: StandaloneNavItem[] = product.sections.map((s) => ({
     label: s.label,
+    slug: s.slug,
     path: `/${s.slug}`,
     iconName: s.iconName,
     end: s.slug !== 'orders',
@@ -147,7 +151,7 @@ function StandaloneSidebar({ productId }: { productId: ProductId }) {
                 <NavLink
                   to={item.path}
                   end={item.end}
-                  title={item.label}
+                  title={t(`nav_${item.slug}`, item.label)}
                   className="group flex flex-col items-center gap-1 rounded-xl px-2 py-2 transition-all duration-150"
                 >
                   <span
@@ -168,7 +172,7 @@ function StandaloneSidebar({ productId }: { productId: ProductId }) {
                         : 'font-normal text-[#6B7280] group-hover:text-stone-300'
                     )}
                   >
-                    {item.label}
+                    {t(`nav_${item.slug}`, item.label)}
                   </span>
                 </NavLink>
               </li>
@@ -187,6 +191,7 @@ function StandaloneSidebar({ productId }: { productId: ProductId }) {
 const COLLAPSE_STORAGE_KEY = 'lekko-sidebar-collapsed'
 
 function PortalSidebar() {
+  const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
   const categories = buildPortalCategories()
@@ -200,7 +205,6 @@ function PortalSidebar() {
     return localStorage.getItem(COLLAPSE_STORAGE_KEY) === 'true'
   })
 
-  // Sync expanded category with URL navigation (when user clicks links elsewhere).
   useEffect(() => {
     if (activeFromUrl && activeFromUrl.id !== expandedId) {
       setExpandedId(activeFromUrl.id)
@@ -212,6 +216,15 @@ function PortalSidebar() {
   }, [collapsed])
 
   const expanded = categories.find((c) => c.id === expandedId) ?? categories[0]
+
+  function getCategoryLabel(cat: PortalCategory): string {
+    if (cat.id === 'users') return t('nav_users')
+    return cat.label
+  }
+
+  function getSubItemLabel(item: PortalSubItem): string {
+    return t(`nav_${item.slug}`, item.label)
+  }
 
   function handleCategoryClick(category: PortalCategory) {
     setExpandedId(category.id)
@@ -229,7 +242,7 @@ function PortalSidebar() {
           <button
             type="button"
             onClick={() => setCollapsed((v) => !v)}
-            title={collapsed ? 'Раскрыть разделы' : 'Свернуть разделы'}
+            title={collapsed ? t('sidebar_expand') : t('sidebar_collapse')}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
           >
             {collapsed ? (
@@ -250,7 +263,7 @@ function PortalSidebar() {
                   <button
                     type="button"
                     onClick={() => handleCategoryClick(cat)}
-                    title={cat.label}
+                    title={getCategoryLabel(cat)}
                     className="group flex w-full flex-col items-center gap-1 rounded-xl px-1 py-2 transition-all duration-150"
                   >
                     <span
@@ -275,7 +288,7 @@ function PortalSidebar() {
                           : 'font-normal text-[#6B7280] group-hover:text-stone-300'
                       )}
                     >
-                      {cat.label}
+                      {getCategoryLabel(cat)}
                     </span>
                   </button>
                 </li>
@@ -292,54 +305,54 @@ function PortalSidebar() {
       {/* Expanded sub-items panel */}
       {collapsed ? null : (
         <div className="flex w-[200px] shrink-0 flex-col border-r border-gray-200 bg-white">
-        <div className="flex h-16 shrink-0 items-center gap-2 px-3">
-          <span className="flex-1 text-[15px] font-semibold text-gray-900">{expanded.label}</span>
-          {expanded.domain && (
-            <a
-              href={`https://${expanded.domain}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={`Открыть ${expanded.domain}`}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-            >
-              <ArrowUpRight className="h-4 w-4" />
-            </a>
-          )}
-        </div>
+          <div className="flex h-16 shrink-0 items-center gap-2 px-3">
+            <span className="flex-1 text-[15px] font-semibold text-gray-900">{getCategoryLabel(expanded)}</span>
+            {expanded.domain && (
+              <a
+                href={`https://${expanded.domain}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={t('sidebar_open_domain', { domain: expanded.domain })}
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                <ArrowUpRight className="h-4 w-4" />
+              </a>
+            )}
+          </div>
 
-        <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
-          Разделы
-        </div>
+          <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+            {t('sidebar_sections_label')}
+          </div>
 
-        <nav className="flex-1 overflow-y-auto px-2 pb-3">
-          {expanded.subItems.length === 0 ? (
-            <p className="px-3 py-2 text-sm text-gray-400">
-              {expanded.emptyMessage ?? 'Нет разделов'}
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-0.5">
-              {expanded.subItems.map((s) => (
-                <li key={s.path}>
-                  <NavLink
-                    to={s.path}
-                    end={s.path === '/users'}
-                    className={({ isActive }) =>
-                      cn(
-                        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                        isActive
-                          ? 'bg-gray-100 font-medium text-gray-900'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                      )
-                    }
-                  >
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-40" />
-                    <span>{s.label}</span>
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          )}
-        </nav>
+          <nav className="flex-1 overflow-y-auto px-2 pb-3">
+            {expanded.subItems.length === 0 ? (
+              <p className="px-3 py-2 text-sm text-gray-400">
+                {t('sidebar_in_development')}
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-0.5">
+                {expanded.subItems.map((s) => (
+                  <li key={s.path}>
+                    <NavLink
+                      to={s.path}
+                      end={s.path === '/users'}
+                      className={({ isActive }) =>
+                        cn(
+                          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                          isActive
+                            ? 'bg-gray-100 font-medium text-gray-900'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        )
+                      }
+                    >
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-40" />
+                      <span>{getSubItemLabel(s)}</span>
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </nav>
         </div>
       )}
     </aside>

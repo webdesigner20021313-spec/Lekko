@@ -1,0 +1,34 @@
+{
+  "search_placeholder": "Поиск страниц и разделов...",
+  "search_not_found": "Ничего не найдено",
+  "notifications": "Уведомления",
+  "read_all": "Прочитать все",
+  "all_notifications": "Все уведомления →",
+  "logout": "Выйти",
+  "logout_toast_title": "Вы вышли из системы",
+  "logout_toast_desc": "До свидания!",
+
+  "search_section_procurement": "Закупки",
+  "search_section_orders": "Заказы",
+  "search_section_references": "Справочники",
+  "search_page_purchase": "Прайс-лист",
+  "search_page_need": "Потребность",
+  "search_page_cart": "Корзина",
+  "search_page_orders": "История заказов",
+  "search_page_wholesalers": "Дистрибуторы",
+
+  "sidebar_expand": "Раскрыть разделы",
+  "sidebar_collapse": "Свернуть разделы",
+  "sidebar_sections_label": "РАЗДЕЛЫ",
+  "sidebar_in_development": "Раздел в разработке",
+  "sidebar_no_sections": "Нет разделов",
+  "sidebar_open_domain": "Открыть {{domain}}",
+
+  "nav_purchase": "Прайс-лист",
+  "nav_need": "Потребность",
+  "nav_cart": "Корзинка",
+  "nav_orders": "Заказы",
+  "nav_wholesalers": "Дистрибуторы",
+  "nav_users": "Пользователи",
+  "nav_roles": "Роли"
+}

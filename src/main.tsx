@@ -5,6 +5,7 @@ import { Toaster } from '@/shared/ui-kit/Toaster'
 import { DevModeSwitcher } from '@/components/DevModeSwitcher'
 import App from './App'
 import './index.css'
+import '@/shared/i18n'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

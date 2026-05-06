@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Bell,
   Search,
@@ -17,15 +18,8 @@ import { useAuthStore } from '@/shared/auth/useAuthStore'
 import { useToast } from '@/shared/ui-kit/Toaster'
 import { formatDateTime } from '@/shared/utils/format'
 
-const searchablePages = [
-  { label: 'Прайс-лист', path: '/purchase', section: 'Закупки' },
-  { label: 'Потребность', path: '/need', section: 'Закупки' },
-  { label: 'Корзина', path: '/cart', section: 'Закупки' },
-  { label: 'История заказов', path: '/orders', section: 'Заказы' },
-  { label: 'Дистрибуторы', path: '/wholesalers', section: 'Справочники' },
-]
-
 export function Header() {
+  const { t } = useTranslation()
   const appMode = detectMode()
   const logoSvg = getLogoForMode(appMode.productId)
   const { language, setLanguage } = useUIStore()
@@ -77,6 +71,14 @@ export function Header() {
     return () => document.removeEventListener('keydown', handleKey)
   }, [])
 
+  const searchablePages = [
+    { label: t('search_page_purchase'),    path: '/purchase',    section: t('search_section_procurement') },
+    { label: t('search_page_need'),        path: '/need',        section: t('search_section_procurement') },
+    { label: t('search_page_cart'),        path: '/cart',        section: t('search_section_procurement') },
+    { label: t('search_page_orders'),      path: '/orders',      section: t('search_section_orders') },
+    { label: t('search_page_wholesalers'), path: '/wholesalers', section: t('search_section_references') },
+  ]
+
   const filteredPages =
     searchQuery.length >= 1
       ? searchablePages.filter(
@@ -87,14 +89,12 @@ export function Header() {
       : []
 
   const unread = unreadCount()
-
   const langLabels: Record<string, string> = { uz: 'UZ', ru: 'RU', en: 'EN' }
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6">
       {/* Left */}
       <div className="flex items-center gap-4">
-        {/* Logo */}
         <div
           className="flex cursor-pointer items-center select-none"
           onClick={() => navigate('/')}
@@ -102,15 +102,13 @@ export function Header() {
           <img src={logoSvg} alt="Lekko" className="h-8 w-auto" />
         </div>
 
-        {/* Divider */}
-
         {/* Search */}
         <div ref={searchRef} className="relative">
           <label className="flex h-10 w-[260px] items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 transition-colors focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-900/10 hover:border-gray-300">
             <Search className="h-4 w-4 shrink-0 text-gray-400" />
             <input
               type="text"
-              placeholder="Поиск страниц и разделов..."
+              placeholder={t('search_placeholder')}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value)
@@ -129,7 +127,6 @@ export function Header() {
             )}
           </label>
 
-          {/* Search dropdown */}
           {showSearch && filteredPages.length > 0 && (
             <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-[260px] rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg">
               {filteredPages.map((page) => (
@@ -152,7 +149,7 @@ export function Header() {
           )}
           {showSearch && searchQuery.length >= 1 && filteredPages.length === 0 && (
             <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-[260px] rounded-xl border border-gray-200 bg-white py-4 shadow-lg">
-              <p className="text-center text-sm text-gray-400">Ничего не найдено</p>
+              <p className="text-center text-sm text-gray-400">{t('search_not_found')}</p>
             </div>
           )}
         </div>
@@ -204,7 +201,7 @@ export function Header() {
                 ? 'border-gray-300 bg-gray-100 text-gray-900'
                 : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'
             )}
-            aria-label="Уведомления"
+            aria-label={t('notifications')}
           >
             <Bell className="h-[18px] w-[18px]" />
             {unread > 0 && (
@@ -214,13 +211,11 @@ export function Header() {
             )}
           </button>
 
-          {/* Notifications dropdown */}
           {showNotifications && (
             <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[360px] rounded-xl border border-gray-200 bg-white shadow-lg">
-              {/* Header */}
               <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-gray-900">Уведомления</h3>
+                  <h3 className="text-sm font-semibold text-gray-900">{t('notifications')}</h3>
                   {unread > 0 && (
                     <span className="rounded-full bg-[#FEE2E2] px-1.5 py-0.5 text-[11px] font-medium text-[#991B1B]">
                       {unread}
@@ -233,12 +228,11 @@ export function Header() {
                     className="flex items-center gap-1 text-xs font-medium text-[#3872FA] transition-colors hover:text-blue-700"
                   >
                     <CheckCheck className="h-3.5 w-3.5" />
-                    Прочитать все
+                    {t('read_all')}
                   </button>
                 )}
               </div>
 
-              {/* List */}
               <div className="max-h-[340px] overflow-y-auto">
                 {notifications.slice(0, 7).map((n) => (
                   <button
@@ -274,17 +268,14 @@ export function Header() {
                 ))}
               </div>
 
-              {/* Footer */}
               <div className="border-t border-gray-100 px-4 py-2.5">
                 <button className="text-xs font-medium text-[#3872FA] hover:underline">
-                  Все уведомления →
+                  {t('all_notifications')}
                 </button>
               </div>
             </div>
           )}
         </div>
-
-        {/* Divider */}
 
         {/* Profile */}
         <div ref={profileRef} className="relative">
@@ -304,10 +295,8 @@ export function Header() {
             </div>
           </button>
 
-          {/* Profile dropdown */}
           {showProfile && (
             <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[220px] rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg">
-              {/* User header */}
               <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white">
                   {user.avatar}
@@ -324,12 +313,12 @@ export function Header() {
                     setShowProfile(false)
                     logout()
                     navigate('/login', { replace: true })
-                    toast({ title: 'Вы вышли из системы', description: 'До свидания!', variant: 'default' })
+                    toast({ title: t('logout_toast_title'), description: t('logout_toast_desc'), variant: 'default' })
                   }}
                   className="flex w-full items-center gap-3 px-4 py-2 text-sm text-red-500 transition-colors hover:bg-red-50"
                 >
                   <LogOut className="h-4 w-4" />
-                  Выйти
+                  {t('logout')}
                 </button>
               </div>
             </div>
