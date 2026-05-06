@@ -4,7 +4,7 @@ import { Header } from '@/components/Header'
 
 export function PortalLayout() {
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-[#111111]">
       <Sidebar mode="portal" />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />

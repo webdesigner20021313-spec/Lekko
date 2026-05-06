@@ -159,13 +159,13 @@ function FiltersBar({
           'flex h-9 w-[180px] items-center justify-between gap-1.5 rounded-lg border px-3 text-sm transition-colors',
           open ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
             : count > 0 ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
-            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
+            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
         )}>
           <span className="truncate">{count > 0 ? `${label} · ${count}` : label}</span>
           <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', open && 'rotate-180')} />
         </button>
         {open && (
-          <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+          <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
             <div className="max-h-52 overflow-y-auto">
               {items.map((item) => {
                 const checked = selected.includes(item)
@@ -193,7 +193,7 @@ function FiltersBar({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+    <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
       <SimpleDropdown ref={mfgRef} open={openMfg} onToggle={() => setOpenMfg(v => !v)}
         label={t('filter_manufacturer')} count={manufacturerFilter.length}
         items={manufacturers} selected={manufacturerFilter}
@@ -208,13 +208,13 @@ function FiltersBar({
           'flex h-9 w-[180px] items-center justify-between gap-1.5 rounded-lg border px-3 text-sm transition-colors',
           openMnn ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
             : mnnFilter.length > 0 ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
-            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
+            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
         )}>
           <span className="truncate">{mnnFilter.length > 0 ? `${t('filter_mnn')} · ${mnnFilter.length}` : t('filter_mnn')}</span>
           <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', openMnn && 'rotate-180')} />
         </button>
         {openMnn && (
-          <div className="absolute left-0 top-10 z-50 w-56 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
+          <div className="absolute left-0 top-10 z-50 w-56 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#111111]">
             <div className="border-b border-gray-100 p-2 dark:border-gray-800">
               <div className="relative">
                 <svg className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -268,13 +268,13 @@ function FiltersBar({
           'flex h-9 w-[180px] items-center justify-between gap-1.5 rounded-lg border px-3 text-sm transition-colors',
           openBonus ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
             : bonusFilter.length ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
-            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
+            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
         )}>
           <span className="truncate">{bonusFilter.length ? `${t('filter_bonuses')} · ${bonusFilter.length}` : t('filter_bonuses')}</span>
           <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', openBonus && 'rotate-180')} />
         </button>
         {openBonus && (
-          <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+          <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
             {bonusOptions.map((b) => {
               const checked = bonusFilter.includes(b.value)
               return (
@@ -314,7 +314,7 @@ function FiltersBar({
           <AlignJustify className="h-4 w-4" />
         </button>
         {openCols && (
-          <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+          <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
             <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{t('filter_columns_header')}</p>
             {columnOptions.map((col) => {
               const checked = visibleColumns[col.key]

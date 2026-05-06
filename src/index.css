@@ -15,11 +15,12 @@
 .dark {
   --table-header-bg: #1f2937;
   --table-border: #374151;
-  --table-row-bg: #111827;
+  --table-row-bg: #111111;
   --table-cell-border: #1f2937;
   --selection-indicator: #93C5FD;
   --need-open-row-bg: #1f2937;
   --need-oos-row-bg: transparent;
+  background-color: #111111;
 }
 
 body {
@@ -29,4 +30,8 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.dark body {
+  background-color: #111111;
 }

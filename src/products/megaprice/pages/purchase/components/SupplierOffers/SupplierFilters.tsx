@@ -66,7 +66,7 @@ function SearchableDropdown({
             ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
             : count > 0
               ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
-              : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
+              : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
         )}
       >
         <span className="flex-1 truncate text-left">
@@ -76,7 +76,7 @@ function SearchableDropdown({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-10 z-50 w-[200px] rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
+        <div className="absolute left-0 top-10 z-50 w-[200px] rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#111111]">
           {/* Поиск */}
           <div className="p-2 border-b border-gray-100 dark:border-gray-800">
             <div className="relative">
@@ -199,7 +199,7 @@ export function SupplierFilters({
   }
 
   return (
-    <div className="flex items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+    <div className="flex items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
 
       {/* Distributor — с поиском */}
       <div ref={distRef} className="relative">
@@ -239,7 +239,7 @@ export function SupplierFilters({
               ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
               : bonusFilter.length
                 ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
-                : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
+                : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
           )}
         >
           <span className="flex-1 truncate text-left">
@@ -249,7 +249,7 @@ export function SupplierFilters({
         </button>
 
         {openBonus && (
-          <div className="absolute left-0 top-10 z-50 w-[200px] rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+          <div className="absolute left-0 top-10 z-50 w-[200px] rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
             <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
               {t('filter_bonuses')}
             </p>
@@ -310,7 +310,7 @@ export function SupplierFilters({
         </button>
 
         {openCols && (
-          <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+          <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
             <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
               {t('filter_columns_header')}
             </p>

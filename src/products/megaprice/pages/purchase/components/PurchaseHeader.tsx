@@ -31,7 +31,7 @@ showFavorites,
   ]
 
   return (
-    <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+    <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
       {/* Единые табы */}
       <div className="flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
         {tabs.map((tab) => (

@@ -47,7 +47,7 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
         className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
+      <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-[#111111]">
         <button
           type="button"
           onClick={onClose}
@@ -202,7 +202,7 @@ export function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#F9FAFB] px-4 dark:bg-gray-950">
 
       {/* card */}
-      <div className="w-full max-w-[420px] rounded-2xl bg-white px-8 py-8 shadow-sm dark:bg-gray-900">
+      <div className="w-full max-w-[420px] rounded-2xl bg-white px-8 py-8 shadow-sm dark:bg-[#111111]">
 
         {/* logo inside card */}
         <div className="mb-6 flex justify-center">

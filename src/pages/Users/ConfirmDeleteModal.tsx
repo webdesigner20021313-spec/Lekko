@@ -15,7 +15,7 @@ export function ConfirmDeleteModal({ open, title, description, onConfirm, onCanc
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-xl">
+      <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white dark:bg-[#111111] shadow-xl">
 
         <div className="flex flex-col items-center px-6 pt-8 pb-6 text-center">
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
@@ -28,7 +28,7 @@ export function ConfirmDeleteModal({ open, title, description, onConfirm, onCanc
         <div className="flex gap-3 border-t border-gray-100 dark:border-gray-700 px-6 py-4">
           <button
             onClick={onCancel}
-            className="flex-1 h-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="flex-1 h-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111111] text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             {t('confirm_cancel')}
           </button>

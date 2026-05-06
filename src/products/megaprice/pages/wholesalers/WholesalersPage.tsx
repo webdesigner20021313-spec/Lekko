@@ -40,7 +40,7 @@ function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountMo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
       onClick={onClose}>
-      <div className="w-[360px] rounded-2xl bg-white shadow-2xl dark:bg-gray-900 dark:border dark:border-gray-700"
+      <div className="w-[360px] rounded-2xl bg-white shadow-2xl dark:bg-[#111111] dark:border dark:border-gray-700"
         onClick={e => e.stopPropagation()}>
 
         <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-gray-700">
@@ -177,10 +177,10 @@ export function WholesalersPage() {
   }, [modalWholesaler, setDiscount])
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-gray-900">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
 
       {/* ── Шапка ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -199,14 +199,14 @@ export function WholesalersPage() {
               placeholder={t('ws_search_ph')}
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500"
+              className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500"
             />
           </div>
         </div>
       </div>
 
       {/* ── Таблица ── */}
-      <div className="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111111]">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">

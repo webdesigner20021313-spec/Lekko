@@ -336,7 +336,7 @@ function OffersModal({ item, currentOfferId, onSelectOffer, onClose }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
       onClick={onClose}>
-      <div className="flex w-[760px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-gray-900 dark:border dark:border-gray-700"
+      <div className="flex w-[760px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-[#111111] dark:border dark:border-gray-700"
         style={{ maxHeight: '80vh' }}
         onClick={e => e.stopPropagation()}>
 
@@ -380,7 +380,7 @@ function OffersModal({ item, currentOfferId, onSelectOffer, onClose }: {
                       onClick={() => { onSelectOffer(offer); onClose() }}
                       className={cn(
                         'cursor-pointer border-b border-gray-100 last:border-0 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800',
-                        isBest && !isSelected ? 'bg-green-50 dark:bg-green-900/20' : 'bg-white dark:bg-gray-900',
+                        isBest && !isSelected ? 'bg-green-50 dark:bg-green-900/20' : 'bg-white dark:bg-[#111111]',
                       )}>
                       <td className="px-3 py-3">
                         <div className={cn('h-4 w-4 rounded-full border-2 flex items-center justify-center',
@@ -484,7 +484,7 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
   ]
 
   return (
-    <div className="flex h-full shrink-0 flex-col overflow-hidden border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"
+    <div className="flex h-full shrink-0 flex-col overflow-hidden border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]"
       style={{ width: DRAWER_W, minWidth: DRAWER_W }}>
 
       <div className="shrink-0 border-b border-gray-200 p-4 dark:border-gray-700">
@@ -589,7 +589,7 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
                   const phStyle = STATUS_STYLE[ph.status]
                   return (
                     <tr key={ph.id}
-                      className={cn('border-b border-gray-100 last:border-0 dark:border-gray-800', idx % 2 === 1 ? 'bg-gray-50/50 dark:bg-gray-800/50' : 'bg-white dark:bg-gray-900')}>
+                      className={cn('border-b border-gray-100 last:border-0 dark:border-gray-800', idx % 2 === 1 ? 'bg-gray-50/50 dark:bg-gray-800/50' : 'bg-white dark:bg-[#111111]')}>
                       <td className="px-3 py-2.5">
                         <p className="truncate text-xs font-medium text-gray-800 dark:text-gray-300" style={{ maxWidth: 130 }}>{ph.name}</p>
                       </td>
@@ -615,7 +615,7 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
         </div>
       </div>
 
-      <div className="shrink-0 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900" style={{ boxShadow: '0 -4px 12px rgba(0,0,0,0.06)' }}>
+      <div className="shrink-0 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-[#111111]" style={{ boxShadow: '0 -4px 12px rgba(0,0,0,0.06)' }}>
         {recQty > 0 ? (
           <>
             {bestOffer && (
@@ -852,7 +852,7 @@ function AIAdviceModal({ item, onClose }: { item: NeedItem; onClose: () => void 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
       <div
-        className="relative flex w-full max-w-[460px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900 dark:border dark:border-gray-700"
+        className="relative flex w-full max-w-[460px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-[#111111] dark:border dark:border-gray-700"
         style={{ maxHeight: '88vh' }}
         onClick={e => e.stopPropagation()}
       >
@@ -915,7 +915,7 @@ function AIAdviceModal({ item, onClose }: { item: NeedItem; onClose: () => void 
                             </div>
                           )}
                           {rec.tableRows.map((row, ri) => (
-                            <div key={ri} className={cn('grid grid-cols-3 px-3 py-2 bg-white dark:bg-gray-900', ri < rec.tableRows!.length - 1 && 'border-b border-gray-100 dark:border-gray-800')}>
+                            <div key={ri} className={cn('grid grid-cols-3 px-3 py-2 bg-white dark:bg-[#111111]', ri < rec.tableRows!.length - 1 && 'border-b border-gray-100 dark:border-gray-800')}>
                               <p className="truncate text-xs font-medium text-gray-700 dark:text-gray-300">{row[0]}</p>
                               <p className="text-right text-xs text-gray-500 dark:text-gray-400">{row[1]}</p>
                               <p className="text-right text-xs font-semibold text-gray-900 dark:text-gray-100">{row[2]}</p>
@@ -942,7 +942,7 @@ function AIAdviceModal({ item, onClose }: { item: NeedItem; onClose: () => void 
           )}
         </div>
 
-        <div className="shrink-0 border-t border-gray-100 bg-white px-5 py-3 dark:border-gray-800 dark:bg-gray-900">
+        <div className="shrink-0 border-t border-gray-100 bg-white px-5 py-3 dark:border-gray-800 dark:bg-[#111111]">
           <button onClick={onClose} className="h-10 w-full rounded-lg bg-gray-900 text-sm font-semibold text-white transition-all duration-200 hover:bg-black dark:bg-gray-700 dark:hover:bg-gray-600">
             {t('need_ai_ok_btn')}
           </button>
@@ -1343,11 +1343,11 @@ export function NeedPage() {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-gray-900"
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]"
       onClick={() => { setGroupOpen(false); setPharmacyOpen(false) }}>
 
       {/* Top controls */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-900">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-[#111111]">
         <div className="flex items-center gap-3">
 
           {/* Pharmacy multi-select */}
@@ -1364,7 +1364,7 @@ export function NeedPage() {
               <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 text-gray-400 transition-transform', pharmacyOpen && 'rotate-180')} />
             </button>
             {pharmacyOpen && (
-              <div className="absolute left-0 top-10 z-50 w-64 rounded-xl border border-gray-200 bg-white py-1 shadow-lg max-h-72 overflow-y-auto dark:border-gray-700 dark:bg-gray-900">
+              <div className="absolute left-0 top-10 z-50 w-64 rounded-xl border border-gray-200 bg-white py-1 shadow-lg max-h-72 overflow-y-auto dark:border-gray-700 dark:bg-[#111111]">
                 {PHARMACIES.map(ph => {
                   const checked = selectedPharmacyIds.includes(ph.id)
                   return (
@@ -1396,7 +1396,7 @@ export function NeedPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input type="text" placeholder={t('need_search_ph')} value={search}
               onChange={e => setSearch(e.target.value)}
-              className="h-full w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm outline-none transition-colors focus:border-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500" />
+              className="h-full w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm outline-none transition-colors focus:border-gray-400 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500" />
           </div>
 
           {/* Group filter */}
@@ -1412,7 +1412,7 @@ export function NeedPage() {
               <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', groupOpen && 'rotate-180')} />
             </button>
             {groupOpen && (
-              <div className="absolute right-0 top-10 z-50 w-52 rounded-xl border border-gray-200 bg-white py-1 shadow-lg max-h-64 overflow-y-auto dark:border-gray-700 dark:bg-gray-900">
+              <div className="absolute right-0 top-10 z-50 w-52 rounded-xl border border-gray-200 bg-white py-1 shadow-lg max-h-64 overflow-y-auto dark:border-gray-700 dark:bg-[#111111]">
                 <button onClick={() => { setGroupFilter(null); setGroupOpen(false) }}
                   className={cn('flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800', !groupFilter ? 'font-medium text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400')}>
                   {t('need_group_all')}
@@ -1433,7 +1433,7 @@ export function NeedPage() {
             <button
               onClick={() => setPeriodOpen(v => !v)}
               className={cn(
-                'flex h-9 w-[260px] items-center gap-2 rounded-lg border bg-white px-3 text-sm transition-colors dark:bg-gray-900',
+                'flex h-9 w-[260px] items-center gap-2 rounded-lg border bg-white px-3 text-sm transition-colors dark:bg-[#111111]',
                 periodOpen
                   ? 'border-gray-400 ring-2 ring-gray-900/20 dark:border-gray-500'
                   : 'border-gray-200 text-gray-700 hover:border-gray-300 dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600',
@@ -1452,7 +1452,7 @@ export function NeedPage() {
             {periodOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setPeriodOpen(false)} />
-                <div className="absolute left-0 top-10 z-50 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                <div className="absolute left-0 top-10 z-50 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#111111]">
                   <div className="py-1">
                     {PERIODS.map(p => (
                       <button key={p.key}
@@ -1666,7 +1666,7 @@ export function NeedPage() {
           </div>
 
           {checkedIds.length >= 1 && (
-            <div className="shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-900">
+            <div className="shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-[#111111]">
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 {t('need_bulk_selected')} <span className="font-semibold text-gray-900 dark:text-gray-100">{checkedIds.length}</span>
               </span>

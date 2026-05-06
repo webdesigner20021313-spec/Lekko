@@ -140,7 +140,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
     <div className="flex h-full flex-col overflow-hidden">
 
       {/* Поиск + Выбор аптеки */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
         <div className="flex items-stretch gap-2">
 
           {/* Поиск */}
@@ -151,7 +151,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
               placeholder="Поиск..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-full w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500"
+              className="h-full w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-gray-400 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500"
             />
           </div>
 
@@ -163,7 +163,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                 'flex h-full w-full items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors',
                 pharmOpen
                   ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600',
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300 dark:hover:border-gray-600',
               )}
             >
               <Building2 className="h-3.5 w-3.5 shrink-0 text-gray-400" />
@@ -172,7 +172,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
             </button>
 
             {pharmOpen && (
-              <div className="absolute right-0 top-10 z-50 w-64 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+              <div className="absolute right-0 top-10 z-50 w-64 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
                 <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
                   Аптека
                 </p>
@@ -213,7 +213,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
               <AlignJustify className="h-4 w-4" />
             </button>
             {colsOpen && (
-              <div className="absolute right-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+              <div className="absolute right-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
                 <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Столбцы</p>
                 {([
                   { key: 'stock',  label: 'Остаток'     },
@@ -308,7 +308,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                     onClick={() => onSelect(isSelected ? null : row.medicine)}
                     className={cn(
                       'group cursor-pointer border-b border-gray-100 transition-colors dark:border-gray-800',
-                      isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800',
+                      isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white hover:bg-gray-50 dark:bg-[#111111] dark:hover:bg-gray-800',
                     )}
                   >
                     {/* Checkbox (батч) + индикатор выбора */}
@@ -383,7 +383,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                       }}
                       className={cn(
                         'transition-colors',
-                        isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white group-hover:bg-gray-50 dark:bg-gray-900 dark:group-hover:bg-gray-800',
+                        isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white group-hover:bg-gray-50 dark:bg-[#111111] dark:group-hover:bg-gray-800',
                       )}
                     >
                       <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -410,7 +410,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
 
       {/* Авто-подбор — появляется при 2+ отмеченных */}
       {checkedIds.length >= 2 && (
-        <div className="shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+        <div className="shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
           <span className="text-sm text-gray-600 dark:text-gray-400">
             Выбрано: <span className="font-semibold text-gray-900 dark:text-gray-100">{checkedIds.length}</span>
           </span>

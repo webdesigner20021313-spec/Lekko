@@ -269,13 +269,13 @@ function ConfirmModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
-      <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900 dark:border dark:border-gray-700">
+      <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-[#111111] dark:border dark:border-gray-700">
         <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
         <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">{description}</p>
         <div className="mt-5 flex gap-2.5">
           <button
             onClick={onClose}
-            className="flex-1 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="flex-1 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300 dark:hover:bg-gray-800"
           >
             {backLabel}
           </button>
@@ -407,7 +407,7 @@ function DistributorCard({
 
   return (
     <div className={cn(
-      'overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900',
+      'overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]',
       isCancelled && 'opacity-60',
     )}>
 
@@ -446,7 +446,7 @@ function DistributorCard({
           {showMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-              <div className="absolute right-0 top-full z-20 mt-1.5 w-52 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+              <div className="absolute right-0 top-full z-20 mt-1.5 w-52 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
                 <button
                   onClick={() => { onDownloadExcel(); setShowMenu(false) }}
                   className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
@@ -561,7 +561,7 @@ export function OrderDetailPage() {
 
   if (!rawOrder) {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-white dark:bg-gray-900">
+      <div className="flex h-full flex-col items-center justify-center bg-white dark:bg-[#111111]">
         <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t('orders_not_found')}</p>
         <button
           onClick={() => navigate(mp('/orders'))}
@@ -706,10 +706,10 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-gray-900">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
 
       {/* ── Header ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(mp('/orders'))}
@@ -726,7 +726,7 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
           <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={() => printFullInvoice(order)}
-              className="flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300 dark:hover:bg-gray-800"
             >
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">{t('orders_invoice_btn')}</span>
@@ -743,7 +743,7 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
       </div>
 
       {/* ── Content ── */}
-      <div className={cn('min-h-0 flex-1 overflow-y-auto bg-gray-50/40 px-6 py-5 dark:bg-gray-900', isOrderActive && 'pb-24')}>
+      <div className={cn('min-h-0 flex-1 overflow-y-auto bg-gray-50/40 px-6 py-5 dark:bg-[#111111]', isOrderActive && 'pb-24')}>
         <div className="mx-auto max-w-4xl space-y-4">
 
           {/* Info cards */}
@@ -814,7 +814,7 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
 
       {/* ── Fixed bottom-right action bar ── */}
       {isOrderActive && (
-        <div className="fixed bottom-0 left-[140px] right-0 z-40 flex items-center justify-end gap-4 border-t border-gray-200 bg-white px-6 py-4 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] dark:border-gray-700 dark:bg-gray-900">
+        <div className="fixed bottom-0 left-[140px] right-0 z-40 flex items-center justify-end gap-4 border-t border-gray-200 bg-white px-6 py-4 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] dark:border-gray-700 dark:bg-[#111111]">
           <button
             onClick={() => setModal({ kind: 'cancel_order' })}
             className="flex h-9 items-center gap-2 rounded-xl bg-red-500 px-4 text-sm font-medium text-white transition-colors hover:bg-red-600"

@@ -63,7 +63,7 @@ export function PurchasePage() {
   const checkedMedicines = mockMedicines.filter((m) => checkedIds.includes(m.id))
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-gray-900">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
       <PurchaseHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}

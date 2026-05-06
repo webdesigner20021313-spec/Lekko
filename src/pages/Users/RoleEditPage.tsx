@@ -113,7 +113,7 @@ export function RoleEditPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-gray-900">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
       <div className="min-h-0 flex-1 overflow-y-auto">
 
         {/* Back */}
@@ -325,7 +325,7 @@ export function RoleEditPage() {
       </div>
 
       {/* Sticky footer */}
-      <div className="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-4 shadow-sm">
+      <div className="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111111] px-6 py-4 shadow-sm">
         <div className="flex items-center justify-end gap-3">
           <button
             onClick={() => navigate('/users/roles')}

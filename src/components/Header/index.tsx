@@ -94,7 +94,7 @@ export function Header() {
   const langLabels: Record<string, string> = { uz: 'UZ', ru: 'RU' }
 
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6 dark:border-gray-800 dark:bg-gray-900">
+    <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6 dark:border-gray-800 dark:bg-[#111111]">
       {/* Left */}
       <div className="flex items-center gap-4">
         <div
@@ -106,7 +106,7 @@ export function Header() {
 
         {/* Search */}
         <div ref={searchRef} className="relative">
-          <label className="flex h-10 w-[260px] items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 transition-colors focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-900/10 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-gray-600 dark:focus-within:ring-gray-400/10 dark:hover:border-gray-600">
+          <label className="flex h-10 w-[260px] items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 transition-colors focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-900/10 hover:border-gray-300 dark:border-gray-700 dark:bg-[#111111] dark:focus-within:border-gray-600 dark:focus-within:ring-gray-400/10 dark:hover:border-gray-600">
             <Search className="h-4 w-4 shrink-0 text-gray-400" />
             <input
               type="text"
@@ -130,7 +130,7 @@ export function Header() {
           </label>
 
           {showSearch && filteredPages.length > 0 && (
-            <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-[260px] rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+            <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-[260px] rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
               {filteredPages.map((page) => (
                 <button
                   key={page.path}
@@ -150,7 +150,7 @@ export function Header() {
             </div>
           )}
           {showSearch && searchQuery.length >= 1 && filteredPages.length === 0 && (
-            <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-[260px] rounded-xl border border-gray-200 bg-white py-4 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+            <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-[260px] rounded-xl border border-gray-200 bg-white py-4 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
               <p className="text-center text-sm text-gray-400">{t('search_not_found')}</p>
             </div>
           )}
@@ -176,7 +176,7 @@ export function Header() {
           </button>
 
           {showLang && (
-            <div className="absolute right-0 top-[calc(100%+4px)] z-50 w-[80px] rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+            <div className="absolute right-0 top-[calc(100%+4px)] z-50 w-[80px] rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
               {(['uz', 'ru'] as const).map((lang) => (
                 <button
                   key={lang}
@@ -223,7 +223,7 @@ export function Header() {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[360px] rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
+            <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[360px] rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#111111]">
               <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t('notifications')}</h3>
@@ -307,7 +307,7 @@ export function Header() {
           </button>
 
           {showProfile && (
-            <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[220px] rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+            <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[220px] rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
               <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3 dark:border-gray-800">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white dark:bg-white dark:text-gray-900">
                   {user.avatar}

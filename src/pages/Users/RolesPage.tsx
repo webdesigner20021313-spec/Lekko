@@ -9,7 +9,7 @@ export function RolesPage() {
   const [modalOpen, setModalOpen] = useState(false)
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-gray-900">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
       <div className="shrink-0 border-b border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center justify-between">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('nav_roles')}</h1>
         <button

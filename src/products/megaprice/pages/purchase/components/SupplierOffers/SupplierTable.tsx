@@ -157,7 +157,7 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
   }
 
   return (
-    <div style={{ height: '100%', overflowX: 'auto', overflowY: 'auto' }}>
+    <div className="dark:bg-[#111111]" style={{ height: '100%', overflowX: 'auto', overflowY: 'auto' }}>
       <table style={{ tableLayout: 'fixed', width: tableWidth, borderCollapse: 'collapse' }}>
         <colgroup>
           <col style={{ width: cols.num }} />

@@ -117,7 +117,7 @@ export function MedicineList({
           cartQtyByMedicine={cartQtyByMedicine}
         />
         {checkedIds.length >= 2 && (
-          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
             <span className="text-sm text-gray-600 dark:text-gray-400">
               {t('selected_label')} <span className="font-semibold text-gray-900 dark:text-gray-100">{checkedIds.length}</span>
             </span>
@@ -137,7 +137,7 @@ export function MedicineList({
   // Manual / POS tabs
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex-shrink-0 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+      <div className="flex-shrink-0 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
         <MedicineFilters
           search={search}
           onSearch={setSearch}
@@ -171,7 +171,7 @@ export function MedicineList({
 
       {/* Авто-подбор — показывается когда выбрано 2+ */}
       {checkedIds.length >= 2 && (
-        <div className="flex-shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+        <div className="flex-shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
           <span className="text-sm text-gray-600 dark:text-gray-400">
             Выбрано: <span className="font-semibold text-gray-900 dark:text-gray-100">{checkedIds.length}</span>
           </span>

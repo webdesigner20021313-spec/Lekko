@@ -56,7 +56,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
     <div className="flex h-full flex-col overflow-hidden">
 
       {/* Фильтры */}
-      <div className="flex shrink-0 items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+      <div className="flex shrink-0 items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
 
         {/* Поиск */}
         <div className="relative flex-1">
@@ -65,7 +65,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('filter_search_inner')}
-            className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:border-gray-500"
+            className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:border-gray-500"
           />
         </div>
 
@@ -79,7 +79,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
                 ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
                 : cityFilter.length
                   ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
-                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
+                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
             )}
           >
             <span className="truncate">{cityFilter.length ? `${t('filter_city')} · ${cityFilter.length}` : t('filter_city')}</span>
@@ -87,7 +87,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
           </button>
 
           {openCity && (
-            <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+            <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
               {allCities.map((city) => {
                 const checked = cityFilter.includes(city)
                 return (

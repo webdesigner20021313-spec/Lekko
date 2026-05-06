@@ -126,10 +126,10 @@ export function OrderHistoryPage() {
   )
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-gray-900">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
 
       {/* ── Шапка ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="relative w-60">
@@ -139,13 +139,13 @@ export function OrderHistoryPage() {
                 placeholder={t('orders_search_ph')}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500"
+                className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 dark:border-gray-700 dark:bg-gray-900">
+            <div className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 dark:border-gray-700 dark:bg-[#111111]">
               <input
                 type="text"
                 placeholder={t('orders_date_ph')}
@@ -169,7 +169,7 @@ export function OrderHistoryPage() {
       </div>
 
       {/* ── KPI Cards ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
         <div className="grid grid-cols-4 gap-3">
           {KPI_CARDS.map(({ status, labelKey }) => {
             const { count, total } = stats[status]
@@ -197,11 +197,11 @@ export function OrderHistoryPage() {
       </div>
 
       {/* ── Список ── */}
-      <div className="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111111]">
         {filteredOrders.length === 0 ? (
           <EmptyState hasFilters={hasFilters} />
         ) : (
-          <div className="overflow-hidden border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+          <div className="overflow-hidden border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
             <table className="w-full">
               <thead>
                 <tr className="h-14 border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">

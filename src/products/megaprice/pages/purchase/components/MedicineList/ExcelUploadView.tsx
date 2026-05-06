@@ -289,7 +289,7 @@ export function ExcelUploadView({
 
       {/* Modal overlay */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-[1px]">
-        <div className="flex w-full max-w-2xl max-h-[85vh] flex-col rounded-2xl bg-white shadow-2xl overflow-hidden dark:bg-gray-900 dark:border dark:border-gray-700">
+        <div className="flex w-full max-w-2xl max-h-[85vh] flex-col rounded-2xl bg-white shadow-2xl overflow-hidden dark:bg-[#111111] dark:border dark:border-gray-700">
 
           {/* Modal header */}
           <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
@@ -370,7 +370,7 @@ export function ExcelUploadView({
           </div>
 
           {/* Modal footer */}
-          <div className="shrink-0 border-t border-gray-200 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-900">
+          <div className="shrink-0 border-t border-gray-200 bg-white px-5 py-4 dark:border-gray-700 dark:bg-[#111111]">
             <button
               onClick={applyAndLoad}
               disabled={colMap.name === -1 && colMap.mnn === -1}
@@ -391,7 +391,7 @@ export function ExcelUploadView({
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Summary bar */}
-      <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+      <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="h-4 w-4 text-green-600" />

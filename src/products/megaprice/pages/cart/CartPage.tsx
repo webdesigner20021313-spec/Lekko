@@ -26,7 +26,7 @@ interface ConfirmPayload { groups: DistGroup[]; pharmacy: Pharmacy; orderNum: st
 
 function QtyControl({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
-    <div className="flex w-[112px] shrink-0 items-center rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+    <div className="flex w-[112px] shrink-0 items-center rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
       <button
         onClick={() => onChange(Math.max(1, value - 1))}
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-l-lg text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
@@ -74,7 +74,7 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
       <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-gray-900 dark:border dark:border-gray-700">
+      <div className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-[#111111] dark:border dark:border-gray-700">
 
         <button
           onClick={onClose}
@@ -121,7 +121,7 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
             {payload.groups.map((group, idx) => (
               <div
                 key={group.id}
-                className={cn('grid grid-cols-[1fr_auto] items-center bg-white px-4 py-3 dark:bg-gray-900', idx !== payload.groups.length - 1 && 'border-b border-gray-100 dark:border-gray-800')}
+                className={cn('grid grid-cols-[1fr_auto] items-center bg-white px-4 py-3 dark:bg-[#111111]', idx !== payload.groups.length - 1 && 'border-b border-gray-100 dark:border-gray-800')}
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{group.name}</p>
@@ -325,8 +325,8 @@ export function CartPage() {
 
   if (items.length === 0 && !successPayload) {
     return (
-      <div className="flex h-full flex-col bg-gray-50 dark:bg-gray-900">
-        <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
+      <div className="flex h-full flex-col bg-gray-50 dark:bg-[#111111]">
+        <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('cart_title')}</h1>
         </div>
         <EmptyCart />
@@ -335,10 +335,10 @@ export function CartPage() {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-gray-900">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
 
       {/* ── Шапка ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-900">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-[#111111]">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 shrink-0">
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('cart_title')}</h1>
@@ -353,7 +353,7 @@ export function CartPage() {
                 'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-all duration-150',
                 distFilter === null
                   ? 'bg-gray-900 text-white shadow-sm dark:bg-blue-600'
-                  : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800',
+                  : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800',
               )}
             >
               {t('cart_filter_all', { n: items.length })}
@@ -366,7 +366,7 @@ export function CartPage() {
                   'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-all duration-150',
                   distFilter === g.id
                     ? 'bg-gray-900 text-white shadow-sm dark:bg-blue-600'
-                    : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800',
+                    : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800',
                 )}
               >
                 {g.name} ({g.items.length})
@@ -385,7 +385,7 @@ export function CartPage() {
 
           <div className="flex-1 overflow-auto">
             <table className="w-full border-collapse">
-              <thead className="sticky top-0 z-10 bg-white dark:bg-gray-900">
+              <thead className="sticky top-0 z-10 bg-white dark:bg-[#111111]">
                 <tr className="h-12 border-b-2 border-gray-200 dark:border-gray-700">
                   <th className="w-10 px-4 text-left">
                     <input
@@ -445,7 +445,7 @@ export function CartPage() {
                       </tr>
 
                       {!isCollapsed && (
-                        <tr className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+                        <tr className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
                           <td className="px-4 py-2" />
                           <td className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_name')}</td>
                           <td className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_manufacturer')}</td>
@@ -465,7 +465,7 @@ export function CartPage() {
                             key={item.offerId}
                             className={cn(
                               'border-b border-gray-100 transition-colors duration-100 dark:border-gray-800',
-                              isChecked ? 'bg-gray-50 dark:bg-gray-800' : 'bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800',
+                              isChecked ? 'bg-gray-50 dark:bg-gray-800' : 'bg-white hover:bg-gray-50 dark:bg-[#111111] dark:hover:bg-gray-800',
                             )}
                           >
                             <td className="px-4 py-3">
@@ -533,7 +533,7 @@ export function CartPage() {
         </div>
 
         {/* ── Правая панель: инвойс ── */}
-        <div className="flex w-[360px] shrink-0 flex-col overflow-hidden border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+        <div className="flex w-[360px] shrink-0 flex-col overflow-hidden border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
 
           <div ref={pharmacyDropRef} className="relative shrink-0">
             <button
@@ -548,7 +548,7 @@ export function CartPage() {
             </button>
 
             {showPharmacyDrop && (
-              <div className="absolute left-0 right-0 top-full z-50 border-b border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900">
+              <div className="absolute left-0 right-0 top-full z-50 border-b border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-[#111111]">
                 {mockPharmacies.map(p => (
                   <button
                     key={p.id}
@@ -614,7 +614,7 @@ export function CartPage() {
                             <p className="text-[11px] text-gray-400 dark:text-gray-500">{t('cart_group_pos_qty', { pos: g.items.length, qty: g.qty })}</p>
                           </div>
                         </div>
-                        <div className="divide-y divide-gray-100 bg-white dark:divide-gray-800 dark:bg-gray-900">
+                        <div className="divide-y divide-gray-100 bg-white dark:divide-gray-800 dark:bg-[#111111]">
                           {g.items.map(item => (
                             <div key={item.offerId} className="flex items-center gap-2 px-3 py-1.5">
                               <p className="min-w-0 flex-1 truncate text-xs text-gray-600 dark:text-gray-400">
@@ -633,7 +633,7 @@ export function CartPage() {
                 </div>
               </div>
 
-              <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-gray-900">
+              <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-[#111111]">
                 <button
                   onClick={createOrder}
                   className="flex h-11 w-full items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black"
