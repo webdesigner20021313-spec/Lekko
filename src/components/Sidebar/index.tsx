@@ -304,29 +304,29 @@ function PortalSidebar() {
 
       {/* Expanded sub-items panel */}
       {collapsed ? null : (
-        <div className="flex w-[200px] shrink-0 flex-col border-r border-white/10 bg-[#1C1917] dark:bg-[#111111]">
+        <div className="flex w-[200px] shrink-0 flex-col border-r border-gray-200 bg-white dark:border-white/10 dark:bg-[#111111]">
           <div className="flex h-16 shrink-0 items-center gap-2 px-3">
-            <span className="flex-1 text-[15px] font-semibold text-white">{getCategoryLabel(expanded)}</span>
+            <span className="flex-1 text-[15px] font-semibold text-gray-900 dark:text-white">{getCategoryLabel(expanded)}</span>
             {expanded.domain && (
               <a
                 href={`https://${expanded.domain}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 title={t('sidebar_open_domain', { domain: expanded.domain })}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 <ArrowUpRight className="h-4 w-4" />
               </a>
             )}
           </div>
 
-          <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+          <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
             {t('sidebar_sections_label')}
           </div>
 
           <nav className="flex-1 overflow-y-auto px-2 pb-3">
             {expanded.subItems.length === 0 ? (
-              <p className="px-3 py-2 text-sm text-gray-500">
+              <p className="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">
                 {t('sidebar_in_development')}
               </p>
             ) : (
@@ -340,8 +340,8 @@ function PortalSidebar() {
                         cn(
                           'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
                           isActive
-                            ? 'bg-white/10 font-medium text-white'
-                            : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                            ? 'bg-gray-100 font-medium text-gray-900 dark:bg-white/10 dark:text-white'
+                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white'
                         )
                       }
                     >
