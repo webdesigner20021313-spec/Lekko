@@ -1,6 +1,8 @@
 import { useRef, useState, useEffect } from 'react'
-import { Search, ChevronDown, X, Check } from 'lucide-react'
+import { Search, ChevronDown, X, Check, AlignJustify } from 'lucide-react'
 import { cn } from '@/shared/utils/utils'
+
+export type MedicineColumnKey = 'mnn' | 'stock' | 'needed'
 
 interface MedicineFiltersProps {
   search: string
@@ -8,14 +10,33 @@ interface MedicineFiltersProps {
   selectedManufacturers: string[]
   onManufacturers: (values: string[]) => void
   manufacturers: string[]
+  visibleColumns: Record<MedicineColumnKey, boolean>
+  onToggleColumn: (key: MedicineColumnKey) => void
+  columnOptions?: { key: MedicineColumnKey; label: string }[]
 }
+
+const defaultColumnOptions: { key: MedicineColumnKey; label: string }[] = [
+  { key: 'mnn', label: 'МНН' },
+]
 
 export function MedicineFilters({
   search, onSearch,
   selectedManufacturers, onManufacturers,
   manufacturers,
+  visibleColumns, onToggleColumn,
+  columnOptions = defaultColumnOptions,
 }: MedicineFiltersProps) {
   const [open, setOpen] = useState(false)
+  const [openCols, setOpenCols] = useState(false)
+  const colsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (colsRef.current && !colsRef.current.contains(e.target as Node)) setOpenCols(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
   const [innerSearch, setInnerSearch] = useState('')
   const ref = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -54,7 +75,7 @@ export function MedicineFilters({
   return (
     <div className="flex items-center gap-2 px-4 py-3">
       {/* Search */}
-      <div className="relative min-w-[120px] flex-1">
+      <div className="relative min-w-0 flex-1">
         <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
         <input
           type="text"
@@ -74,7 +95,7 @@ export function MedicineFilters({
       </div>
 
       {/* Manufacturer multi-select */}
-      <div ref={ref} className="relative min-w-[120px] flex-1">
+      <div ref={ref} className="relative min-w-0 flex-1">
         <button
           onClick={() => setOpen((v) => !v)}
           className={cn(
@@ -153,6 +174,44 @@ export function MedicineFilters({
                 </button>
               </div>
             )}
+          </div>
+        )}
+      </div>
+
+      {/* Column toggle */}
+      <div ref={colsRef} className="relative shrink-0">
+        <button
+          onClick={() => setOpenCols(v => !v)}
+          className={cn(
+            'flex h-9 w-9 items-center justify-center rounded-lg border transition-colors',
+            openCols
+              ? 'border-gray-900 bg-gray-900 text-white'
+              : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700',
+          )}
+        >
+          <AlignJustify className="h-4 w-4" />
+        </button>
+        {openCols && (
+          <div className="absolute right-0 top-10 z-50 w-40 rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
+            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Столбцы</p>
+            {columnOptions.map(col => {
+              const checked = visibleColumns[col.key]
+              return (
+                <label
+                  key={col.key}
+                  onClick={() => onToggleColumn(col.key)}
+                  className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50"
+                >
+                  <div className={cn(
+                    'flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors',
+                    checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300',
+                  )}>
+                    {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                  </div>
+                  <span className="text-sm text-gray-700">{col.label}</span>
+                </label>
+              )
+            })}
           </div>
         )}
       </div>

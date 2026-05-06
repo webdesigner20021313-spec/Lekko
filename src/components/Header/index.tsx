@@ -18,7 +18,7 @@ import { useToast } from '@/shared/ui-kit/Toaster'
 import { formatDateTime } from '@/shared/utils/format'
 
 const searchablePages = [
-  { label: 'Магазин', path: '/purchase', section: 'Закупки' },
+  { label: 'Прайс-лист', path: '/purchase', section: 'Закупки' },
   { label: 'Потребность', path: '/need', section: 'Закупки' },
   { label: 'Корзина', path: '/cart', section: 'Закупки' },
   { label: 'История заказов', path: '/orders', section: 'Заказы' },

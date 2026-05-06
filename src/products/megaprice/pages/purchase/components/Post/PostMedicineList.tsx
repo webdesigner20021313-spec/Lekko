@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 
-import { Search, Check, ChevronDown, Heart, Building2, Zap } from 'lucide-react'
+import { Search, Check, ChevronDown, Heart, Building2, Zap, AlignJustify } from 'lucide-react'
 import { cn } from '@/shared/utils/utils'
 import { mockMedicines, mockPharmacies, mockSupplierOffers } from '@/products/megaprice/mocks/purchase.mocks'
 import { mockPOSByPharmacy } from '@/products/megaprice/mocks/pos.mocks'
@@ -28,7 +28,18 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
   const [checkedIds,  setCheckedIds]  = useState<string[]>([])
   const [byDemand,    setByDemand]    = useState(true)
   const [showModal,   setShowModal]   = useState(false)
+  const [colsOpen,    setColsOpen]    = useState(false)
+  const [visibleCols, setVisibleCols] = useState({ stock: true, needed: true })
   const pharmRef  = useRef<HTMLDivElement>(null)
+  const colsRef   = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (colsRef.current && !colsRef.current.contains(e.target as Node)) setColsOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
   const tableRef  = useRef<HTMLDivElement>(null)
   const [containerW, setContainerW] = useState(500)
 
@@ -40,8 +51,9 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
   }, [])
 
   // Название — min 400px, резиновый
-  const nameW  = Math.max(400, containerW - COL_CB - COL_STOCK - COL_NEEDED - COL_FAV)
-  const tableW = Math.max(400 + COL_CB + COL_STOCK + COL_NEEDED + COL_FAV, containerW)
+  const extraW = (visibleCols.stock ? COL_STOCK : 0) + (visibleCols.needed ? COL_NEEDED : 0)
+  const nameW  = Math.max(400, containerW - COL_CB - extraW - COL_FAV)
+  const tableW = Math.max(400 + COL_CB + extraW + COL_FAV, containerW)
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -144,7 +156,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
           </div>
 
           {/* Выбор аптеки */}
-          <div ref={pharmRef} className="relative h-9 flex-1">
+          <div ref={pharmRef} className="relative h-9 flex-1" style={{ minWidth: 0 }}>
             <button
               onClick={() => setPharmOpen((v) => !v)}
               className={cn(
@@ -189,6 +201,39 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
             )}
           </div>
 
+          {/* Column toggle */}
+          <div ref={colsRef} className="relative shrink-0">
+            <button
+              onClick={() => setColsOpen(v => !v)}
+              className={cn(
+                'flex h-9 w-9 items-center justify-center rounded-lg border transition-colors',
+                colsOpen ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700',
+              )}
+            >
+              <AlignJustify className="h-4 w-4" />
+            </button>
+            {colsOpen && (
+              <div className="absolute right-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
+                <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Столбцы</p>
+                {([
+                  { key: 'stock',  label: 'Остаток'     },
+                  { key: 'needed', label: 'Потребность'  },
+                ] as const).map(col => {
+                  const checked = visibleCols[col.key]
+                  return (
+                    <label key={col.key} onClick={() => setVisibleCols(prev => ({ ...prev, [col.key]: !prev[col.key] }))}
+                      className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50">
+                      <div className={cn('flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors',
+                        checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300')}>
+                        {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                      </div>
+                      <span className="text-sm text-gray-700">{col.label}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -198,8 +243,8 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
           <colgroup>
             <col style={{ width: COL_CB }} />
             <col style={{ width: nameW }} />
-            <col style={{ width: COL_STOCK }} />
-            <col style={{ width: COL_NEEDED }} />
+            {visibleCols.stock  && <col style={{ width: COL_STOCK }} />}
+            {visibleCols.needed && <col style={{ width: COL_NEEDED }} />}
             <col style={{ width: COL_FAV }} />
           </colgroup>
           <thead>
@@ -226,20 +271,16 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
               }}>
                 <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Название</span>
               </th>
-              <th style={{
-                position: 'sticky', top: 0, zIndex: 2, height: 48,
-                background: '#F9FAFB', borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb',
-                padding: '0 12px', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden',
-              }}>
-                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Остаток</span>
-              </th>
-              <th style={{
-                position: 'sticky', top: 0, zIndex: 2, height: 48,
-                background: '#F9FAFB', borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb',
-                padding: '0 16px', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden',
-              }}>
-                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Потребность</span>
-              </th>
+              {visibleCols.stock && (
+                <th style={{ position: 'sticky', top: 0, zIndex: 2, height: 48, background: '#F9FAFB', borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', padding: '0 12px', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Остаток</span>
+                </th>
+              )}
+              {visibleCols.needed && (
+                <th style={{ position: 'sticky', top: 0, zIndex: 2, height: 48, background: '#F9FAFB', borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', padding: '0 16px', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Потребность</span>
+                </th>
+              )}
               {/* Heart header — sticky right */}
               <th style={{
                 position: 'sticky', top: 0, right: 0, zIndex: 4, height: 48,
@@ -251,7 +292,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-10 text-center text-sm text-gray-400">
+                <td colSpan={2 + (visibleCols.stock ? 1 : 0) + (visibleCols.needed ? 1 : 0) + 1} className="py-10 text-center text-sm text-gray-400">
                   Ничего не найдено
                 </td>
               </tr>
@@ -305,32 +346,33 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                     </td>
 
                     {/* Остаток */}
-                    <td className="whitespace-nowrap px-3 py-0 text-right">
-                      <span className={cn(
-                        'text-sm tabular-nums font-medium',
-                        row.stock === 0 ? 'text-gray-400' : 'text-gray-700',
-                      )}>
-                        {row.stock === 0 ? '—' : row.stock}
-                      </span>
-                    </td>
+                    {visibleCols.stock && (
+                      <td className="whitespace-nowrap px-3 py-0 text-right">
+                        <span className={cn('text-sm tabular-nums font-medium', row.stock === 0 ? 'text-gray-400' : 'text-gray-700')}>
+                          {row.stock === 0 ? '—' : row.stock}
+                        </span>
+                      </td>
+                    )}
 
                     {/* Потребность */}
-                    <td className="px-4 py-0 text-right">
-                      {row.needed > 0 ? (
-                        <span className="inline-flex items-center rounded-full bg-[#FEE2E2] px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[#991B1B]">
-                          +{row.needed} нужно
-                        </span>
-                      ) : row.excess > 0 ? (
-                        <span className="inline-flex items-center rounded-full bg-[#FEF3C7] px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[#92400E]">
-                          −{row.excess} лишних
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#D1FAE5] px-2.5 py-0.5 text-xs font-semibold text-[#065F46]">
-                          <Check className="h-3 w-3" />
-                          Достаточно
-                        </span>
-                      )}
-                    </td>
+                    {visibleCols.needed && (
+                      <td className="px-4 py-0 text-right">
+                        {row.needed > 0 ? (
+                          <span className="inline-flex items-center rounded-full bg-[#FEE2E2] px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[#991B1B]">
+                            +{row.needed} нужно
+                          </span>
+                        ) : row.excess > 0 ? (
+                          <span className="inline-flex items-center rounded-full bg-[#FEF3C7] px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[#92400E]">
+                            −{row.excess} лишних
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-[#D1FAE5] px-2.5 py-0.5 text-xs font-semibold text-[#065F46]">
+                            <Check className="h-3 w-3" />
+                            Достаточно
+                          </span>
+                        )}
+                      </td>
+                    )}
 
                     {/* Избранное — sticky right */}
                     <td

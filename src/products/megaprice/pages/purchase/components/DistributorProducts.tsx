@@ -110,34 +110,46 @@ const cellDiv = (extra?: React.CSSProperties): React.CSSProperties => ({
 // ─── FiltersBar ───────────────────────────────────────────────────────────────
 
 function FiltersBar({
-  manufacturers, countries,
+  manufacturers, countries, mnns,
   manufacturerFilter, onManufacturer,
   countryFilter, onCountry,
   bonusFilter, onBonus,
+  mnnFilter, onMnn,
   visibleColumns, onToggleColumn,
 }: {
   manufacturers: string[]
   countries: string[]
+  mnns: string[]
   manufacturerFilter: string[]
   onManufacturer: (v: string[]) => void
   countryFilter: string[]
   onCountry: (v: string[]) => void
   bonusFilter: BonusType[]
   onBonus: (v: BonusType[]) => void
+  mnnFilter: string[]
+  onMnn: (v: string[]) => void
   visibleColumns: Record<ColumnKey, boolean>
   onToggleColumn: (k: ColumnKey) => void
 }) {
   const [openMfg,   setOpenMfg]   = useState(false)
   const [openCtry,  setOpenCtry]  = useState(false)
   const [openBonus, setOpenBonus] = useState(false)
+  const [openMnn,   setOpenMnn]   = useState(false)
+  const [mnnSearch, setMnnSearch] = useState('')
   const [openCols,  setOpenCols]  = useState(false)
 
   const mfgRef   = useClickOutside(() => setOpenMfg(false))
   const ctryRef  = useClickOutside(() => setOpenCtry(false))
   const bonusRef = useClickOutside(() => setOpenBonus(false))
+  const mnnRef   = useClickOutside(() => { setOpenMnn(false); setMnnSearch('') })
   const colsRef  = useClickOutside(() => setOpenCols(false))
 
-  const hasFilter = manufacturerFilter.length > 0 || countryFilter.length > 0 || bonusFilter.length > 0
+  const mnnInputRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    if (openMnn) { setMnnSearch(''); setTimeout(() => mnnInputRef.current?.focus(), 50) }
+  }, [openMnn])
+
+  const hasFilter = manufacturerFilter.length > 0 || countryFilter.length > 0 || bonusFilter.length > 0 || mnnFilter.length > 0
 
   function toggle<T>(arr: T[], val: T, set: (v: T[]) => void) {
     set(arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val])
@@ -197,6 +209,65 @@ function FiltersBar({
         label="Страна" count={countryFilter.length}
         items={countries} selected={countryFilter}
         onToggleItem={(v) => toggle(countryFilter, v, onCountry)} onClear={() => onCountry([])} />
+      {/* МНН с поиском */}
+      <div ref={mnnRef} className="relative">
+        <button onClick={() => setOpenMnn(v => !v)} className={cn(
+          'flex h-9 w-[180px] items-center justify-between gap-1.5 rounded-lg border px-3 text-sm transition-colors',
+          openMnn ? 'border-gray-400 bg-white text-gray-900'
+            : mnnFilter.length > 0 ? 'border-gray-300 bg-white text-gray-700'
+            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700'
+        )}>
+          <span className="truncate">{mnnFilter.length > 0 ? `МНН · ${mnnFilter.length}` : 'МНН'}</span>
+          <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', openMnn && 'rotate-180')} />
+        </button>
+        {openMnn && (
+          <div className="absolute left-0 top-10 z-50 w-56 rounded-xl border border-gray-200 bg-white shadow-lg">
+            <div className="border-b border-gray-100 p-2">
+              <div className="relative">
+                <svg className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input
+                  ref={mnnInputRef}
+                  type="text"
+                  value={mnnSearch}
+                  onChange={(e) => setMnnSearch(e.target.value)}
+                  placeholder="Поиск..."
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-8 w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-7 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 focus:bg-white"
+                />
+                {mnnSearch && (
+                  <button onClick={(e) => { e.stopPropagation(); setMnnSearch('') }} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="max-h-52 overflow-y-auto py-1">
+              {mnns.filter(m => m.toLowerCase().includes(mnnSearch.toLowerCase())).length === 0 ? (
+                <p className="px-3 py-3 text-xs text-gray-400">Ничего не найдено</p>
+              ) : (
+                mnns.filter(m => m.toLowerCase().includes(mnnSearch.toLowerCase())).map((m) => {
+                  const checked = mnnFilter.includes(m)
+                  return (
+                    <label key={m} onClick={() => toggle(mnnFilter, m, onMnn)}
+                      className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50">
+                      <div className={cn('flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
+                        checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300')}>
+                        {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                      </div>
+                      <span className="truncate text-sm text-gray-700">{m}</span>
+                    </label>
+                  )
+                })
+              )}
+            </div>
+            {mnnFilter.length > 0 && (
+              <div className="border-t border-gray-100 px-3 py-2">
+                <button onClick={() => onMnn([])} className="text-xs text-gray-400 hover:text-gray-600">Сбросить всё</button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Бонусы */}
       <div ref={bonusRef} className="relative">
@@ -234,7 +305,7 @@ function FiltersBar({
       </div>
 
       {hasFilter && (
-        <button onClick={() => { onManufacturer([]); onCountry([]); onBonus([]) }}
+        <button onClick={() => { onManufacturer([]); onCountry([]); onBonus([]); onMnn([]) }}
           className="flex h-9 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-500 transition-colors hover:bg-red-100">
           <X className="h-3.5 w-3.5" />
           Очистить
@@ -278,6 +349,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
   const [manufacturerFilter, setManufacturerFilter] = useState<string[]>([])
   const [countryFilter,      setCountryFilter]      = useState<string[]>([])
   const [bonusFilter,        setBonusFilter]        = useState<BonusType[]>([])
+  const [mnnFilter,          setMnnFilter]          = useState<string[]>([])
   const [visibleColumns,     setVisibleColumns]     = useState<Record<ColumnKey, boolean>>({
     expiry: true, payment: true, price: true, bonus: true, quantity: true,
   })
@@ -315,12 +387,14 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
 
   const manufacturers = useMemo(() => Array.from(new Set(products.map((p) => p.medicine.manufacturer))).sort(), [products])
   const countries     = useMemo(() => Array.from(new Set(products.map((p) => p.medicine.country))).sort(), [products])
+  const mnns          = useMemo(() => Array.from(new Set(products.map((p) => p.medicine.mnn).filter(Boolean))).sort(), [products])
 
   const filtered = useMemo(() => {
     let list = products
     if (manufacturerFilter.length) list = list.filter((p) => manufacturerFilter.includes(p.medicine.manufacturer))
     if (countryFilter.length)      list = list.filter((p) => countryFilter.includes(p.medicine.country))
     if (bonusFilter.length)        list = list.filter((p) => p.offer.bonus && bonusFilter.includes(p.offer.bonus.type))
+    if (mnnFilter.length)          list = list.filter((p) => mnnFilter.includes(p.medicine.mnn))
     if (sortField === 'price') {
       list = [...list].sort((a, b) => sortDir === 'asc' ? a.offer.priceWithVat - b.offer.priceWithVat : b.offer.priceWithVat - a.offer.priceWithVat)
     } else if (sortField === 'expiry') {
@@ -330,7 +404,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
       })
     }
     return list
-  }, [products, manufacturerFilter, countryFilter, bonusFilter, sortField, sortDir])
+  }, [products, manufacturerFilter, countryFilter, bonusFilter, mnnFilter, sortField, sortDir])
 
   function handleSort(field: SortField) {
     if (sortField === field) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
@@ -525,10 +599,11 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
     <div className="flex h-full flex-col overflow-hidden">
 
       <FiltersBar
-        manufacturers={manufacturers} countries={countries}
+        manufacturers={manufacturers} countries={countries} mnns={mnns}
         manufacturerFilter={manufacturerFilter} onManufacturer={setManufacturerFilter}
         countryFilter={countryFilter} onCountry={setCountryFilter}
         bonusFilter={bonusFilter} onBonus={setBonusFilter}
+        mnnFilter={mnnFilter} onMnn={setMnnFilter}
         visibleColumns={visibleColumns}
         onToggleColumn={(k) => setVisibleColumns((prev) => ({ ...prev, [k]: !prev[k] }))}
       />

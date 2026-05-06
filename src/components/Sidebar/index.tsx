@@ -11,6 +11,7 @@ import {
   Pill,
   PanelLeftClose,
   PanelLeftOpen,
+  ArrowUpRight,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/shared/utils/utils'
@@ -54,7 +55,7 @@ interface PortalCategory {
   id: 'megaprice' | 'analytic' | 'apteka' | 'users'
   label: string
   iconName: string
-  logo?: string
+  domain?: string
   defaultPath: string
   matchPrefix: string
   subItems: PortalSubItem[]
@@ -67,7 +68,7 @@ function buildPortalCategories(): PortalCategory[] {
       id: 'megaprice',
       label: 'Mega price',
       iconName: 'Store',
-      logo: products.megaprice.logo,
+      domain: products.megaprice.domain,
       defaultPath: `${products.megaprice.basePath}/${products.megaprice.sections[0]?.slug ?? ''}`,
       matchPrefix: products.megaprice.basePath,
       subItems: products.megaprice.sections.map((s) => ({
@@ -79,7 +80,7 @@ function buildPortalCategories(): PortalCategory[] {
       id: 'analytic',
       label: 'Analytic',
       iconName: 'BarChart3',
-      logo: products.analytic.logo,
+      domain: products.analytic.domain,
       defaultPath: products.analytic.basePath,
       matchPrefix: products.analytic.basePath,
       subItems: [],
@@ -89,7 +90,7 @@ function buildPortalCategories(): PortalCategory[] {
       id: 'apteka',
       label: 'Apteka',
       iconName: 'Pill',
-      logo: products.apteka.logo,
+      domain: products.apteka.domain,
       defaultPath: products.apteka.basePath,
       matchPrefix: products.apteka.basePath,
       subItems: [],
@@ -177,7 +178,7 @@ function StandaloneSidebar({ productId }: { productId: ProductId }) {
       </nav>
 
       <div className="shrink-0 border-t border-[#6B7280] py-[16px]">
-        <p className="text-center text-[14px] text-[#6B7280]">v1.0.9</p>
+        <p className="text-center text-[14px] text-[#6B7280]">v1.0.2</p>
       </div>
     </aside>
   )
@@ -284,24 +285,25 @@ function PortalSidebar() {
         </nav>
 
         <div className="shrink-0 border-t border-[#6B7280] py-[16px]">
-          <p className="text-center text-[12px] text-[#6B7280]">v1.0.9</p>
+          <p className="text-center text-[12px] text-[#6B7280]">v1.0.2</p>
         </div>
       </div>
 
       {/* Expanded sub-items panel */}
       {collapsed ? null : (
         <div className="flex w-[200px] shrink-0 flex-col border-r border-gray-200 bg-white">
-        <div className="flex h-16 shrink-0 items-center px-5">
-          {expanded.logo ? (
-            <img
-              src={expanded.logo}
-              alt={expanded.label}
-              className="h-9 w-auto"
-            />
-          ) : (
-            <span className="text-[15px] font-semibold text-gray-900">
-              {expanded.label}
-            </span>
+        <div className="flex h-16 shrink-0 items-center gap-2 px-3">
+          <span className="flex-1 text-[15px] font-semibold text-gray-900">{expanded.label}</span>
+          {expanded.domain && (
+            <a
+              href={`https://${expanded.domain}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`Открыть ${expanded.domain}`}
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            >
+              <ArrowUpRight className="h-4 w-4" />
+            </a>
           )}
         </div>
 

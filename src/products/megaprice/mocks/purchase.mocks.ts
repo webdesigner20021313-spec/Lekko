@@ -1,4 +1,5 @@
 import type { Pharmacy, Medicine, SupplierOffer } from '@/products/megaprice/pages/purchase/types/purchase.types'
+import { mockPOSMedicines } from '@/products/megaprice/mocks/pos.mocks'
 
 export const mockPharmacies: Pharmacy[] = [
   {
@@ -162,6 +163,7 @@ export const mockSupplierOffers: SupplierOffer[] = [
 ]
 
 // POS items — medicines that need restocking
-export const mockPosItems: Medicine[] = mockMedicines.filter(m =>
-  ['m1', 'm4', 'm5', 'm7', 'm9', 'm13', 'm14', 'm18'].includes(m.id)
-)
+const posMap = Object.fromEntries(mockPOSMedicines.map(p => [p.id, p]))
+export const mockPosItems: Medicine[] = mockMedicines
+  .filter(m => ['m1', 'm4', 'm5', 'm7', 'm9', 'm13', 'm14', 'm18'].includes(m.id))
+  .map(m => ({ ...m, stock: posMap[m.id]?.stock, needed: posMap[m.id]?.needed }))

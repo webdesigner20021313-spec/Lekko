@@ -91,6 +91,41 @@ function getPharmacyItems(pharmacyId: string): NeedItem[] {
   })
 }
 
+function getMultiPharmacyItems(ids: string[]): NeedItem[] {
+  if (ids.length === 0) return mockNeedItems
+  if (ids.length === 1) return getPharmacyItems(ids[0])
+  return mockNeedItems.flatMap(item => {
+    const phList = getItemPharmacies(item).filter(ph => ids.includes(ph.id))
+    if (phList.length === 0) return []
+    const stockSum    = phList.reduce((s, ph) => s + ph.stock, 0)
+    const salesSum    = parseFloat(phList.reduce((s, ph) => s + ph.avgDailySales, 0).toFixed(1))
+    const sales30dSum = phList.reduce((s, ph) => s + ph.sales30d, 0)
+    if (stockSum === 0 && sales30dSum === 0) return []
+    const salesRatio  = item.avgDailySales > 0 ? salesSum / item.avgDailySales : 0
+    const daysOfCover = salesSum > 0 ? stockSum / salesSum : 0
+    let status: NeedStatus
+    if (stockSum === 0) status = 'oos'
+    else if (daysOfCover < 7) status = 'critical'
+    else if (daysOfCover > 30) status = 'overstock'
+    else status = 'normal'
+    return [{
+      ...item,
+      stock:             stockSum,
+      avgDailySales:     salesSum,
+      sales30d:          sales30dSum,
+      sales7d:           Math.round(item.sales7d * salesRatio),
+      daysOfCover,
+      status,
+      optimalStock:      Math.max(1, Math.round(item.optimalStock * salesRatio)),
+      lostRevenuePerDay: status === 'oos' ? item.lostRevenuePerDay * salesRatio : 0,
+      frozenAmount:      (status === 'overstock' || status === 'dead')
+        ? item.frozenAmount * (item.stock > 0 ? stockSum / item.stock : 0)
+        : 0,
+      recommendedQty:    Math.max(0, Math.ceil(salesSum * 7) - stockSum),
+    }]
+  })
+}
+
 // ─── InfoTooltip ─────────────────────────────────────────────────────────────
 
 function InfoTooltip({ text }: { text: string }) {
@@ -419,10 +454,10 @@ function OffersModal({ item, currentOfferId, onSelectOffer, onClose }: {
 
 // ─── NeedDrawer ───────────────────────────────────────────────────────────────
 
-function NeedDrawer({ item, periodDays, selectedPharmacyId, activeOffer, onClose, onAddToCart, onShowOffers }: {
+function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClose, onAddToCart, onShowOffers }: {
   item: NeedItem
   periodDays: number
-  selectedPharmacyId: string | null
+  selectedPharmacyIds: string[]
   activeOffer: SupplierOffer | null
   onClose: () => void
   onAddToCart: (item: NeedItem, qty: number) => void
@@ -435,10 +470,10 @@ function NeedDrawer({ item, periodDays, selectedPharmacyId, activeOffer, onClose
   const bestOffer = activeOffer
   const pharmacies = useMemo(() => {
     const all = getItemPharmacies(item)
-    return selectedPharmacyId
-      ? all.filter(ph => ph.id === selectedPharmacyId)
+    return selectedPharmacyIds.length > 0
+      ? all.filter(ph => selectedPharmacyIds.includes(ph.id))
       : all
-  }, [item, selectedPharmacyId])
+  }, [item, selectedPharmacyIds])
 
   useEffect(() => {
     const q = calcRecommendedQty(item, periodDays)
@@ -1202,9 +1237,9 @@ export function NeedPage() {
   const { addItem } = usePurchaseCart()
   const { toast } = useToast()
 
-  // Pharmacy single-select
-  const [selectedPharmacyId, setSelectedPharmacyId] = useState<string | null>(null)
-  const [pharmacyOpen, setPharmacyOpen]             = useState(false)
+  // Pharmacy multi-select
+  const [selectedPharmacyIds, setSelectedPharmacyIds] = useState<string[]>([])
+  const [pharmacyOpen, setPharmacyOpen]               = useState(false)
 
   // Other filters
   const [scenario] = useState<ScenarioKey>('all')
@@ -1287,10 +1322,10 @@ export function NeedPage() {
     : PERIODS.find(p => p.key === period)!.days
 
   // Pharmacy-filtered base list — если выбрана аптека, данные пересчитываются под неё
-  const pharmacyFiltered = useMemo(() => {
-    if (!selectedPharmacyId) return mockNeedItems
-    return getPharmacyItems(selectedPharmacyId)
-  }, [selectedPharmacyId])
+  const pharmacyFiltered = useMemo(
+    () => getMultiPharmacyItems(selectedPharmacyIds),
+    [selectedPharmacyIds],
+  )
 
   const kpi = useMemo(() => calcKpi(pharmacyFiltered, periodDays), [pharmacyFiltered, periodDays])
 
@@ -1316,9 +1351,11 @@ export function NeedPage() {
   const tableW = COL_CB + nameW + COL_MFR + reorderableW + COL_ACTION
 
   // Pharmacy dropdown label
-  const pharmacyLabel = selectedPharmacyId
-    ? (PHARMACIES.find(ph => ph.id === selectedPharmacyId)?.name ?? 'Аптека')
-    : `Все аптеки (${PHARMACIES.length})`
+  const pharmacyLabel = selectedPharmacyIds.length === 0
+    ? `Все аптеки (${PHARMACIES.length})`
+    : selectedPharmacyIds.length === 1
+      ? (PHARMACIES.find(ph => ph.id === selectedPharmacyIds[0])?.name ?? 'Аптека')
+      : `Аптеки · ${selectedPharmacyIds.length}`
 
   // KPI card filter click
   function handleKpiClick(statuses: NeedStatus[]) {
@@ -1404,9 +1441,11 @@ export function NeedPage() {
     const ws = XLSX.utils.json_to_sheet(rows)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Потребность')
-    const pharmacyName = selectedPharmacyId
-      ? PHARMACIES.find(p => p.id === selectedPharmacyId)?.name ?? 'аптека'
-      : 'все аптеки'
+    const pharmacyName = selectedPharmacyIds.length === 0
+      ? 'все аптеки'
+      : selectedPharmacyIds.length === 1
+        ? (PHARMACIES.find(p => p.id === selectedPharmacyIds[0])?.name ?? 'аптека')
+        : `${selectedPharmacyIds.length} аптеки`
     XLSX.writeFile(wb, `Потребность — ${pharmacyName} — ${new Date().toLocaleDateString('ru')}.xlsx`)
   }
 
@@ -1503,12 +1542,12 @@ export function NeedPage() {
       <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-3">
         <div className="flex items-center gap-3">
 
-          {/* Pharmacy single-select */}
+          {/* Pharmacy multi-select */}
           <div className="relative shrink-0" onClick={e => e.stopPropagation()}>
             <button onClick={() => setPharmacyOpen(v => !v)}
               className={cn(
                 'flex h-9 w-[240px] items-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors',
-                selectedPharmacyId !== null
+                selectedPharmacyIds.length > 0
                   ? 'border-gray-300 bg-gray-50 text-gray-900'
                   : 'border-gray-200 text-gray-600 hover:border-gray-300',
               )}>
@@ -1518,31 +1557,32 @@ export function NeedPage() {
             </button>
             {pharmacyOpen && (
               <div className="absolute left-0 top-10 z-50 w-64 rounded-xl border border-gray-200 bg-white py-1 shadow-lg max-h-72 overflow-y-auto">
-                {/* All pharmacies option */}
-                <button onClick={() => { setSelectedPharmacyId(null); setPharmacyOpen(false) }}
-                  className={cn('flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50',
-                    selectedPharmacyId === null ? 'font-medium text-gray-900' : 'text-gray-500')}>
-                  <div className={cn('h-4 w-4 shrink-0 rounded-full border flex items-center justify-center',
-                    selectedPharmacyId === null ? 'border-gray-900' : 'border-gray-300')}>
-                    {selectedPharmacyId === null && <div className="h-2 w-2 rounded-full bg-gray-900" />}
-                  </div>
-                  Все аптеки
-                </button>
-                <div className="mx-3 my-1 h-px bg-gray-100" />
                 {PHARMACIES.map(ph => {
-                  const active = selectedPharmacyId === ph.id
+                  const checked = selectedPharmacyIds.includes(ph.id)
                   return (
-                    <button key={ph.id}
-                      onClick={() => { setSelectedPharmacyId(active ? null : ph.id); setPharmacyOpen(false) }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50">
-                      <div className={cn('h-4 w-4 shrink-0 rounded-full border flex items-center justify-center',
-                        active ? 'border-gray-900' : 'border-gray-300')}>
-                        {active && <div className="h-2 w-2 rounded-full bg-gray-900" />}
+                    <label key={ph.id}
+                      onClick={() => setSelectedPharmacyIds(prev =>
+                        checked ? prev.filter(id => id !== ph.id) : [...prev, ph.id]
+                      )}
+                      className="flex cursor-pointer w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50">
+                      <div className={cn(
+                        'flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors',
+                        checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300',
+                      )}>
+                        {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
                       </div>
-                      <span className={cn('truncate', active ? 'font-medium text-gray-900' : 'text-gray-700')}>{ph.name}</span>
-                    </button>
+                      <span className={cn('truncate', checked ? 'font-medium text-gray-900' : 'text-gray-700')}>{ph.name}</span>
+                    </label>
                   )
                 })}
+                {selectedPharmacyIds.length > 0 && (
+                  <div className="border-t border-gray-100 px-3 py-2">
+                    <button onClick={() => setSelectedPharmacyIds([])}
+                      className="text-xs text-gray-400 hover:text-gray-600">
+                      Сбросить всё
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1682,7 +1722,7 @@ export function NeedPage() {
                 {kpi.oos.length} {kpi.oos.length === 1 ? 'товар' : 'товара'}
               </p>
               <p className="text-xs text-gray-500 text-right leading-tight">
-                {kpi.oos.length > 0 ? `Потери ${formatCurrency(kpi.lostPerDay)}/день` : 'Всё в наличии'}
+                {kpi.oos.length > 0 ? `Потери ${formatCurrency(kpi.lostPerDay * periodDays)} за ${periodDays} дн.` : 'Всё в наличии'}
               </p>
             </div>
           </div>
@@ -1881,7 +1921,7 @@ export function NeedPage() {
           <NeedDrawer
             item={drawerItem}
             periodDays={periodDays}
-            selectedPharmacyId={selectedPharmacyId}
+            selectedPharmacyIds={selectedPharmacyIds}
             activeOffer={selectedOfferMap[drawerItem.id] ?? getBestOffer(drawerItem.id)}
             onClose={() => setDrawerItem(null)}
             onAddToCart={handleAddToCart}

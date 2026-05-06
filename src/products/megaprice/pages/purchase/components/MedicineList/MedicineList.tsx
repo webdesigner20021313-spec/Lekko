@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { Zap } from 'lucide-react'
-import { MedicineFilters } from './MedicineFilters'
+import { MedicineFilters, type MedicineColumnKey } from './MedicineFilters'
 import { MedicineTable } from './MedicineTable'
 import { ExcelUploadView } from './ExcelUploadView'
 import { PostMedicineList } from '../Post/PostMedicineList'
@@ -32,6 +32,11 @@ export function MedicineList({
   const [search, setSearch] = useState('')
   const [manufacturerFilter, setManufacturerFilter] = useState<string[]>([])
   const [excelMedicines, setExcelMedicines] = useState<Medicine[]>([])
+  const [visibleColumns, setVisibleColumns] = useState<Record<MedicineColumnKey, boolean>>({ mnn: true, stock: false, needed: false })
+
+  function toggleColumn(key: MedicineColumnKey) {
+    setVisibleColumns(prev => ({ ...prev, [key]: !prev[key] }))
+  }
 
   const panel1Ref = useRef<HTMLDivElement>(null)
   const [panel1Width, setPanel1Width] = useState(640)
@@ -137,6 +142,8 @@ export function MedicineList({
           selectedManufacturers={manufacturerFilter}
           onManufacturers={setManufacturerFilter}
           manufacturers={manufacturers}
+          visibleColumns={visibleColumns}
+          onToggleColumn={toggleColumn}
         />
       </div>
 
@@ -156,6 +163,7 @@ export function MedicineList({
           onToggleFavorite={toggleFavorite}
           cartQtyByMedicine={cartQtyByMedicine}
           panel1Width={panel1Width}
+          showMnn={visibleColumns.mnn}
         />
       </div>
 

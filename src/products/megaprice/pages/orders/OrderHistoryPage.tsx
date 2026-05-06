@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Package, Download, Calendar, AlertCircle, ChevronDown } from 'lucide-react'
+import { Search, Package, Download, Calendar, AlertCircle } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency, formatDate } from '@/shared/utils/format'
@@ -98,6 +98,17 @@ export function OrderHistoryPage() {
 
   const hasFilters = search.trim().length > 0 || statusFilter !== 'all' || !!dateRange.trim()
 
+  const stats = useMemo(() => {
+    const byStatus = (s: OrderStatus) => orders.filter(o => o.status === s)
+    const sum      = (list: typeof orders) => list.reduce((acc, o) => acc + o.totalSum, 0)
+    return {
+      new:       { count: byStatus('new').length,       total: sum(byStatus('new')) },
+      modified:  { count: byStatus('modified').length,  total: sum(byStatus('modified')) },
+      completed: { count: byStatus('completed').length, total: sum(byStatus('completed')) },
+      cancelled: { count: byStatus('cancelled').length, total: sum(byStatus('cancelled')) },
+    }
+  }, [orders])
+
   const allChecked = filteredOrders.length > 0 && filteredOrders.every(o => checked.includes(o.id))
   const toggleAll  = () => setChecked(allChecked ? [] : filteredOrders.map(o => o.id))
   const toggleOne  = (id: string) => setChecked(prev =>
@@ -138,21 +149,6 @@ export function OrderHistoryPage() {
               <Calendar className="h-4 w-4 shrink-0 text-gray-400" />
             </div>
 
-            {/* Статус */}
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value as OrderStatus | 'all')}
-                className="h-9 appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-8 text-sm text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20"
-              >
-                <option value="all">Все статусы</option>
-                <option value="new">Новый</option>
-                <option value="completed">Завершён</option>
-                <option value="cancelled">Отменён</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            </div>
-
             {/* Excel */}
             <button
               onClick={() => exportToExcel(filteredOrders)}
@@ -162,6 +158,40 @@ export function OrderHistoryPage() {
               Excel
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* ── KPI Cards ── */}
+      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4">
+        <div className="grid grid-cols-4 gap-3">
+          {([
+            { status: 'new'       as OrderStatus, label: 'Новые' },
+            { status: 'modified'  as OrderStatus, label: 'Изменено' },
+            { status: 'completed' as OrderStatus, label: 'Завершённые' },
+            { status: 'cancelled' as OrderStatus, label: 'Отменённые' },
+          ] as const).map(({ status, label }) => {
+            const { bg, text } = ORDER_STATUS_CONFIG[status]
+            const { count, total } = stats[status]
+            const isActive = statusFilter === status
+            return (
+              <div
+                key={status}
+                onClick={() => setStatusFilter(isActive ? 'all' : status)}
+                className={cn(
+                  'flex flex-col rounded-xl border bg-white p-4 cursor-pointer transition-all',
+                  isActive ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-200 hover:border-gray-300',
+                )}
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{label}</p>
+                <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+                  <p className="text-2xl font-bold tabular-nums leading-none text-gray-900">
+                    {count} <span className="text-sm font-medium text-gray-400">шт.</span>
+                  </p>
+                  <p className="text-sm font-semibold text-gray-500">{formatCurrency(total)}</p>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
 

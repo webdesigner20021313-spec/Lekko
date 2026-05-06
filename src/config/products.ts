@@ -31,7 +31,7 @@ export const products: Record<ProductId, Product> = {
     domain: 'megaprice.com',
     basePath: '/megaprice',
     sections: [
-      { label: 'Магазин',     slug: 'purchase',     iconName: 'Store' },
+      { label: 'Прайс-лист',   slug: 'purchase',     iconName: 'Store' },
       { label: 'Потребность', slug: 'need',         iconName: 'TrendingUp' },
       { label: 'Корзинка',    slug: 'cart',         iconName: 'ShoppingCart' },
       { label: 'Заказы',      slug: 'orders',       iconName: 'ClipboardList' },

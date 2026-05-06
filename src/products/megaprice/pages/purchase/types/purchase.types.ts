@@ -13,6 +13,8 @@ export interface Medicine {
   manufacturer: string
   country: string
   isFavorite: boolean
+  stock?: number
+  needed?: number
 }
 
 export type BonusType = 'cashback' | 'gift' | 'free_delivery' | 'discount'

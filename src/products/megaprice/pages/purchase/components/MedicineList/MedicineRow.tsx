@@ -15,12 +15,13 @@ interface MedicineRowProps {
   onSelect: () => void
   onToggleCheck: () => void
   onToggleFavorite: () => void
+  showMnn: boolean
 }
 
 export function MedicineRow({
   medicine,
   isSelected, isChecked, isFavorite, cartQty,
-  onSelect, onToggleCheck, onToggleFavorite,
+  onSelect, onToggleCheck, onToggleFavorite, showMnn,
 }: MedicineRowProps) {
   return (
     <tr
@@ -80,16 +81,18 @@ export function MedicineRow({
       </td>
 
       {/* МНН */}
-      <td style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', overflow: 'hidden', padding: '0 12px' }}>
-          <p
-            className="text-sm text-gray-600"
-            style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
-          >
-            {medicine.mnn}
-          </p>
-        </div>
-      </td>
+      {showMnn && (
+        <td style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', overflow: 'hidden', padding: '0 12px' }}>
+            <p
+              className="text-sm text-gray-600"
+              style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+            >
+              {medicine.mnn}
+            </p>
+          </div>
+        </td>
+      )}
 
       {/* Heart — sticky right */}
       <td

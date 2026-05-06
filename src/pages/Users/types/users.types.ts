@@ -34,7 +34,7 @@ export const PROJECTS_CONFIG: ProjectConfig[] = [
     id: 'megaprice',
     label: 'Megaprice',
     sections: [
-      { id: 'shop',        label: 'Магазин'     },
+      { id: 'shop',        label: 'Прайс-лист'   },
       { id: 'needs',       label: 'Потребности' },
       { id: 'cart',        label: 'Корзина'     },
       { id: 'orders',      label: 'Заказы'      },

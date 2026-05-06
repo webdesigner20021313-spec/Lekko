@@ -1,5 +1,5 @@
 // ── Global order status ───────────────────────────────────────────────────────
-export type OrderStatus = 'new' | 'completed' | 'cancelled'
+export type OrderStatus = 'new' | 'modified' | 'completed' | 'cancelled'
 
 // ── Per-distributor status inside an order ────────────────────────────────────
 export type DistributorStatus =
@@ -19,6 +19,7 @@ export interface OrderStatusConfig {
 
 export const ORDER_STATUS_CONFIG: Record<OrderStatus, OrderStatusConfig> = {
   new:       { label: 'Новый',    bg: 'bg-[#DBEAFE]', text: 'text-[#1E40AF]' },
+  modified:  { label: 'Изменено', bg: 'bg-[#FFEDD5]', text: 'text-[#9A3412]' },
   completed: { label: 'Завершён', bg: 'bg-[#D1FAE5]', text: 'text-[#065F46]' },
   cancelled: { label: 'Отменён',  bg: 'bg-[#FEE2E2]', text: 'text-[#991B1B]' },
 }

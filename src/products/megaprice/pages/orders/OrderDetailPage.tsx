@@ -4,7 +4,7 @@ import {
   ArrowLeft, MapPin, Calendar, Wallet,
   Download, FileText, CheckCircle2, XCircle,
   MoreVertical, Mail, MessageCircle,
-  Trash2, AlertCircle, Check, Send, X,
+  AlertCircle, Check, X,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import logoSvgRaw from '@/assets/logos/megaprice-logo.svg?raw'
@@ -28,7 +28,6 @@ import {
 type ModalState =
   | { kind: 'complete' }
   | { kind: 'cancel_order' }
-  | { kind: 'cancel_dist'; distributorId: string; distributorName: string }
 
 // ─── Download / Print helpers ─────────────────────────────────────────────────
 
@@ -354,28 +353,16 @@ function ProposalBlock({
 
 function DistributorCard({
   group,
-  items,
-  isDirty,
-  isEditable,
-  onQtyChange,
-  onDeleteItem,
-  onSave,
-  onCancelDistributor,
-  onSendDistributor,
+  isOrderActive,
+  onCancelOrder,
   onAcceptProposal,
   onRejectProposal,
   onDownloadExcel,
   onPrintInvoice,
 }: {
   group: OrderDistributorGroup
-  items: OrderItem[]
-  isDirty: boolean
-  isEditable: boolean
-  onQtyChange: (itemId: string, qty: number) => void
-  onDeleteItem: (itemId: string) => void
-  onSave: () => void
-  onCancelDistributor: () => void
-  onSendDistributor: () => void
+  isOrderActive: boolean
+  onCancelOrder: () => void
   onAcceptProposal: () => void
   onRejectProposal: () => void
   onDownloadExcel: () => void
@@ -385,9 +372,7 @@ function DistributorCard({
 
   const isCancelled = group.distributorStatus === 'cancelled'
   const hasOffer    = group.distributorStatus === 'offer'
-  const subtotal    = items.reduce((s, i) => s + i.quantity * i.priceWithVat, 0)
-  const totalQty    = items.reduce((s, i) => s + i.quantity, 0)
-  const canSend     = isEditable && !isCancelled
+  const totalQty    = group.items.reduce((s, i) => s + i.quantity, 0)
 
   return (
     <div className={cn(
@@ -445,22 +430,15 @@ function DistributorCard({
                   <FileText className="h-4 w-4 text-gray-400" />
                   Скачать Invoice
                 </button>
-                {canSend && (
+                {isOrderActive && !isCancelled && (
                   <>
                     <div className="my-1 border-t border-gray-100" />
                     <button
-                      onClick={() => { onSendDistributor(); setShowMenu(false) }}
-                      className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <Send className="h-4 w-4 text-gray-400" />
-                      {group.distributorStatus === 'new' ? 'Отправить' : 'Отправить повторно'}
-                    </button>
-                    <button
-                      onClick={() => { onCancelDistributor(); setShowMenu(false) }}
+                      onClick={() => { onCancelOrder(); setShowMenu(false) }}
                       className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
                       <XCircle className="h-4 w-4 text-red-400" />
-                      Отменить дистрибутора
+                      Отменить заказ
                     </button>
                   </>
                 )}
@@ -481,11 +459,9 @@ function DistributorCard({
       )}
 
       {/* ── Items table ── */}
-      <div className={cn('overflow-x-auto', isCancelled && 'pointer-events-none')}>
-        {items.length === 0 ? (
-          <div className="py-10 text-center text-sm text-gray-400">
-            Все товары удалены — сохраните или сбросьте изменения
-          </div>
+      <div className="overflow-x-auto">
+        {group.items.length === 0 ? (
+          <div className="py-10 text-center text-sm text-gray-400">Нет товаров</div>
         ) : (
           <table className="w-full">
             <thead>
@@ -495,11 +471,10 @@ function DistributorCard({
                 <th className="px-5 py-2.5 text-center text-xs font-semibold text-gray-500">Кол-во</th>
                 <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500">Цена / шт</th>
                 <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500">Итого</th>
-                {isEditable && !isCancelled && <th className="w-10 px-2 py-2.5" />}
               </tr>
             </thead>
             <tbody>
-              {items.map(item => (
+              {group.items.map(item => (
                 <tr key={item.id} className="border-b border-gray-100 transition-colors hover:bg-gray-50/50">
                   <td className="px-5 py-3.5">
                     <p className="text-sm font-medium text-gray-900">{item.medicineName}</p>
@@ -509,34 +484,7 @@ function DistributorCard({
                     <p className="text-xs text-gray-400">{item.country}</p>
                   </td>
                   <td className="px-5 py-3.5 text-center">
-                    {isEditable && !isCancelled ? (
-                      <div className="inline-flex items-center gap-1">
-                        <button
-                          onClick={() => onQtyChange(item.id, item.quantity - 1)}
-                          className="flex h-6 w-6 items-center justify-center rounded border border-gray-200 text-sm text-gray-500 hover:bg-gray-100"
-                        >
-                          −
-                        </button>
-                        <input
-                          type="number"
-                          min={1}
-                          value={item.quantity}
-                          onChange={e => {
-                            const v = parseInt(e.target.value, 10)
-                            if (!isNaN(v)) onQtyChange(item.id, v)
-                          }}
-                          className="h-6 w-12 rounded border border-gray-200 text-center text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/20"
-                        />
-                        <button
-                          onClick={() => onQtyChange(item.id, item.quantity + 1)}
-                          className="flex h-6 w-6 items-center justify-center rounded border border-gray-200 text-sm text-gray-500 hover:bg-gray-100"
-                        >
-                          +
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-sm font-medium text-gray-900">{item.quantity}</span>
-                    )}
+                    <span className="text-sm font-medium text-gray-900">{item.quantity}</span>
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     <span className="text-sm text-gray-600">{formatCurrency(item.priceWithVat)}</span>
@@ -546,16 +494,6 @@ function DistributorCard({
                       {formatCurrency(item.quantity * item.priceWithVat)}
                     </span>
                   </td>
-                  {isEditable && !isCancelled && (
-                    <td className="px-2 py-3.5">
-                      <button
-                        onClick={() => onDeleteItem(item.id)}
-                        className="flex h-6 w-6 items-center justify-center rounded text-gray-300 transition-colors hover:bg-red-50 hover:text-red-500"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </td>
-                  )}
                 </tr>
               ))}
             </tbody>
@@ -569,32 +507,12 @@ function DistributorCard({
           {isCancelled ? (
             <span className="text-red-400">Отменён</span>
           ) : (
-            `${totalQty} ед. · ${items.length} поз.`
+            `${totalQty} ед. · ${group.items.length} поз.`
           )}
         </span>
-        <div className="flex items-center gap-3">
-          {isDirty && items.length > 0 && (
-            <button
-              onClick={onSave}
-              className="flex h-8 items-center gap-1.5 rounded-lg bg-gray-900 px-3 text-xs font-medium text-white transition-colors hover:bg-black"
-            >
-              <Check className="h-3 w-3" />
-              Сохранить
-            </button>
-          )}
-          {isDirty && items.length === 0 && (
-            <span className="text-xs text-red-400">Нельзя сохранить без товаров</span>
-          )}
-          {isCancelled ? (
-            <span className="text-base font-bold text-gray-300 line-through">
-              {formatCurrency(group.subtotal)}
-            </span>
-          ) : (
-            <span className="text-base font-bold text-gray-900">
-              {formatCurrency(isDirty ? subtotal : group.subtotal)}
-            </span>
-          )}
-        </div>
+        <span className={cn('text-base font-bold', isCancelled ? 'text-gray-300 line-through' : 'text-gray-900')}>
+          {formatCurrency(group.subtotal)}
+        </span>
       </div>
     </div>
   )
@@ -629,25 +547,17 @@ export function OrderDetailPage() {
 // ─── Order Detail Content ─────────────────────────────────────────────────────
 
 function OrderDetailContent({ order: initialOrder }: { order: Order }) {
-  const navigate = useNavigate()
+  const navigate      = useNavigate()
+  const updateOrder   = useOrdersStore(s => s.updateOrder)
 
-  const [order,      setOrder]      = useState<Order>(initialOrder)
-  const [groupEdits, setGroupEdits] = useState<Record<string, { items: OrderItem[]; isDirty: boolean }>>({})
-  const [modal,      setModal]      = useState<ModalState | null>(null)
+  const [order, setOrder] = useState<Order>(initialOrder)
+  const [modal, setModal] = useState<ModalState | null>(null)
 
-  const isOrderActive = order.status === 'new'
+  const isOrderActive = order.status === 'new' || order.status === 'modified'
   const totalItems    = order.groups.reduce((s, g) => s + g.items.length, 0)
   const hasProposals  = order.groups.some(g => g.distributorStatus === 'offer')
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
-
-  function getGroupItems(group: OrderDistributorGroup): OrderItem[] {
-    return groupEdits[group.distributorId]?.items ?? group.items
-  }
-
-  function isGroupDirty(distributorId: string): boolean {
-    return groupEdits[distributorId]?.isDirty ?? false
-  }
 
   function recalcTotals(groups: OrderDistributorGroup[]) {
     const active = groups.filter(g => g.distributorStatus !== 'cancelled')
@@ -658,65 +568,6 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
   }
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
-
-  function handleQtyChange(distributorId: string, itemId: string, qty: number) {
-    setGroupEdits(prev => {
-      const current = prev[distributorId]?.items ?? order.groups.find(g => g.distributorId === distributorId)!.items
-      return {
-        ...prev,
-        [distributorId]: {
-          items: current.map(i => i.id === itemId ? { ...i, quantity: Math.max(1, qty) } : i),
-          isDirty: true,
-        },
-      }
-    })
-  }
-
-  function handleDeleteItem(distributorId: string, itemId: string) {
-    setGroupEdits(prev => {
-      const current = prev[distributorId]?.items ?? order.groups.find(g => g.distributorId === distributorId)!.items
-      return {
-        ...prev,
-        [distributorId]: {
-          items: current.filter(i => i.id !== itemId),
-          isDirty: true,
-        },
-      }
-    })
-  }
-
-  function handleSaveGroup(distributorId: string) {
-    const edited = groupEdits[distributorId]
-    if (!edited || edited.items.length === 0) return
-
-    const newSubtotal = edited.items.reduce((s, i) => s + i.quantity * i.priceWithVat, 0)
-    const updatedGroups = order.groups.map(g =>
-      g.distributorId === distributorId
-        ? { ...g, items: edited.items, subtotal: newSubtotal }
-        : g
-    )
-    setOrder(prev => ({ ...prev, groups: updatedGroups, ...recalcTotals(updatedGroups) }))
-    setGroupEdits(prev => { const n = { ...prev }; delete n[distributorId]; return n })
-  }
-
-  function handleCancelDistributor(distributorId: string) {
-    const updatedGroups = order.groups.map(g =>
-      g.distributorId === distributorId
-        ? { ...g, distributorStatus: 'cancelled' as DistributorStatus }
-        : g
-    )
-    setOrder(prev => ({ ...prev, groups: updatedGroups, ...recalcTotals(updatedGroups) }))
-    setGroupEdits(prev => { const n = { ...prev }; delete n[distributorId]; return n })
-  }
-
-  function handleSendDistributor(distributorId: string) {
-    const updatedGroups = order.groups.map(g =>
-      g.distributorId === distributorId
-        ? { ...g, distributorStatus: 'sent' as DistributorStatus, sentAt: new Date().toISOString() }
-        : g
-    )
-    setOrder(prev => ({ ...prev, groups: updatedGroups }))
-  }
 
   function handleAcceptProposal(distributorId: string) {
     const group = order.groups.find(g => g.distributorId === distributorId)
@@ -749,20 +600,41 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
         ? { ...g, items: updatedItems, subtotal: newSubtotal, distributorStatus: 'accepted' as DistributorStatus, proposal: undefined }
         : g
     )
-    setOrder(prev => ({ ...prev, groups: updatedGroups, ...recalcTotals(updatedGroups) }))
+    const stillHasOffers = updatedGroups.some(g => g.distributorStatus === 'offer')
+    const next = {
+      ...order,
+      groups: updatedGroups,
+      ...recalcTotals(updatedGroups),
+      ...(order.status === 'modified' && !stillHasOffers ? { status: 'new' as OrderStatus } : {}),
+    }
+    setOrder(next)
+    updateOrder(next)
   }
 
   function handleRejectProposal(distributorId: string) {
     const updatedGroups = order.groups.map(g =>
       g.distributorId === distributorId
-        ? { ...g, distributorStatus: 'rejected' as DistributorStatus }
+        ? { ...g, distributorStatus: 'cancelled' as DistributorStatus }
         : g
     )
-    setOrder(prev => ({ ...prev, groups: updatedGroups }))
+    const allCancelled   = updatedGroups.every(g => g.distributorStatus === 'cancelled')
+    const stillHasOffers = updatedGroups.some(g => g.distributorStatus === 'offer')
+    const next = {
+      ...order,
+      groups: updatedGroups,
+      ...recalcTotals(updatedGroups),
+      status: (allCancelled
+        ? 'cancelled'
+        : (order.status === 'modified' && !stillHasOffers ? 'new' : order.status)) as OrderStatus,
+    }
+    setOrder(next)
+    updateOrder(next)
   }
 
   function handleCompleteOrder() {
-    setOrder(prev => ({ ...prev, status: 'completed' as OrderStatus }))
+    const next = { ...order, status: 'completed' as OrderStatus }
+    setOrder(next)
+    updateOrder(next)
   }
 
   function handleCancelOrder() {
@@ -770,7 +642,9 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
       ...g,
       distributorStatus: 'cancelled' as DistributorStatus,
     }))
-    setOrder(prev => ({ ...prev, status: 'cancelled' as OrderStatus, groups: updatedGroups }))
+    const next = { ...order, status: 'cancelled' as OrderStatus, groups: updatedGroups }
+    setOrder(next)
+    updateOrder(next)
   }
 
   // ── Info card ────────────────────────────────────────────────────────────────
@@ -883,30 +757,18 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
           )}
 
           {/* Distributor cards */}
-          {order.groups.map(group => {
-            const currentItems = getGroupItems(group)
-            const dirty        = isGroupDirty(group.distributorId)
-            const editable     = isOrderActive && group.distributorStatus !== 'cancelled' && group.distributorStatus !== 'offer'
-
-            return (
-              <DistributorCard
-                key={group.distributorId}
-                group={group}
-                items={currentItems}
-                isDirty={dirty}
-                isEditable={editable}
-                onQtyChange={(itemId, qty)    => handleQtyChange(group.distributorId, itemId, qty)}
-                onDeleteItem={itemId           => handleDeleteItem(group.distributorId, itemId)}
-                onSave={()                     => handleSaveGroup(group.distributorId)}
-                onCancelDistributor={()        => setModal({ kind: 'cancel_dist', distributorId: group.distributorId, distributorName: group.distributorName })}
-                onSendDistributor={()          => handleSendDistributor(group.distributorId)}
-                onAcceptProposal={()           => handleAcceptProposal(group.distributorId)}
-                onRejectProposal={()           => handleRejectProposal(group.distributorId)}
-                onDownloadExcel={()            => downloadGroupExcel(group, order.number)}
-                onPrintInvoice={()             => printGroupInvoice(group, order)}
-              />
-            )
-          })}
+          {order.groups.map(group => (
+            <DistributorCard
+              key={group.distributorId}
+              group={group}
+              isOrderActive={isOrderActive}
+              onCancelOrder={() => setModal({ kind: 'cancel_order' })}
+              onAcceptProposal={() => handleAcceptProposal(group.distributorId)}
+              onRejectProposal={() => handleRejectProposal(group.distributorId)}
+              onDownloadExcel={() => downloadGroupExcel(group, order.number)}
+              onPrintInvoice={() => printGroupInvoice(group, order)}
+            />
+          ))}
 
         </div>
       </div>
@@ -948,16 +810,6 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
           confirmLabel="Отменить заказ"
           isDanger
           onConfirm={handleCancelOrder}
-          onClose={() => setModal(null)}
-        />
-      )}
-      {modal?.kind === 'cancel_dist' && (
-        <ConfirmModal
-          title={`Отменить ${modal.distributorName}?`}
-          description="Заказ у этого дистрибутора будет отменён, сумма заказа пересчитается."
-          confirmLabel="Отменить дистрибутора"
-          isDanger
-          onConfirm={() => handleCancelDistributor(modal.distributorId)}
           onClose={() => setModal(null)}
         />
       )}

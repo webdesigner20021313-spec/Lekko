@@ -12,19 +12,20 @@ interface MedicineTableProps {
   onToggleFavorite: (id: string) => void
   cartQtyByMedicine: Record<string, number>
   panel1Width: number
+  showMnn: boolean
 }
 
 const COL_CB  = 56
 const COL_MNN = 240
 const COL_FAV = 56
-const FIXED   = COL_CB + COL_MNN + COL_FAV  // 352
+const FIXED   = COL_CB + COL_FAV
 const MIN_NAME = 400
 
 export function MedicineTable({
   medicines, selectedId, onSelect, checkedIds, onToggleCheck,
-  favoriteIds, onToggleFavorite, cartQtyByMedicine, panel1Width,
+  favoriteIds, onToggleFavorite, cartQtyByMedicine, panel1Width, showMnn,
 }: MedicineTableProps) {
-  const nameW  = Math.max(MIN_NAME, panel1Width - FIXED)
+  const nameW  = Math.max(MIN_NAME, panel1Width - FIXED - (showMnn ? COL_MNN : 0))
   const tableW = Math.max(MIN_NAME + FIXED, panel1Width)
 
   const allChecked  = medicines.length > 0 && medicines.every((m) => checkedIds.includes(m.id))
@@ -53,7 +54,7 @@ export function MedicineTable({
       <colgroup>
         <col style={{ width: COL_CB }} />
         <col style={{ width: nameW }} />
-        <col style={{ width: COL_MNN }} />
+        {showMnn && <col style={{ width: COL_MNN }} />}
         <col style={{ width: COL_FAV }} />
       </colgroup>
       <thead>
@@ -89,19 +90,21 @@ export function MedicineTable({
               Название
             </span>
           </th>
-          <th
-            style={{
-              position: 'sticky', top: 0, zIndex: 2, height: 48, background: '#F9FAFB',
-              padding: '0 12px', textAlign: 'left',
-              borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb',
-              overflow: 'hidden',
-            }}
-          >
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500"
-              style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              МНН
-            </span>
-          </th>
+          {showMnn && (
+            <th
+              style={{
+                position: 'sticky', top: 0, zIndex: 2, height: 48, background: '#F9FAFB',
+                padding: '0 12px', textAlign: 'left',
+                borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb',
+                overflow: 'hidden',
+              }}
+            >
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500"
+                style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                МНН
+              </span>
+            </th>
+          )}
           <th
             style={{
               position: 'sticky', top: 0, right: 0, zIndex: 4, height: 48,
@@ -124,6 +127,7 @@ export function MedicineTable({
             onSelect={() => onSelect(medicine)}
             onToggleCheck={() => onToggleCheck(medicine.id)}
             onToggleFavorite={() => onToggleFavorite(medicine.id)}
+            showMnn={showMnn}
           />
         ))}
       </tbody>
