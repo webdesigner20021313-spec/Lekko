@@ -35,3 +35,9 @@ body {
 .dark body {
   background-color: #111111;
 }
+
+.dark input[type="checkbox"],
+.dark input[type="radio"] {
+  color-scheme: dark;
+  accent-color: #e5e7eb;
+}
