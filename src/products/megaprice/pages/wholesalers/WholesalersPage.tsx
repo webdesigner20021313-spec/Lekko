@@ -131,7 +131,7 @@ function DiscountActionCell({ wholesaler, onOpen }: { wholesaler: Wholesaler; on
     return (
       <button
         onClick={onOpen}
-        className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-800 transition-colors"
+        className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-800 transition-colors"
         title="Изменить скидку"
       >
         <Pencil className="h-3.5 w-3.5" />
@@ -141,7 +141,7 @@ function DiscountActionCell({ wholesaler, onOpen }: { wholesaler: Wholesaler; on
   return (
     <button
       onClick={onOpen}
-      className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-800 transition-colors"
+      className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-800 transition-colors"
       title="Добавить скидку"
     >
       <Plus className="h-3.5 w-3.5" />
