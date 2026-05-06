@@ -89,7 +89,7 @@ export function Header() {
       : []
 
   const unread = unreadCount()
-  const langLabels: Record<string, string> = { uz: 'UZ', ru: 'RU', en: 'EN' }
+  const langLabels: Record<string, string> = { uz: 'UZ', ru: 'RU' }
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6">
@@ -175,7 +175,7 @@ export function Header() {
 
           {showLang && (
             <div className="absolute right-0 top-[calc(100%+4px)] z-50 w-[80px] rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
-              {(['uz', 'ru', 'en'] as const).map((lang) => (
+              {(['uz', 'ru'] as const).map((lang) => (
                 <button
                   key={lang}
                   onClick={() => { setLanguage(lang); setShowLang(false) }}
