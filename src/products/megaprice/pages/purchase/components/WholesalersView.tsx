@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { Search, ChevronDown, Check, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { mockDistributors } from '@/products/megaprice/mocks/purchase.mocks'
 import { formatDate } from '@/shared/utils/format'
 import { cn } from '@/shared/utils/utils'
@@ -23,6 +24,7 @@ function useClickOutside(onClose: () => void) {
 }
 
 export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) {
+  const { t } = useTranslation()
   const [search,     setSearch]     = useState('')
   const [cityFilter, setCityFilter] = useState<string[]>([])
   const [openCity,   setOpenCity]   = useState(false)
@@ -54,7 +56,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
     <div className="flex h-full flex-col overflow-hidden">
 
       {/* Фильтры */}
-      <div className="flex shrink-0 items-center gap-2 border-b border-gray-200 bg-white px-4 py-3">
+      <div className="flex shrink-0 items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
 
         {/* Поиск */}
         <div className="relative flex-1">
@@ -62,8 +64,8 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Поиск..."
-            className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none"
+            placeholder={t('filter_search_inner')}
+            className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:border-gray-500"
           />
         </div>
 
@@ -74,40 +76,40 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
             className={cn(
               'flex h-9 w-full items-center justify-between gap-1.5 rounded-lg border px-3 text-sm transition-colors',
               openCity
-                ? 'border-gray-400 bg-white text-gray-900'
+                ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
                 : cityFilter.length
-                  ? 'border-gray-300 bg-white text-gray-700'
-                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
             )}
           >
-            <span className="truncate">{cityFilter.length ? `Город · ${cityFilter.length}` : 'Город'}</span>
+            <span className="truncate">{cityFilter.length ? `${t('filter_city')} · ${cityFilter.length}` : t('filter_city')}</span>
             <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', openCity && 'rotate-180')} />
           </button>
 
           {openCity && (
-            <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
+            <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
               {allCities.map((city) => {
                 const checked = cityFilter.includes(city)
                 return (
                   <label
                     key={city}
                     onClick={() => toggleCity(city)}
-                    className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50"
+                    className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
                     <div className={cn(
                       'flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                      checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
+                      checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600'
                     )}>
                       {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
                     </div>
-                    <span className="truncate text-sm text-gray-700">{city}</span>
+                    <span className="truncate text-sm text-gray-700 dark:text-gray-300">{city}</span>
                   </label>
                 )
               })}
               {cityFilter.length > 0 && (
-                <div className="border-t border-gray-100 px-3 py-2">
-                  <button onClick={() => setCityFilter([])} className="text-xs text-gray-400 hover:text-gray-600">
-                    Сбросить
+                <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+                  <button onClick={() => setCityFilter([])} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">
+                    {t('filter_reset')}
                   </button>
                 </div>
               )}
@@ -134,18 +136,18 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
             <col style={{ width: 130 }} />
           </colgroup>
           <thead>
-            <tr style={{ height: 48, background: '#F9FAFB', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, zIndex: 2 }}>
+            <tr style={{ height: 48, background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)', position: 'sticky', top: 0, zIndex: 2 }}>
               <th style={{ padding: '0 16px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden' }}
                 className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                 №
               </th>
               <th style={{ padding: '0 16px', textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden' }}
                 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Дистрибутор
+                {t('col_distributor')}
               </th>
               <th style={{ padding: '0 16px', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden' }}
                 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Дата прайса
+                {t('col_price_date')}
               </th>
             </tr>
           </thead>
@@ -153,7 +155,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={3} className="py-16 text-center text-sm text-gray-400">
-                  Ничего не найдено
+                  {t('filter_nothing_found')}
                 </td>
               </tr>
             ) : (
@@ -164,24 +166,24 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
                     key={dist.id}
                     onClick={() => onSelect(dist)}
                     className={cn(
-                      'cursor-pointer border-b border-gray-100 transition-colors',
-                      isSelected ? 'bg-gray-100' : 'hover:bg-gray-50'
+                      'cursor-pointer border-b border-gray-100 transition-colors dark:border-gray-800',
+                      isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                     )}
                   >
                     <td className={cn(
                       'px-4 py-3 text-center text-xs text-gray-400',
-                      isSelected && 'border-l-2 border-l-gray-900'
+                      isSelected && 'border-l-2 border-l-gray-900 dark:border-l-blue-400'
                     )}>
                       {i + 1}
                     </td>
                     <td className="px-4 py-3">
-                      <p className={cn('text-sm text-gray-900', isSelected ? 'font-semibold' : 'font-medium')}>
+                      <p className={cn('text-sm text-gray-900 dark:text-gray-100', isSelected ? 'font-semibold' : 'font-medium')}>
                         {dist.name}
                       </p>
-                      <p className="text-xs text-gray-500">{dist.city}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{dist.city}</p>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="text-sm text-gray-600">{formatDate(dist.lastPriceDate)}</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">{formatDate(dist.lastPriceDate)}</span>
                     </td>
                   </tr>
                 )

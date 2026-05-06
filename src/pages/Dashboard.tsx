@@ -5,7 +5,7 @@ export function Dashboard() {
   return (
     <div className="h-full overflow-y-auto p-8">
       <div className="mx-auto max-w-5xl">
-        <h1 className="text-2xl font-bold text-gray-900">Добро пожаловать в Lekko</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Добро пожаловать в Lekko</h1>
         <p className="mt-2 text-sm text-gray-500">Выберите продукт для перехода</p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -19,7 +19,7 @@ export function Dashboard() {
               <Link
                 key={id}
                 to={target}
-                className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+                className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800"
               >
                 <img src={product.logo} alt={product.name} className="h-10 w-auto" />
                 <p className="text-sm text-gray-500">
@@ -32,8 +32,8 @@ export function Dashboard() {
           })}
         </div>
 
-        <div className="mt-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900">Администрирование</h2>
+        <div className="mt-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Администрирование</h2>
           <Link
             to="/users"
             className="mt-3 inline-block text-sm font-medium text-[#3872FA] hover:underline"

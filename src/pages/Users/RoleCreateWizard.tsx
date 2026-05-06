@@ -186,12 +186,12 @@ export function RoleCreateWizard({ open, onClose }: Props) {
                 autoFocus
                 onChange={(e) => { setRoleName(e.target.value); setNameError('') }}
                 onKeyDown={(e) => { if (e.key === 'Enter') goToStep2() }}
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20"
+                className="h-10 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20"
               />
               {nameError && <p className="mt-1.5 text-xs text-red-500">{nameError}</p>}
             </div>
             <ModalFooter>
-              <button onClick={onClose} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50">Отмена</button>
+              <button onClick={onClose} className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Отмена</button>
               <button onClick={goToStep2} className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white hover:bg-black">Далее →</button>
             </ModalFooter>
           </>
@@ -219,17 +219,17 @@ export function RoleCreateWizard({ open, onClose }: Props) {
                         onClick={() => toggleItem(item)}
                         className={cn(
                           'flex flex-col gap-1 rounded-xl border-2 p-4 text-left transition-all duration-150',
-                          sel ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                          sel ? 'border-gray-900 bg-gray-50 dark:bg-gray-700' : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                         )}
                       >
                         <div className="flex items-center gap-2.5">
                           <div className={cn(
                             'flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors',
-                            sel ? 'border-gray-900 bg-gray-900' : 'border-gray-300 bg-white'
+                            sel ? 'border-gray-900 bg-gray-900' : 'border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-700'
                           )}>
                             {sel && <Check className="h-3 w-3 text-white" />}
                           </div>
-                          <span className={cn('text-sm font-medium', sel ? 'text-gray-900' : 'text-gray-600')}>{p.label}</span>
+                          <span className={cn('text-sm font-medium', sel ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400')}>{p.label}</span>
                         </div>
                         {p.sections.length > 0 && (
                           <p className="pl-7 text-xs text-gray-400">{p.sections.length} разделов</p>
@@ -253,7 +253,7 @@ export function RoleCreateWizard({ open, onClose }: Props) {
                         onClick={() => toggleItem(item)}
                         className={cn(
                           'flex items-center gap-2.5 rounded-xl border-2 p-4 text-left transition-all duration-150',
-                          sel ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                          sel ? 'border-gray-900 bg-gray-50 dark:bg-gray-700' : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                         )}
                       >
                         <div className={cn(
@@ -272,7 +272,7 @@ export function RoleCreateWizard({ open, onClose }: Props) {
               {selError && <p className="text-xs text-red-500">{selError}</p>}
             </div>
             <ModalFooter>
-              <button onClick={() => setStep(1)} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50">← Назад</button>
+              <button onClick={() => setStep(1)} className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">← Назад</button>
               <button onClick={goToStep3} className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white hover:bg-black">Далее →</button>
             </ModalFooter>
           </>
@@ -294,9 +294,9 @@ export function RoleCreateWizard({ open, onClose }: Props) {
                 if (!proj) return null
 
                 return (
-                  <div key={item.id} className="overflow-hidden rounded-xl border border-gray-200">
-                    <div className="bg-gray-50 px-4 py-2.5">
-                      <p className="text-sm font-semibold text-gray-900">{config.label}</p>
+                  <div key={item.id} className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-gray-800 px-4 py-2.5">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{config.label}</p>
                     </div>
 
                     {config.sections.length === 0 ? (
@@ -304,14 +304,14 @@ export function RoleCreateWizard({ open, onClose }: Props) {
                     ) : (
                       <table className="w-full">
                         <thead>
-                          <tr className="border-b border-gray-100">
+                          <tr className="border-b border-gray-100 dark:border-gray-700">
                             <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-400">Раздел</th>
                             {PERMS.map((p) => (
                               <th key={p} className="px-3 py-2 text-center text-[11px] font-semibold text-gray-400">{PERMISSION_LABELS[p]}</th>
                             ))}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50">
+                        <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
                           {config.sections.map((sec) => {
                             const acc = proj.sections[sec.id] ?? buildEmptySectionAccess()
                             return (
@@ -322,7 +322,7 @@ export function RoleCreateWizard({ open, onClose }: Props) {
                                       onClick={() => toggleSectionEnabled(item.id, sec.id)}
                                       className={cn(
                                         'relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors',
-                                        acc.enabled ? 'bg-gray-900' : 'bg-gray-200'
+                                        acc.enabled ? 'bg-gray-900' : 'bg-gray-200 dark:bg-gray-600'
                                       )}
                                     >
                                       <span className={cn(
@@ -330,7 +330,7 @@ export function RoleCreateWizard({ open, onClose }: Props) {
                                         acc.enabled ? 'translate-x-3.5' : 'translate-x-0.5'
                                       )} />
                                     </button>
-                                    <span className="text-sm text-gray-700">{sec.label}</span>
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">{sec.label}</span>
                                   </div>
                                 </td>
                                 {PERMS.map((perm) => (
@@ -342,7 +342,7 @@ export function RoleCreateWizard({ open, onClose }: Props) {
                                         'mx-auto flex h-5 w-5 items-center justify-center rounded border-2 transition-colors',
                                         acc[perm] && acc.enabled
                                           ? 'border-gray-900 bg-gray-900'
-                                          : 'border-gray-200 bg-white',
+                                          : 'border-gray-200 dark:border-gray-500 bg-white dark:bg-gray-700',
                                         !acc.enabled && 'pointer-events-none'
                                       )}
                                     >
@@ -362,9 +362,9 @@ export function RoleCreateWizard({ open, onClose }: Props) {
 
               {/* Portal sections */}
               {selected.filter((s) => s.kind === 'portal').length > 0 && (
-                <div className="overflow-hidden rounded-xl border border-gray-200">
-                  <div className="bg-gray-50 px-4 py-2.5">
-                    <p className="text-sm font-semibold text-gray-900">Разделы портала</p>
+                <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                  <div className="bg-gray-50 dark:bg-gray-800 px-4 py-2.5">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Разделы портала</p>
                   </div>
                   <table className="w-full">
                     <thead>
@@ -381,14 +381,14 @@ export function RoleCreateWizard({ open, onClose }: Props) {
                         const acc = portalSections[item.id] ?? buildEmptySectionAccess()
                         return (
                           <tr key={item.id}>
-                            <td className="px-4 py-2.5 text-sm text-gray-700">{sec.label}</td>
+                            <td className="px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300">{sec.label}</td>
                             {PERMS.map((perm) => (
                               <td key={perm} className="px-3 py-2.5 text-center">
                                 <button
                                   onClick={() => togglePortalPerm(item.id, perm)}
                                   className={cn(
                                     'mx-auto flex h-5 w-5 items-center justify-center rounded border-2 transition-colors',
-                                    acc[perm] ? 'border-gray-900 bg-gray-900' : 'border-gray-200 bg-white'
+                                    acc[perm] ? 'border-gray-900 bg-gray-900' : 'border-gray-200 dark:border-gray-500 bg-white dark:bg-gray-700'
                                   )}
                                 >
                                   {acc[perm] && <Check className="h-3 w-3 text-white" />}
@@ -404,7 +404,7 @@ export function RoleCreateWizard({ open, onClose }: Props) {
               )}
             </div>
             <ModalFooter>
-              <button onClick={() => setStep(2)} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50">← Назад</button>
+              <button onClick={() => setStep(2)} className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">← Назад</button>
               <button onClick={handleSave} className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white hover:bg-black">Сохранить роль</button>
             </ModalFooter>
           </>

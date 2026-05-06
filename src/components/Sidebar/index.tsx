@@ -9,7 +9,7 @@ import {
   Building2,
   Users,
   BarChart3,
-  Pill,
+  Cross,
   PanelLeftClose,
   PanelLeftOpen,
   ArrowUpRight,
@@ -27,7 +27,7 @@ const iconMap: Record<string, LucideIcon> = {
   Building2,
   Users,
   BarChart3,
-  Pill,
+  Cross,
 }
 
 function renderIcon(name: string, className = 'h-6 w-6'): React.ReactNode {
@@ -69,7 +69,7 @@ function buildPortalCategories(): PortalCategory[] {
   return [
     {
       id: 'megaprice',
-      label: 'Mega price',
+      label: products.megaprice.name,
       iconName: 'Store',
       domain: products.megaprice.domain,
       defaultPath: `${products.megaprice.basePath}/${products.megaprice.sections[0]?.slug ?? ''}`,
@@ -82,7 +82,7 @@ function buildPortalCategories(): PortalCategory[] {
     },
     {
       id: 'analytic',
-      label: 'Analytic',
+      label: products.analytic.name,
       iconName: 'BarChart3',
       domain: products.analytic.domain,
       defaultPath: products.analytic.basePath,
@@ -91,8 +91,8 @@ function buildPortalCategories(): PortalCategory[] {
     },
     {
       id: 'apteka',
-      label: 'Apteka',
-      iconName: 'Pill',
+      label: products.apteka.name,
+      iconName: 'Cross',
       domain: products.apteka.domain,
       defaultPath: products.apteka.basePath,
       matchPrefix: products.apteka.basePath,
@@ -304,16 +304,16 @@ function PortalSidebar() {
 
       {/* Expanded sub-items panel */}
       {collapsed ? null : (
-        <div className="flex w-[200px] shrink-0 flex-col border-r border-gray-200 bg-white">
+        <div className="flex w-[200px] shrink-0 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
           <div className="flex h-16 shrink-0 items-center gap-2 px-3">
-            <span className="flex-1 text-[15px] font-semibold text-gray-900">{getCategoryLabel(expanded)}</span>
+            <span className="flex-1 text-[15px] font-semibold text-gray-900 dark:text-gray-100">{getCategoryLabel(expanded)}</span>
             {expanded.domain && (
               <a
                 href={`https://${expanded.domain}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 title={t('sidebar_open_domain', { domain: expanded.domain })}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
               >
                 <ArrowUpRight className="h-4 w-4" />
               </a>
@@ -340,8 +340,8 @@ function PortalSidebar() {
                         cn(
                           'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
                           isActive
-                            ? 'bg-gray-100 font-medium text-gray-900'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            ? 'bg-gray-100 font-medium text-gray-900 dark:bg-gray-800 dark:text-gray-100'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100'
                         )
                       }
                     >

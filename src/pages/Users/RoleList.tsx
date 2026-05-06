@@ -1,19 +1,23 @@
 import { useState } from 'react'
+import { useTranslation, type TFunction } from 'react-i18next'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useUsersStore } from '@/pages/Users/stores/useUsersStore'
-import { PROJECTS_CONFIG, PORTAL_SECTIONS_CONFIG, PERMISSION_LABELS } from './types/users.types'
+import { PROJECTS_CONFIG, PORTAL_SECTIONS_CONFIG } from './types/users.types'
 import { ConfirmDeleteModal } from './ConfirmDeleteModal'
 import { RoleEditModal } from './RoleEditModal'
 import type { Role, PermissionType } from './types/users.types'
 
-function getActiveLabels(role: Role): { sections: string[]; perms: string[] } {
+function getActiveLabels(
+  role: Role,
+  t: TFunction
+): { sections: string[]; perms: string[] } {
   const sections: string[] = []
   const permSet = new Set<PermissionType>()
 
   for (const config of PROJECTS_CONFIG) {
     const proj = role.projects[config.id]
     if (!proj?.enabled) continue
-    sections.push(config.label)
+    sections.push(config.id === 'users' ? t('nav_users') : config.label)
     for (const sec of Object.values(proj.sections)) {
       if (!sec.enabled) continue
       if (sec.view)   permSet.add('view')
@@ -25,7 +29,7 @@ function getActiveLabels(role: Role): { sections: string[]; perms: string[] } {
   for (const config of PORTAL_SECTIONS_CONFIG) {
     const sec = role.portalSections[config.id]
     if (!sec?.enabled) continue
-    sections.push(config.label)
+    sections.push(t(`role_sec_${config.id.replace('-', '_')}`, config.label))
     if (sec.view)   permSet.add('view')
     if (sec.edit)   permSet.add('edit')
     if (sec.delete) permSet.add('delete')
@@ -34,75 +38,76 @@ function getActiveLabels(role: Role): { sections: string[]; perms: string[] } {
   const perms: PermissionType[] = ['view', 'edit', 'delete']
   return {
     sections,
-    perms: perms.filter((p) => permSet.has(p)).map((p) => PERMISSION_LABELS[p]),
+    perms: perms.filter((p) => permSet.has(p)).map((p) => t(`perm_${p}`)),
   }
 }
 
 export function RoleList() {
-  const { roles, users, deleteRole }      = useUsersStore()
-  const [deleteTarget, setDeleteTarget]   = useState<Role | null>(null)
-  const [editRoleId,   setEditRoleId]     = useState<string | null>(null)
+  const { t } = useTranslation()
+  const { roles, users, deleteRole }    = useUsersStore()
+  const [deleteTarget, setDeleteTarget] = useState<Role | null>(null)
+  const [editRoleId,   setEditRoleId]   = useState<string | null>(null)
 
   const getUserCount = (roleId: string) => users.filter((u) => u.roleId === roleId).length
 
   return (
     <>
-      <div className="overflow-hidden border-b border-gray-200">
+      <div className="overflow-hidden border-b border-gray-200 dark:border-gray-700">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50">
+            <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
               <th className="w-10 px-4 py-3 text-center text-xs font-semibold text-gray-400">#</th>
-              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500">Название</th>
-              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500">Разделы</th>
-              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500">Права</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500">Пользователей</th>
+              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('roles_col_name')}</th>
+              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('roles_col_sections')}</th>
+              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('roles_col_perms')}</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">{t('roles_col_users')}</th>
               <th className="w-20 px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {roles.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-16 text-center text-sm text-gray-400">Ролей пока нет</td>
+                <td colSpan={6} className="py-16 text-center text-sm text-gray-400">{t('roles_empty')}</td>
               </tr>
             ) : (
               roles.map((role, idx) => {
-                const { sections, perms } = getActiveLabels(role)
+                const { sections, perms } = getActiveLabels(role, t)
                 return (
-                  <tr key={role.id} className="bg-white transition-colors hover:bg-gray-50">
+                  <tr key={role.id} className="bg-white dark:bg-gray-900 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
                     <td className="px-4 py-3 text-center text-xs text-gray-400">{idx + 1}</td>
                     <td className="px-4 py-3">
-                      <span className="text-sm font-medium text-gray-900">{role.name}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{role.name}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
                         {sections.length > 0 ? sections.map((s) => (
-                          <span key={s} className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">{s}</span>
+                          <span key={s} className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300">{s}</span>
                         )) : (
-                          <span className="text-xs text-gray-400">Нет доступа</span>
+                          <span className="text-xs text-gray-400">{t('roles_no_access')}</span>
                         )}
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
                         {perms.length > 0 ? perms.map((p) => (
-                          <span key={p} className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">{p}</span>
+                          <span key={p} className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300">{p}</span>
                         )) : (
                           <span className="text-xs text-gray-400">—</span>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center text-sm text-gray-600">{getUserCount(role.id)}</td>
+                    <td className="px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-400">{getUserCount(role.id)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => setEditRoleId(role.id)}
-                          className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                          className="rounded p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(role)}
-                          className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                          className="rounded p-1.5 text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -118,8 +123,8 @@ export function RoleList() {
 
       <ConfirmDeleteModal
         open={!!deleteTarget}
-        title="Удалить роль?"
-        description={deleteTarget ? `Роль «${deleteTarget.name}» будет удалена. Пользователи с этой ролью останутся без роли.` : ''}
+        title={t('roles_delete_title')}
+        description={deleteTarget ? t('roles_delete_desc', { name: deleteTarget.name }) : ''}
         onConfirm={() => { deleteRole(deleteTarget!.id); setDeleteTarget(null) }}
         onCancel={() => setDeleteTarget(null)}
       />

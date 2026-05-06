@@ -40,7 +40,7 @@ export const products: Record<ProductId, Product> = {
   },
   apteka: {
     id: 'apteka',
-    name: 'Apteka',
+    name: 'Аптека',
     logo: aptekaLogo,
     domain: 'apteka.com',
     basePath: '/apteka',
@@ -48,7 +48,7 @@ export const products: Record<ProductId, Product> = {
   },
   analytic: {
     id: 'analytic',
-    name: 'Analytic',
+    name: 'Аналитика',
     logo: analyticLogo,
     domain: 'analytic.com',
     basePath: '/analytic',

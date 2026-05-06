@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Eye, EyeOff, User, Lock, X, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/shared/ui-kit/Button'
 import { useAuthStore } from '@/shared/auth/useAuthStore'
@@ -14,6 +15,7 @@ type ForgotStep = 'phone' | 'code' | 'done'
 const MOCK_CODE = '123456'
 
 function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation()
   const [step, setStep] = useState<ForgotStep>('phone')
   const [phone, setPhone] = useState('')
   const [phoneError, setPhoneError] = useState('')
@@ -23,7 +25,7 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
   function handleSendCode() {
     const digits = phone.replace(/\D/g, '')
     if (digits.length < 9) {
-      setPhoneError('Введите корректный номер телефона')
+      setPhoneError(t('forgot_phone_error'))
       return
     }
     setPhoneError('')
@@ -32,7 +34,7 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
 
   function handleVerifyCode() {
     if (code.trim() !== MOCK_CODE) {
-      setCodeError('Неверный код. Попробуйте снова')
+      setCodeError(t('forgot_code_error'))
       return
     }
     setCodeError('')
@@ -45,25 +47,25 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
         className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+      <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-          aria-label="Закрыть"
+          className="absolute right-4 top-4 rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors dark:hover:bg-gray-800 dark:hover:text-gray-300"
+          aria-label={t('modal_close')}
         >
           <X size={18} />
         </button>
 
         {step === 'phone' && (
           <>
-            <h2 className="mb-1 text-[17px] font-semibold text-gray-900">Восстановление пароля</h2>
+            <h2 className="mb-1 text-[17px] font-semibold text-gray-900 dark:text-gray-100">{t('forgot_title')}</h2>
             <p className="mb-5 text-sm text-gray-500">
-              Введите номер телефона — отправим SMS с кодом
+              {t('forgot_subtitle')}
             </p>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700">Номер телефона</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('forgot_phone_label')}</label>
                 <input
                   type="tel"
                   placeholder="+998 90 123 45 67"
@@ -73,15 +75,16 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
                   className={cn(
                     'h-11 w-full rounded-xl border bg-gray-50 px-4 text-sm text-gray-800 placeholder:text-gray-400',
                     'transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1',
+                    'dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500',
                     phoneError
                       ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
-                      : 'border-gray-200 focus:border-gray-400 focus:ring-gray-200'
+                      : 'border-gray-200 focus:border-gray-400 focus:ring-gray-200 dark:border-gray-700 dark:focus:border-gray-500'
                   )}
                 />
                 {phoneError && <p className="text-xs text-red-500">{phoneError}</p>}
               </div>
               <Button variant="primary" size="md" className="w-full rounded-xl" onClick={handleSendCode}>
-                Получить код
+                {t('forgot_send_code')}
               </Button>
             </div>
           </>
@@ -89,18 +92,18 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
 
         {step === 'code' && (
           <>
-            <h2 className="mb-1 text-[17px] font-semibold text-gray-900">Введите код</h2>
+            <h2 className="mb-1 text-[17px] font-semibold text-gray-900 dark:text-gray-100">{t('forgot_code_title')}</h2>
             <p className="mb-4 text-sm text-gray-500">
-              Код отправлен на{' '}
-              <span className="font-medium text-gray-700">{phone}</span>
+              {t('forgot_code_sent')}{' '}
+              <span className="font-medium text-gray-700 dark:text-gray-300">{phone}</span>
             </p>
-            <div className="mb-4 rounded-xl bg-blue-50 px-4 py-3 text-xs text-blue-700">
-              Демо-режим: ваш код —{' '}
+            <div className="mb-4 rounded-xl bg-blue-50 px-4 py-3 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+              {t('forgot_demo_hint')}{' '}
               <span className="font-bold tracking-widest">{MOCK_CODE}</span>
             </div>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700">6-значный код</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('forgot_code_label')}</label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -112,19 +115,20 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
                   className={cn(
                     'h-11 w-full rounded-xl border bg-gray-50 px-4 text-sm tracking-widest text-gray-800 placeholder:text-gray-400',
                     'transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1',
+                    'dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500',
                     codeError
                       ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
-                      : 'border-gray-200 focus:border-gray-400 focus:ring-gray-200'
+                      : 'border-gray-200 focus:border-gray-400 focus:ring-gray-200 dark:border-gray-700 dark:focus:border-gray-500'
                   )}
                 />
                 {codeError && <p className="text-xs text-red-500">{codeError}</p>}
               </div>
               <Button variant="primary" size="md" className="w-full rounded-xl" onClick={handleVerifyCode} disabled={code.length !== 6}>
-                Подтвердить
+                {t('forgot_confirm')}
               </Button>
-              <button type="button" className="text-center text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              <button type="button" className="text-center text-sm text-gray-400 hover:text-gray-600 transition-colors dark:hover:text-gray-300"
                 onClick={() => { setCode(''); setCodeError(''); setStep('phone') }}>
-                Изменить номер
+                {t('forgot_change_phone')}
               </button>
             </div>
           </>
@@ -132,15 +136,15 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
 
         {step === 'done' && (
           <div className="flex flex-col items-center py-2 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
-              <CheckCircle2 size={32} className="text-green-600" />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-50 dark:bg-green-900/30">
+              <CheckCircle2 size={32} className="text-green-600 dark:text-green-400" />
             </div>
-            <h2 className="mb-1 text-[17px] font-semibold text-gray-900">Код подтверждён</h2>
+            <h2 className="mb-1 text-[17px] font-semibold text-gray-900 dark:text-gray-100">{t('forgot_done_title')}</h2>
             <p className="mb-6 text-sm text-gray-500">
-              Войдите с текущими данными аккаунта.
+              {t('forgot_done_subtitle')}
             </p>
             <Button variant="primary" size="md" className="w-full rounded-xl" onClick={onClose}>
-              Вернуться ко входу
+              {t('forgot_back_to_login')}
             </Button>
           </div>
         )}
@@ -152,6 +156,7 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
 // ── Login page ─────────────────────────────────────────────────────────────
 
 export function LoginPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const login = useAuthStore((s) => s.login)
@@ -173,8 +178,8 @@ export function LoginPage() {
 
   function validate() {
     let ok = true
-    if (!loginValue.trim()) { setLoginError('Введите логин'); ok = false } else setLoginError('')
-    if (!password) { setPasswordError('Введите пароль'); ok = false } else setPasswordError('')
+    if (!loginValue.trim()) { setLoginError(t('login_error_required')); ok = false } else setLoginError('')
+    if (!password) { setPasswordError(t('password_error_required')); ok = false } else setPasswordError('')
     return ok
   }
 
@@ -189,15 +194,15 @@ export function LoginPage() {
     if (ok) {
       navigate(from, { replace: true })
     } else {
-      setAuthError('Неверный логин или пароль')
+      setAuthError(t('auth_error'))
     }
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#F9FAFB] px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#F9FAFB] px-4 dark:bg-gray-950">
 
       {/* card */}
-      <div className="w-full max-w-[420px] rounded-2xl bg-white px-8 py-8 shadow-sm">
+      <div className="w-full max-w-[420px] rounded-2xl bg-white px-8 py-8 shadow-sm dark:bg-gray-900">
 
         {/* logo inside card */}
         <div className="mb-6 flex justify-center">
@@ -206,8 +211,8 @@ export function LoginPage() {
 
         {/* title */}
         <div className="mb-6">
-          <h1 className="text-[20px] font-bold text-gray-900">Войти в аккаунт</h1>
-          <p className="mt-1 text-sm text-gray-500">Введите логин и пароль для входа</p>
+          <h1 className="text-[20px] font-bold text-gray-900 dark:text-gray-100">{t('login_title')}</h1>
+          <p className="mt-1 text-sm text-gray-500">{t('login_subtitle')}</p>
         </div>
 
         {/* form */}
@@ -215,12 +220,12 @@ export function LoginPage() {
 
           {/* login field */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Логин</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('login_label')}</label>
             <div className="relative">
               <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Введите логин"
+                placeholder={t('login_placeholder')}
                 value={loginValue}
                 onChange={(e) => {
                   setLoginValue(e.target.value)
@@ -232,9 +237,10 @@ export function LoginPage() {
                 className={cn(
                   'h-11 w-full rounded-xl border bg-gray-50 pl-10 pr-4 text-sm text-gray-800 placeholder:text-gray-400',
                   'transition-colors focus:outline-none focus:bg-white focus:ring-2 focus:ring-offset-1',
+                  'dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:bg-gray-700',
                   loginError || authError
                     ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
-                    : 'border-gray-200 focus:border-gray-400 focus:ring-gray-900/10'
+                    : 'border-gray-200 focus:border-gray-400 focus:ring-gray-900/10 dark:border-gray-700 dark:focus:border-gray-500'
                 )}
               />
             </div>
@@ -244,20 +250,20 @@ export function LoginPage() {
           {/* password field */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">Пароль</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('password_label')}</label>
               <button
                 type="button"
                 onClick={() => setShowForgot(true)}
                 className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
               >
-                Забыли пароль?
+                {t('forgot_password')}
               </button>
             </div>
             <div className="relative">
               <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Введите пароль"
+                placeholder={t('password_placeholder')}
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value)
@@ -268,17 +274,18 @@ export function LoginPage() {
                 className={cn(
                   'h-11 w-full rounded-xl border bg-gray-50 pl-10 pr-10 text-sm text-gray-800 placeholder:text-gray-400',
                   'transition-colors focus:outline-none focus:bg-white focus:ring-2 focus:ring-offset-1',
+                  'dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:bg-gray-700',
                   passwordError || authError
                     ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
-                    : 'border-gray-200 focus:border-gray-400 focus:ring-gray-900/10'
+                    : 'border-gray-200 focus:border-gray-400 focus:ring-gray-900/10 dark:border-gray-700 dark:focus:border-gray-500'
                 )}
               />
               <button
                 type="button"
                 tabIndex={-1}
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors dark:hover:text-gray-300"
+                aria-label={showPassword ? t('password_hide') : t('password_show')}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -288,7 +295,7 @@ export function LoginPage() {
 
           {/* auth error */}
           {authError && (
-            <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+            <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-400">
               {authError}
             </div>
           )}
@@ -304,36 +311,36 @@ export function LoginPage() {
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                Входим...
+                {t('login_loading')}
               </span>
             ) : (
-              'Войти'
+              t('login_submit')
             )}
           </Button>
         </form>
 
         {/* divider */}
         <div className="my-5 flex items-center gap-3">
-          <div className="h-px flex-1 bg-gray-200" />
-          <span className="text-xs text-gray-400">или</span>
-          <div className="h-px flex-1 bg-gray-200" />
+          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+          <span className="text-xs text-gray-400">{t('login_or')}</span>
+          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
         </div>
 
         {/* register link */}
         <p className="text-center text-sm text-gray-500">
-          Нет аккаунта?{' '}
+          {t('login_no_account')}{' '}
           <span className="cursor-pointer font-medium text-blue-600 hover:text-blue-800 transition-colors">
-            Оставить заявку
+            {t('login_request')}
           </span>
         </p>
       </div>
 
       {/* footer */}
       <p className="mt-6 max-w-[360px] text-center text-[12px] text-gray-400">
-        Нажимая «Войти», вы соглашаетесь с{' '}
-        <span className="underline cursor-pointer hover:text-gray-600">Условиями использования</span>
-        {' '}и{' '}
-        <span className="underline cursor-pointer hover:text-gray-600">Политикой конфиденциальности</span>
+        {t('login_terms')}{' '}
+        <span className="underline cursor-pointer hover:text-gray-600 dark:hover:text-gray-300">{t('login_terms_link')}</span>
+        {' '}{t('login_terms_and')}{' '}
+        <span className="underline cursor-pointer hover:text-gray-600 dark:hover:text-gray-300">{t('login_privacy_link')}</span>
       </p>
 
       {/* forgot password modal */}

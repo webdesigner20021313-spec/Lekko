@@ -26,14 +26,14 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-gray-200 bg-white text-gray-700",
+        default: "border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300",
         success:
-          "border-[#D1FAE5] bg-[#D1FAE5]/60 text-[#065F46] [&>button]:text-[#065F46]",
+          "border-[#D1FAE5] bg-[#D1FAE5]/60 text-[#065F46] [&>button]:text-[#065F46] dark:border-[#064E3B] dark:bg-[#064E3B]/40 dark:text-[#6EE7B7] dark:[&>button]:text-[#6EE7B7]",
         warning:
-          "border-[#FEF3C7] bg-[#FEF3C7]/70 text-[#92400E] [&>button]:text-[#92400E]",
+          "border-[#FEF3C7] bg-[#FEF3C7]/70 text-[#92400E] [&>button]:text-[#92400E] dark:border-[#78350F] dark:bg-[#78350F]/40 dark:text-[#FCD34D] dark:[&>button]:text-[#FCD34D]",
         danger:
-          "border-[#FEE2E2] bg-[#FEE2E2]/70 text-[#991B1B] [&>button]:text-[#991B1B]",
-        info: "border-[#DBEAFE] bg-[#DBEAFE]/60 text-[#1E40AF] [&>button]:text-[#1E40AF]",
+          "border-[#FEE2E2] bg-[#FEE2E2]/70 text-[#991B1B] [&>button]:text-[#991B1B] dark:border-[#7F1D1D] dark:bg-[#7F1D1D]/40 dark:text-[#FCA5A5] dark:[&>button]:text-[#FCA5A5]",
+        info: "border-[#DBEAFE] bg-[#DBEAFE]/60 text-[#1E40AF] [&>button]:text-[#1E40AF] dark:border-[#1E3A8A] dark:bg-[#1E3A8A]/40 dark:text-[#93C5FD] dark:[&>button]:text-[#93C5FD]",
       },
     },
     defaultVariants: {
@@ -64,7 +64,7 @@ const ToastAction = React.forwardRef<
   <ToastPrimitive.Action
     ref={ref}
     className={cn(
-      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-transparent px-3 text-xs font-medium transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900/20",
+      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-transparent px-3 text-xs font-medium transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-400/20",
       className
     )}
     {...props}
@@ -79,7 +79,7 @@ const ToastClose = React.forwardRef<
   <ToastPrimitive.Close
     ref={ref}
     className={cn(
-      "absolute right-2 top-2 rounded-md p-1 text-gray-400 opacity-70 transition-opacity hover:text-gray-700 hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-gray-900/20",
+      "absolute right-2 top-2 rounded-md p-1 text-gray-400 opacity-70 transition-opacity hover:text-gray-700 hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:hover:text-gray-300 dark:focus:ring-gray-400/20",
       className
     )}
     toast-close=""

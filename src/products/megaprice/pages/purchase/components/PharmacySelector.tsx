@@ -14,13 +14,13 @@ export function PharmacySelector({ selected, onChange }: PharmacySelectorProps) 
   }
 
   return (
-    <div className="border-b border-gray-200 bg-white px-4 py-3">
+    <div className="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
       <div className="flex items-center gap-2">
         <Building2 className="h-4 w-4 flex-shrink-0 text-gray-400" />
         <select
           value={selected?.id ?? ''}
           onChange={handleChange}
-          className="flex-1 appearance-none bg-transparent text-sm font-medium text-gray-900 outline-none cursor-pointer"
+          className="flex-1 appearance-none bg-transparent text-sm font-medium text-gray-900 outline-none cursor-pointer dark:text-gray-100"
         >
           <option value="" disabled>
             Выберите аптеку

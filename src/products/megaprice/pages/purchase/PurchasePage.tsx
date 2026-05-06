@@ -63,7 +63,7 @@ export function PurchasePage() {
   const checkedMedicines = mockMedicines.filter((m) => checkedIds.includes(m.id))
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-gray-900">
       <PurchaseHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -74,7 +74,7 @@ export function PurchasePage() {
       <div ref={containerRef} className="flex flex-1 overflow-hidden">
         {/* Left panel — меняется в зависимости от вкладки */}
         <div
-          className="flex flex-col overflow-hidden border-r border-gray-200"
+          className="flex flex-col overflow-hidden border-r border-gray-200 dark:border-gray-700"
           style={{ width: `${currentSplit}%`, minWidth: 200 }}
         >
           {activeTab === 'wholesalers'
@@ -97,7 +97,7 @@ export function PurchasePage() {
         {/* Resize handle */}
         <div
           onMouseDown={startSplitResize}
-          className="flex w-2 cursor-col-resize items-center justify-center bg-gray-200 transition-colors hover:bg-blue-400 active:bg-blue-500"
+          className="flex w-2 cursor-col-resize items-center justify-center bg-gray-200 transition-colors hover:bg-blue-400 active:bg-blue-500 dark:bg-gray-700"
         />
 
         {/* Right panel — меняется только в режиме оптовиков */}

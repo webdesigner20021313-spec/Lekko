@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { Zap } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { MedicineFilters, type MedicineColumnKey } from './MedicineFilters'
 import { MedicineTable } from './MedicineTable'
 import { ExcelUploadView } from './ExcelUploadView'
@@ -29,6 +30,7 @@ export function MedicineList({
   showFavorites,
   onAutoSelect,
 }: MedicineListProps) {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [manufacturerFilter, setManufacturerFilter] = useState<string[]>([])
   const [excelMedicines, setExcelMedicines] = useState<Medicine[]>([])
@@ -115,16 +117,16 @@ export function MedicineList({
           cartQtyByMedicine={cartQtyByMedicine}
         />
         {checkedIds.length >= 2 && (
-          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3">
-            <span className="text-sm text-gray-600">
-              Выбрано: <span className="font-semibold text-gray-900">{checkedIds.length}</span>
+          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {t('selected_label')} <span className="font-semibold text-gray-900 dark:text-gray-100">{checkedIds.length}</span>
             </span>
             <button
               onClick={onAutoSelect}
-              className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-black"
+              className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-black dark:bg-gray-700 dark:hover:bg-gray-600"
             >
               <Zap className="h-4 w-4" />
-              Авто-подбор
+              {t('autoselect_btn')}
             </button>
           </div>
         )}
@@ -135,7 +137,7 @@ export function MedicineList({
   // Manual / POS tabs
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex-shrink-0 border-b border-gray-200 bg-white">
+      <div className="flex-shrink-0 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
         <MedicineFilters
           search={search}
           onSearch={setSearch}
@@ -169,13 +171,13 @@ export function MedicineList({
 
       {/* Авто-подбор — показывается когда выбрано 2+ */}
       {checkedIds.length >= 2 && (
-        <div className="flex-shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3">
-          <span className="text-sm text-gray-600">
-            Выбрано: <span className="font-semibold text-gray-900">{checkedIds.length}</span>
+        <div className="flex-shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            Выбрано: <span className="font-semibold text-gray-900 dark:text-gray-100">{checkedIds.length}</span>
           </span>
           <button
             onClick={onAutoSelect}
-            className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-black"
+            className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-black dark:bg-gray-700 dark:hover:bg-gray-600"
           >
             <Zap className="h-4 w-4" />
             Авто-подбор

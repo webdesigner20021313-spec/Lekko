@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Package } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { SupplierFilters } from './SupplierFilters'
 import { SupplierTable } from './SupplierTable'
 import { mockSupplierOffers } from '@/products/megaprice/mocks/purchase.mocks'
@@ -11,6 +12,7 @@ interface SupplierOffersProps {
 }
 
 export function SupplierOffers({ medicine }: SupplierOffersProps) {
+  const { t } = useTranslation()
   const [distributorFilter, setDistributorFilter] = useState<string[]>([])
   const [cityFilter, setCityFilter] = useState<string[]>([])
   const [bonusFilter, setBonusFilter] = useState<BonusType[]>([])
@@ -97,12 +99,12 @@ export function SupplierOffers({ medicine }: SupplierOffersProps) {
   if (!medicine) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-        <div className="rounded-xl bg-gray-100 p-5">
+        <div className="rounded-xl bg-gray-100 p-5 dark:bg-gray-800">
           <Package className="h-10 w-10 text-gray-400" />
         </div>
         <div>
-          <p className="text-base font-medium text-gray-700">Выберите лекарство</p>
-          <p className="mt-1 text-sm text-gray-400">из списка слева</p>
+          <p className="text-base font-medium text-gray-700 dark:text-gray-300">{t('select_medicine_title')}</p>
+          <p className="mt-1 text-sm text-gray-400">{t('select_from_left')}</p>
         </div>
       </div>
     )

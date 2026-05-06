@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback } from 'react'
 import { UploadCloud, FileSpreadsheet, X, AlertCircle, CheckCircle2, AlertTriangle, ChevronDown } from 'lucide-react'
 import { read, utils } from 'xlsx'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import type { Medicine } from '@/products/megaprice/pages/purchase/types/purchase.types'
 
@@ -47,12 +48,17 @@ function autoDetect(headers: string[]): ColMap {
   }
 }
 
-function applyMapping(rawData: unknown[][], map: ColMap): { rows: ParsedRow[]; errors: ParseError[] } {
+function applyMapping(
+  rawData: unknown[][],
+  map: ColMap,
+  errNoNameCol: string,
+  errNoRows: string,
+): { rows: ParsedRow[]; errors: ParseError[] } {
   const errors: ParseError[] = []
   const rows:   ParsedRow[]  = []
 
   if (map.name === -1 && map.mnn === -1) {
-    errors.push({ row: 0, message: 'Не указана колонка «Название» или «МНН»' })
+    errors.push({ row: 0, message: errNoNameCol })
     return { rows, errors }
   }
 
@@ -66,7 +72,7 @@ function applyMapping(rawData: unknown[][], map: ColMap): { rows: ParsedRow[]; e
     rows.push({ rowNum, name, mnn, manufacturer, country })
   })
 
-  if (rows.length === 0) errors.push({ row: 0, message: 'Не удалось извлечь позиции из файла' })
+  if (rows.length === 0) errors.push({ row: 0, message: errNoRows })
   return { rows, errors }
 }
 
@@ -112,8 +118,8 @@ function ColSelect({ label, required, value, activeCols, onChange }: ColSelectPr
   return (
     <div className="flex flex-col gap-1.5">
       <span className={cn(
-        'text-xs text-gray-500',
-        required && 'font-medium text-gray-700',
+        'text-xs text-gray-500 dark:text-gray-400',
+        required && 'font-medium text-gray-700 dark:text-gray-300',
       )}>
         {label}{required && <span className="ml-0.5 text-red-400">*</span>}
       </span>
@@ -121,7 +127,7 @@ function ColSelect({ label, required, value, activeCols, onChange }: ColSelectPr
         <select
           value={value}
           onChange={e => onChange(Number(e.target.value))}
-          className="h-8 w-full appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-8 text-sm text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20"
+          className="h-8 w-full appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-8 text-sm text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-gray-500"
         >
           <option value={-1}>—</option>
           {activeCols.map(i => (
@@ -140,6 +146,7 @@ export function ExcelUploadView({
   medicines, catalogMedicines, onMedicinesLoaded,
   selectedId, onSelect, checkedIds, onToggleCheck, cartQtyByMedicine,
 }: ExcelUploadViewProps) {
+  const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const [step,        setStep]        = useState<Step>('idle')
@@ -164,7 +171,7 @@ export function ExcelUploadView({
       const data = utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: '' }) as unknown[][]
 
       if (!data || data.length < 2) {
-        setErrors([{ row: 0, message: 'Файл пустой или не содержит данных' }])
+        setErrors([{ row: 0, message: t('excel_err_empty') }])
         setStep('error')
         return
       }
@@ -180,7 +187,7 @@ export function ExcelUploadView({
       setColMap(autoDetect(hdrs))
       setStep('mapping')
     } catch {
-      setErrors([{ row: 0, message: 'Не удалось прочитать файл. Убедитесь, что это .xlsx, .xls или .csv.' }])
+      setErrors([{ row: 0, message: t('excel_err_read') }])
       setStep('error')
     }
   }
@@ -193,7 +200,7 @@ export function ExcelUploadView({
 
   // ── Apply mapping ──
   function applyAndLoad() {
-    const { rows, errors: errs } = applyMapping(rawData, colMap)
+    const { rows, errors: errs } = applyMapping(rawData, colMap, t('excel_err_no_name_col'), t('excel_err_no_rows'))
     if (errs.length > 0 && rows.length === 0) { setErrors(errs); setStep('error'); return }
     const { medicines: matched, unmatchedIds: unmatched } = matchWithCatalog(rows, catalogMedicines)
     setUnmatchedIds(unmatched)
@@ -221,23 +228,23 @@ export function ExcelUploadView({
         onClick={() => inputRef.current?.click()}
         className={cn(
           'flex w-full max-w-sm cursor-pointer flex-col items-center gap-4 rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors',
-          isDragging ? 'border-gray-900 bg-gray-50' : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+          isDragging ? 'border-gray-900 bg-gray-50 dark:border-blue-400 dark:bg-gray-800' : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-800'
         )}
       >
-        <div className="rounded-xl bg-gray-100 p-4">
-          <UploadCloud className={cn('h-8 w-8 transition-colors', isDragging ? 'text-gray-900' : 'text-gray-400')} />
+        <div className="rounded-xl bg-gray-100 p-4 dark:bg-gray-800">
+          <UploadCloud className={cn('h-8 w-8 transition-colors', isDragging ? 'text-gray-900 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500')} />
         </div>
         <div>
-          <p className="text-sm font-medium text-gray-700">{isDragging ? 'Отпустите файл' : 'Перетащите файл или нажмите'}</p>
-          <p className="mt-1 text-xs text-gray-400">Поддерживаются .xlsx, .xls, .csv</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{isDragging ? t('excel_drop_active') : t('excel_drop_idle')}</p>
+          <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{t('excel_formats')}</p>
         </div>
-        <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
-          <FileSpreadsheet className="h-4 w-4 text-gray-500" />
-          Выбрать файл
+        <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+          <FileSpreadsheet className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+          {t('excel_choose_file')}
         </button>
       </div>
-      <p className="mt-4 max-w-sm text-center text-xs text-gray-400">
-        После загрузки вы сможете указать какая колонка за что отвечает
+      <p className="mt-4 max-w-sm text-center text-xs text-gray-400 dark:text-gray-500">
+        {t('excel_hint')}
       </p>
       <input ref={inputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={e => handleFile(e.target.files?.[0])} />
     </div>
@@ -246,15 +253,15 @@ export function ExcelUploadView({
   // ── ERROR ─────────────────────────────────────────────────────────────────
   if (step === 'error') return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-      <div className="rounded-xl bg-red-50 p-4">
+      <div className="rounded-xl bg-red-50 p-4 dark:bg-red-900/20">
         <AlertCircle className="h-8 w-8 text-red-400" />
       </div>
       <div>
-        <p className="text-sm font-semibold text-gray-900">Ошибка при загрузке</p>
+        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t('excel_error_title')}</p>
         {errors.map((e, i) => <p key={i} className="mt-1 text-xs text-red-500">{e.message}</p>)}
       </div>
-      <button onClick={handleClear} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
-        Попробовать снова
+      <button onClick={handleClear} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+        {t('excel_try_again')}
       </button>
       <input ref={inputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={e => handleFile(e.target.files?.[0])} />
     </div>
@@ -270,30 +277,30 @@ export function ExcelUploadView({
             <UploadCloud className="h-8 w-8 text-gray-400" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-700">Перетащите файл или нажмите</p>
-            <p className="mt-1 text-xs text-gray-400">Поддерживаются .xlsx, .xls, .csv</p>
+            <p className="text-sm font-medium text-gray-700">{t('excel_drop_idle')}</p>
+            <p className="mt-1 text-xs text-gray-400">{t('excel_formats')}</p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm">
             <FileSpreadsheet className="h-4 w-4 text-gray-500" />
-            Выбрать файл
+            {t('excel_choose_file')}
           </div>
         </div>
       </div>
 
       {/* Modal overlay */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-[1px]">
-        <div className="flex w-full max-w-2xl max-h-[85vh] flex-col rounded-2xl bg-white shadow-2xl overflow-hidden">
+        <div className="flex w-full max-w-2xl max-h-[85vh] flex-col rounded-2xl bg-white shadow-2xl overflow-hidden dark:bg-gray-900 dark:border dark:border-gray-700">
 
           {/* Modal header */}
-          <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
+          <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
             <div className="flex items-center gap-2 min-w-0">
               <FileSpreadsheet className="h-4 w-4 shrink-0 text-gray-400" />
-              <span className="text-sm font-semibold text-gray-900 truncate max-w-[280px]">{fileName}</span>
-              <span className="text-xs text-gray-400 shrink-0">· {rawData.length - 1} строк</span>
+              <span className="text-sm font-semibold text-gray-900 truncate max-w-[280px] dark:text-gray-100">{fileName}</span>
+              <span className="text-xs text-gray-400 shrink-0 dark:text-gray-500">· {t('excel_rows_count', { count: rawData.length - 1 })}</span>
             </div>
             <button
               onClick={handleClear}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors dark:hover:bg-gray-800 dark:hover:text-gray-300"
             >
               <X className="h-4 w-4" />
             </button>
@@ -309,34 +316,34 @@ export function ExcelUploadView({
                 .filter(i => rawData.slice(1).some(row => String((row as unknown[])[i] ?? '').trim() !== ''))
               return (
                 <div>
-                  <p className="mb-2.5 text-sm font-semibold text-gray-900">Укажите какая колонка за что отвечает</p>
+                  <p className="mb-2.5 text-sm font-semibold text-gray-900 dark:text-gray-100">{t('excel_mapping_title')}</p>
                   <div className="grid grid-cols-4 gap-3">
-                    <ColSelect label="Название"     required value={colMap.name}         activeCols={activeCols} onChange={v => setColMap(p => ({ ...p, name: v }))} />
-                    <ColSelect label="МНН"                   value={colMap.mnn}          activeCols={activeCols} onChange={v => setColMap(p => ({ ...p, mnn: v }))} />
-                    <ColSelect label="Производитель"         value={colMap.manufacturer} activeCols={activeCols} onChange={v => setColMap(p => ({ ...p, manufacturer: v }))} />
-                    <ColSelect label="Страна"                value={colMap.country}      activeCols={activeCols} onChange={v => setColMap(p => ({ ...p, country: v }))} />
+                    <ColSelect label={t('col_name')}         required value={colMap.name}         activeCols={activeCols} onChange={v => setColMap(p => ({ ...p, name: v }))} />
+                    <ColSelect label={t('col_mnn')}                   value={colMap.mnn}          activeCols={activeCols} onChange={v => setColMap(p => ({ ...p, mnn: v }))} />
+                    <ColSelect label={t('filter_manufacturer')}       value={colMap.manufacturer} activeCols={activeCols} onChange={v => setColMap(p => ({ ...p, manufacturer: v }))} />
+                    <ColSelect label={t('filter_country')}            value={colMap.country}      activeCols={activeCols} onChange={v => setColMap(p => ({ ...p, country: v }))} />
                   </div>
                 </div>
               )
             })()}
 
-            {/* Preview table — only columns that have at least one non-empty value */}
+            {/* Preview table */}
             {(() => {
               const activeCols = headers
                 .map((_, i) => i)
                 .filter(i => preview.some(row => String((row as unknown[])[i] ?? '').trim() !== ''))
               return (
                 <div>
-                  <p className="mb-1.5 text-sm font-semibold text-gray-900">
-                    Предпросмотр <span className="font-normal text-gray-400">— первые {preview.length} строк</span>
+                  <p className="mb-1.5 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    {t('excel_preview_title')} <span className="font-normal text-gray-400 dark:text-gray-500">— {t('excel_preview_rows', { count: preview.length })}</span>
                   </p>
-                  <div className="rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="rounded-xl border border-gray-200 overflow-hidden dark:border-gray-700">
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b border-gray-100 bg-gray-50">
+                        <tr className="border-b border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
                           {activeCols.map(i => (
-                            <th key={i} className="whitespace-nowrap px-3 py-2 text-left text-xs font-bold text-gray-400">
+                            <th key={i} className="whitespace-nowrap px-3 py-2 text-left text-xs font-bold text-gray-400 dark:text-gray-500">
                               {colLabel(i)}
                             </th>
                           ))}
@@ -344,9 +351,9 @@ export function ExcelUploadView({
                       </thead>
                       <tbody>
                         {preview.map((row, ri) => (
-                          <tr key={ri} className="border-b border-gray-100 last:border-0">
+                          <tr key={ri} className="border-b border-gray-100 last:border-0 dark:border-gray-800">
                             {activeCols.map(ci => (
-                              <td key={ci} className="max-w-[160px] truncate whitespace-nowrap px-3 py-2 text-gray-600">
+                              <td key={ci} className="max-w-[160px] truncate whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">
                                 {String((row as unknown[])[ci] ?? '')}
                               </td>
                             ))}
@@ -363,13 +370,13 @@ export function ExcelUploadView({
           </div>
 
           {/* Modal footer */}
-          <div className="shrink-0 border-t border-gray-200 bg-white px-5 py-4">
+          <div className="shrink-0 border-t border-gray-200 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-900">
             <button
               onClick={applyAndLoad}
               disabled={colMap.name === -1 && colMap.mnn === -1}
               className="h-9 w-full rounded-lg bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Применить
+              {t('excel_apply')}
             </button>
           </div>
 
@@ -384,43 +391,45 @@ export function ExcelUploadView({
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Summary bar */}
-      <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
+      <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="h-4 w-4 text-green-600" />
-            <span className="max-w-[160px] truncate text-xs font-medium text-gray-700" title={fileName}>{fileName}</span>
+            <span className="max-w-[160px] truncate text-xs font-medium text-gray-700 dark:text-gray-300" title={fileName}>{fileName}</span>
           </div>
-          <span className="inline-flex items-center rounded-full bg-[#D1FAE5] px-2 py-0.5 text-xs font-medium text-[#065F46]">
-            {matchedCount} найдено
+          <span className="inline-flex items-center rounded-full bg-[#D1FAE5] px-2 py-0.5 text-xs font-medium text-[#065F46] dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]">
+            {t('excel_found_count', { count: matchedCount })}
           </span>
           {unmatchedCount > 0 && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#FEF3C7] px-2 py-0.5 text-xs font-medium text-[#92400E]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#FEF3C7] px-2 py-0.5 text-xs font-medium text-[#92400E] dark:bg-[#78350F]/40 dark:text-[#FCD34D]">
               <AlertTriangle className="h-3 w-3" />
-              {unmatchedCount} не найдено
+              {t('excel_not_found_count', { count: unmatchedCount })}
             </span>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setStep('mapping')} className="rounded px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 transition-colors">
-            Изменить
+          <button onClick={() => setStep('mapping')} className="rounded px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 transition-colors dark:text-blue-400 dark:hover:bg-blue-900/20">
+            {t('excel_change')}
           </button>
-          <button onClick={handleClear} className="flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 transition-colors">
-            <X className="h-3.5 w-3.5" /> Очистить
+          <button onClick={handleClear} className="flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 transition-colors dark:text-gray-400 dark:hover:bg-gray-800">
+            <X className="h-3.5 w-3.5" /> {t('excel_clear')}
           </button>
         </div>
       </div>
 
       {unmatchedCount > 0 && (
-        <div className="flex items-start gap-2.5 border-b border-[#FEF3C7] bg-[#FFFBEB] px-4 py-2.5">
+        <div className="flex items-start gap-2.5 border-b border-[#FEF3C7] bg-[#FFFBEB] px-4 py-2.5 dark:border-[#78350F]/40 dark:bg-[#78350F]/20">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#D97706]" />
-          <p className="text-xs text-[#92400E]">
-            {unmatchedCount} {unmatchedCount === 1 ? 'препарат не найден' : 'препарата не найдено'} в каталоге по МНН. Проверьте сопоставление колонок.
+          <p className="text-xs text-[#92400E] dark:text-[#FCD34D]">
+            {unmatchedCount === 1
+              ? t('excel_unmatched_1', { count: unmatchedCount })
+              : t('excel_unmatched_many', { count: unmatchedCount })}
           </p>
         </div>
       )}
 
       {/* Medicine list */}
-      <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+      <div className="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
         {medicines.map(medicine => {
           const isSelected  = medicine.id === selectedId
           const isChecked   = checkedIds.includes(medicine.id)
@@ -433,10 +442,10 @@ export function ExcelUploadView({
               onClick={() => !isUnmatched && onSelect(medicine)}
               className={cn(
                 'relative flex items-center gap-3 px-4 py-3 transition-colors',
-                isUnmatched ? 'cursor-default opacity-60' : isSelected ? 'cursor-pointer bg-gray-100' : 'cursor-pointer hover:bg-gray-50'
+                isUnmatched ? 'cursor-default opacity-60' : isSelected ? 'cursor-pointer bg-gray-100 dark:bg-gray-800' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800'
               )}
             >
-              {isSelected && !isUnmatched && <span className="absolute inset-y-0 left-0 w-[3px] rounded-r-sm bg-gray-900" />}
+              {isSelected && !isUnmatched && <span className="absolute inset-y-0 left-0 w-[3px] rounded-r-sm" style={{ background: 'var(--selection-indicator)' }} />}
               <input
                 type="checkbox"
                 checked={isChecked}
@@ -446,23 +455,23 @@ export function ExcelUploadView({
                 className="h-4 w-4 flex-shrink-0 cursor-pointer rounded border-gray-300 accent-gray-900 disabled:cursor-not-allowed disabled:opacity-50"
               />
               <div className="min-w-0 flex-1">
-                <p className={cn('truncate text-sm', isSelected && !isUnmatched ? 'font-semibold text-gray-900' : 'font-medium text-gray-900')}>
+                <p className={cn('truncate text-sm', isSelected && !isUnmatched ? 'font-semibold text-gray-900 dark:text-gray-100' : 'font-medium text-gray-900 dark:text-gray-100')}>
                   {medicine.name}
                 </p>
-                <p className="truncate text-xs text-gray-500">
+                <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                   {medicine.mnn
-                    ? <><span className="text-gray-400">МНН: </span>{medicine.mnn}{medicine.manufacturer !== '—' ? ` · ${medicine.manufacturer}` : ''}</>
+                    ? <><span className="text-gray-400 dark:text-gray-500">{t('excel_mnn_label')}</span>{medicine.mnn}{medicine.manufacturer !== '—' ? ` · ${medicine.manufacturer}` : ''}</>
                     : <>{medicine.manufacturer}{medicine.country !== '—' ? ` (${medicine.country})` : ''}</>
                   }
                 </p>
               </div>
               {isUnmatched ? (
-                <span className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-[#FEF3C7] px-2 py-0.5 text-xs font-medium text-[#92400E]">
-                  <AlertTriangle className="h-3 w-3" /> Не в каталоге
+                <span className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-[#FEF3C7] px-2 py-0.5 text-xs font-medium text-[#92400E] dark:bg-[#78350F]/40 dark:text-[#FCD34D]">
+                  <AlertTriangle className="h-3 w-3" /> {t('excel_not_in_catalog')}
                 </span>
               ) : cartQty > 0 ? (
-                <span className="flex-shrink-0 inline-flex items-center rounded-full bg-[#D1FAE5] px-2 py-0.5 text-xs font-semibold text-[#065F46]">
-                  {cartQty} уп.
+                <span className="flex-shrink-0 inline-flex items-center rounded-full bg-[#D1FAE5] px-2 py-0.5 text-xs font-semibold text-[#065F46] dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]">
+                  {t('excel_cart_qty', { count: cartQty })}
                 </span>
               ) : null}
             </div>

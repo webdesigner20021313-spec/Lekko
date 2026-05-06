@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import { Search, ChevronDown, X, Check, AlignJustify } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import type { BonusType, ColumnKey } from '@/products/megaprice/pages/purchase/types/purchase.types'
 
@@ -15,21 +16,6 @@ interface SupplierFiltersProps {
   visibleColumns: Record<ColumnKey, boolean>
   onToggleColumn: (key: ColumnKey) => void
 }
-
-const bonusOptions: { value: BonusType; label: string }[] = [
-  { value: 'cashback',      label: 'Кэшбэк'          },
-  { value: 'gift',          label: '+Товар'           },
-  { value: 'free_delivery', label: 'Беспл. доставка'  },
-  { value: 'discount',      label: 'Скидка'           },
-]
-
-const columnOptions: { key: ColumnKey; label: string }[] = [
-  { key: 'expiry',   label: 'Годен до'   },
-  { key: 'payment',  label: 'Оплата'     },
-  { key: 'price',    label: 'Цена с НДС' },
-  { key: 'bonus',    label: 'Бонусы'     },
-  { key: 'quantity', label: 'Количество' },
-]
 
 function useClickOutside(onClose: () => void) {
   const ref = useRef<HTMLDivElement>(null)
@@ -57,6 +43,7 @@ function SearchableDropdown({
   onToggleItem: (v: string) => void
   onClear: () => void
 }) {
+  const { t } = useTranslation()
   const [q, setQ] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -76,10 +63,10 @@ function SearchableDropdown({
         className={cn(
           'flex h-9 w-[200px] items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors',
           open
-            ? 'border-gray-400 bg-white text-gray-900'
+            ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
             : count > 0
-              ? 'border-gray-300 bg-white text-gray-700'
-              : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700'
+              ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+              : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
         )}
       >
         <span className="flex-1 truncate text-left">
@@ -89,9 +76,9 @@ function SearchableDropdown({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-10 z-50 w-[200px] rounded-xl border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 top-10 z-50 w-[200px] rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
           {/* Поиск */}
-          <div className="p-2 border-b border-gray-100">
+          <div className="p-2 border-b border-gray-100 dark:border-gray-800">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
               <input
@@ -99,9 +86,9 @@ function SearchableDropdown({
                 type="text"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Поиск..."
+                placeholder={t('filter_search_inner')}
                 onClick={(e) => e.stopPropagation()}
-                className="h-8 w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-7 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 focus:bg-white"
+                className="h-8 w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-7 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:border-gray-600 dark:focus:bg-gray-700"
               />
               {q && (
                 <button
@@ -116,7 +103,7 @@ function SearchableDropdown({
 
           <div className="max-h-[216px] overflow-y-auto py-1">
             {filtered.length === 0 ? (
-              <p className="px-3 py-3 text-xs text-gray-400">Ничего не найдено</p>
+              <p className="px-3 py-3 text-xs text-gray-400">{t('filter_nothing_found')}</p>
             ) : (
               filtered.map((item) => {
                 const checked = selected.includes(item)
@@ -124,15 +111,15 @@ function SearchableDropdown({
                   <label
                     key={item}
                     onClick={() => onToggleItem(item)}
-                    className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50"
+                    className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
                     <div className={cn(
                       'flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                      checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
+                      checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600'
                     )}>
                       {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
                     </div>
-                    <span className="truncate text-sm text-gray-700">{item}</span>
+                    <span className="truncate text-sm text-gray-700 dark:text-gray-300">{item}</span>
                   </label>
                 )
               })
@@ -140,9 +127,9 @@ function SearchableDropdown({
           </div>
 
           {selected.length > 0 && (
-            <div className="border-t border-gray-100 px-3 py-2">
-              <button onClick={onClear} className="text-xs text-gray-400 hover:text-gray-600">
-                Сбросить всё
+            <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+              <button onClick={onClear} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">
+                {t('filter_reset_all')}
               </button>
             </div>
           )}
@@ -160,6 +147,23 @@ export function SupplierFilters({
   visibleColumns, onToggleColumn,
   showColumnToggle = true,
 }: SupplierFiltersProps & { showColumnToggle?: boolean }) {
+  const { t } = useTranslation()
+
+  const bonusOptions: { value: BonusType; label: string }[] = [
+    { value: 'cashback',      label: t('bonus_cashback')      },
+    { value: 'gift',          label: t('bonus_gift')          },
+    { value: 'free_delivery', label: t('bonus_free_delivery') },
+    { value: 'discount',      label: t('bonus_discount')      },
+  ]
+
+  const columnOptions: { key: ColumnKey; label: string }[] = [
+    { key: 'expiry',   label: t('col_expiry')    },
+    { key: 'payment',  label: t('col_payment')   },
+    { key: 'price',    label: t('col_price_vat') },
+    { key: 'bonus',    label: t('filter_bonuses') },
+    { key: 'quantity', label: t('col_quantity')  },
+  ]
+
   const [openDist, setOpenDist]   = useState(false)
   const [openCity, setOpenCity]   = useState(false)
   const [openBonus, setOpenBonus] = useState(false)
@@ -195,14 +199,14 @@ export function SupplierFilters({
   }
 
   return (
-    <div className="flex items-center gap-2 border-b border-gray-200 bg-white px-4 py-3">
+    <div className="flex items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
 
       {/* Distributor — с поиском */}
       <div ref={distRef} className="relative">
         <SearchableDropdown
           open={openDist}
           onToggle={() => setOpenDist((v) => !v)}
-          label="Дистрибутор"
+          label={t('filter_distributor')}
           count={distributorFilter.length}
           items={distributors}
           selected={distributorFilter}
@@ -216,7 +220,7 @@ export function SupplierFilters({
         <SearchableDropdown
           open={openCity}
           onToggle={() => setOpenCity((v) => !v)}
-          label="Город"
+          label={t('filter_city')}
           count={cityFilter.length}
           items={cities}
           selected={cityFilter}
@@ -232,22 +236,22 @@ export function SupplierFilters({
           className={cn(
             'flex h-9 w-[200px] items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors',
             openBonus
-              ? 'border-gray-400 bg-white text-gray-900'
+              ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
               : bonusFilter.length
-                ? 'border-gray-300 bg-white text-gray-700'
-                : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+                : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
           )}
         >
           <span className="flex-1 truncate text-left">
-            {bonusFilter.length ? `Бонусы · ${bonusFilter.length}` : 'Бонусы'}
+            {bonusFilter.length ? `${t('filter_bonuses')} · ${bonusFilter.length}` : t('filter_bonuses')}
           </span>
           <ChevronDown className={cn('h-3.5 w-3.5 flex-shrink-0 transition-transform', openBonus && 'rotate-180')} />
         </button>
 
         {openBonus && (
-          <div className="absolute left-0 top-10 z-50 w-[200px] rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
-            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
-              Бонусы
+          <div className="absolute left-0 top-10 z-50 w-[200px] rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              {t('filter_bonuses')}
             </p>
             <div className="overflow-y-auto">
               {bonusOptions.map((b) => {
@@ -256,23 +260,23 @@ export function SupplierFilters({
                   <label
                     key={b.value}
                     onClick={() => toggleBonus(b.value)}
-                    className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50"
+                    className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
                     <div className={cn(
                       'flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                      checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
+                      checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600'
                     )}>
                       {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
                     </div>
-                    <span className="truncate text-sm text-gray-700">{b.label}</span>
+                    <span className="truncate text-sm text-gray-700 dark:text-gray-300">{b.label}</span>
                   </label>
                 )
               })}
             </div>
             {bonusFilter.length > 0 && (
-              <div className="border-t border-gray-100 px-3 py-2">
-                <button onClick={() => onBonus([])} className="text-xs text-gray-400 hover:text-gray-600">
-                  Сбросить всё
+              <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+                <button onClick={() => onBonus([])} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">
+                  {t('filter_reset_all')}
                 </button>
               </div>
             )}
@@ -287,7 +291,7 @@ export function SupplierFilters({
           className="flex h-9 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-500 transition-colors hover:border-red-300 hover:bg-red-100 hover:text-red-600"
         >
           <X className="h-3.5 w-3.5" />
-          Очистить
+          {t('filter_clear')}
         </button>
       )}
 
@@ -298,17 +302,17 @@ export function SupplierFilters({
           className={cn(
             'flex h-9 w-9 items-center justify-center rounded-lg border transition-colors',
             openCols
-              ? 'border-gray-900 bg-gray-900 text-white'
-              : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+              ? 'border-gray-900 bg-gray-900 text-white dark:border-gray-400 dark:bg-gray-700'
+              : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300'
           )}
         >
           <AlignJustify className="h-4 w-4" />
         </button>
 
         {openCols && (
-          <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
-            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
-              Столбцы
+          <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              {t('filter_columns_header')}
             </p>
             {columnOptions.map((col) => {
               const checked = visibleColumns[col.key]
@@ -316,15 +320,15 @@ export function SupplierFilters({
                 <label
                   key={col.key}
                   onClick={() => onToggleColumn(col.key)}
-                  className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50"
+                  className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <div className={cn(
                     'flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                    checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
+                    checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600'
                   )}>
                     {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
                   </div>
-                  <span className="text-sm text-gray-700">{col.label}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{col.label}</span>
                 </label>
               )
             })}

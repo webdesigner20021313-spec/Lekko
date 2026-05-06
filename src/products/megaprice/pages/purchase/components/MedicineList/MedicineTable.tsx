@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MedicineRow } from './MedicineRow'
 import type { Medicine } from '@/products/megaprice/pages/purchase/types/purchase.types'
 
@@ -25,6 +26,7 @@ export function MedicineTable({
   medicines, selectedId, onSelect, checkedIds, onToggleCheck,
   favoriteIds, onToggleFavorite, cartQtyByMedicine, panel1Width, showMnn,
 }: MedicineTableProps) {
+  const { t } = useTranslation()
   const nameW  = Math.max(MIN_NAME, panel1Width - FIXED - (showMnn ? COL_MNN : 0))
   const tableW = Math.max(MIN_NAME + FIXED, panel1Width)
 
@@ -44,7 +46,7 @@ export function MedicineTable({
   if (medicines.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-sm text-gray-400">Лекарства не найдены</p>
+        <p className="text-sm text-gray-400">{t('medicines_not_found')}</p>
       </div>
     )
   }
@@ -62,9 +64,9 @@ export function MedicineTable({
           <th
             style={{
               position: 'sticky', top: 0, left: 0, zIndex: 4, height: 48,
-              width: COL_CB, background: '#F9FAFB', padding: 0,
-              borderBottom: '1px solid #e5e7eb',
-              boxShadow: '1px 0 0 #e5e7eb',
+              width: COL_CB, background: 'var(--table-header-bg)', padding: 0,
+              borderBottom: '1px solid var(--table-border)',
+              boxShadow: '1px 0 0 var(--table-border)',
             }}
           >
             <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -79,38 +81,38 @@ export function MedicineTable({
           </th>
           <th
             style={{
-              position: 'sticky', top: 0, zIndex: 2, height: 48, background: '#F9FAFB',
+              position: 'sticky', top: 0, zIndex: 2, height: 48, background: 'var(--table-header-bg)',
               padding: '0 12px', textAlign: 'left',
-              borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb',
+              borderBottom: '1px solid var(--table-border)', borderRight: '1px solid var(--table-border)',
               overflow: 'hidden',
             }}
           >
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500"
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
               style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              Название
+              {t('col_name')}
             </span>
           </th>
           {showMnn && (
             <th
               style={{
-                position: 'sticky', top: 0, zIndex: 2, height: 48, background: '#F9FAFB',
+                position: 'sticky', top: 0, zIndex: 2, height: 48, background: 'var(--table-header-bg)',
                 padding: '0 12px', textAlign: 'left',
-                borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb',
+                borderBottom: '1px solid var(--table-border)', borderRight: '1px solid var(--table-border)',
                 overflow: 'hidden',
               }}
             >
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500"
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
                 style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                МНН
+                {t('col_mnn')}
               </span>
             </th>
           )}
           <th
             style={{
               position: 'sticky', top: 0, right: 0, zIndex: 4, height: 48,
-              width: COL_FAV, background: '#F9FAFB', padding: 0,
-              borderBottom: '1px solid #e5e7eb',
-              boxShadow: '-1px 0 0 #e5e7eb',
+              width: COL_FAV, background: 'var(--table-header-bg)', padding: 0,
+              borderBottom: '1px solid var(--table-border)',
+              boxShadow: '-1px 0 0 var(--table-border)',
             }}
           />
         </tr>

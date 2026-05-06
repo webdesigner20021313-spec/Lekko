@@ -12,26 +12,25 @@ export type DistributorStatus =
   | 'cancelled'    // отменён
 
 export interface OrderStatusConfig {
-  label: string
   bg: string
   text: string
 }
 
 export const ORDER_STATUS_CONFIG: Record<OrderStatus, OrderStatusConfig> = {
-  new:       { label: 'Новый',    bg: 'bg-[#DBEAFE]', text: 'text-[#1E40AF]' },
-  modified:  { label: 'Изменено', bg: 'bg-[#FFEDD5]', text: 'text-[#9A3412]' },
-  completed: { label: 'Завершён', bg: 'bg-[#D1FAE5]', text: 'text-[#065F46]' },
-  cancelled: { label: 'Отменён',  bg: 'bg-[#FEE2E2]', text: 'text-[#991B1B]' },
+  new:       { bg: 'bg-[#DBEAFE] dark:bg-[#1E3A8A]/40', text: 'text-[#1E40AF] dark:text-[#93C5FD]' },
+  modified:  { bg: 'bg-[#FFEDD5] dark:bg-[#78350F]/40', text: 'text-[#9A3412] dark:text-[#FCD34D]' },
+  completed: { bg: 'bg-[#D1FAE5] dark:bg-[#064E3B]/40', text: 'text-[#065F46] dark:text-[#6EE7B7]' },
+  cancelled: { bg: 'bg-[#FEE2E2] dark:bg-[#7F1D1D]/40', text: 'text-[#991B1B] dark:text-[#FCA5A5]' },
 }
 
 export const DISTRIBUTOR_STATUS_CONFIG: Record<DistributorStatus, OrderStatusConfig> = {
-  new:          { label: 'Новый',               bg: 'bg-[#F3F4F6]', text: 'text-[#374151]' },
-  sent:         { label: 'Отправлен',           bg: 'bg-[#EDE9FE]', text: 'text-[#5B21B6]' },
-  partial_sent: { label: 'Частично отправлен',  bg: 'bg-[#FEF3C7]', text: 'text-[#92400E]' },
-  offer:        { label: 'Предложение',         bg: 'bg-[#FEF3C7]', text: 'text-[#92400E]' },
-  accepted:     { label: 'Принято',             bg: 'bg-[#D1FAE5]', text: 'text-[#065F46]' },
-  rejected:     { label: 'Отклонено',           bg: 'bg-[#FEE2E2]', text: 'text-[#991B1B]' },
-  cancelled:    { label: 'Отменён',             bg: 'bg-[#FEE2E2]', text: 'text-[#991B1B]' },
+  new:          { bg: 'bg-[#F3F4F6] dark:bg-gray-700', text: 'text-[#374151] dark:text-gray-300' },
+  sent:         { bg: 'bg-[#EDE9FE] dark:bg-[#4C1D95]/40', text: 'text-[#5B21B6] dark:text-[#C4B5FD]' },
+  partial_sent: { bg: 'bg-[#FEF3C7] dark:bg-[#78350F]/40', text: 'text-[#92400E] dark:text-[#FCD34D]' },
+  offer:        { bg: 'bg-[#FEF3C7] dark:bg-[#78350F]/40', text: 'text-[#92400E] dark:text-[#FCD34D]' },
+  accepted:     { bg: 'bg-[#D1FAE5] dark:bg-[#064E3B]/40', text: 'text-[#065F46] dark:text-[#6EE7B7]' },
+  rejected:     { bg: 'bg-[#FEE2E2] dark:bg-[#7F1D1D]/40', text: 'text-[#991B1B] dark:text-[#FCA5A5]' },
+  cancelled:    { bg: 'bg-[#FEE2E2] dark:bg-[#7F1D1D]/40', text: 'text-[#991B1B] dark:text-[#FCA5A5]' },
 }
 
 // ── Wholesaler proposal ───────────────────────────────────────────────────────

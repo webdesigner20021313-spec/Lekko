@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { X, Search, CheckCircle2, AlertTriangle, Loader2, Check } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency } from '@/shared/utils/format'
 import { Button } from '@/shared/ui-kit/Button'
@@ -65,6 +66,7 @@ const inputCls = [
   'h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-800',
   'placeholder:text-gray-400 transition-colors duration-150',
   'hover:border-gray-300 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10',
+  'dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500 dark:hover:border-gray-600 dark:focus:border-gray-500',
 ].join(' ')
 
 function Label({
@@ -76,9 +78,10 @@ function Label({
   onClear?: () => void
   hasValue?: boolean
 }) {
+  const { t } = useTranslation()
   return (
     <div className="mb-2 flex items-center justify-between">
-      <p className="text-[13px] font-semibold text-gray-900">{children}</p>
+      <p className="text-[13px] font-semibold text-gray-900 dark:text-gray-100">{children}</p>
       {onClear !== undefined && (
         <button
           type="button"
@@ -91,7 +94,7 @@ function Label({
               : 'cursor-default text-gray-300',
           )}
         >
-          Очистить
+          {t('filter_clear')}
         </button>
       )}
     </div>
@@ -111,6 +114,7 @@ function TagInput({
   onRemove: (id: string) => void
   placeholder?: string
 }) {
+  const { t } = useTranslation()
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
 
@@ -144,10 +148,14 @@ function TagInput({
 
       {/* Выпадающий список */}
       {open && (
-        <div className="mt-1 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md">
+        <div className="mt-1 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900">
           {filtered.length === 0 ? (
             <p className="px-3 py-3 text-center text-sm text-gray-400">
-              {query ? 'Ничего не найдено' : selected.length === options.length ? 'Все варианты выбраны' : 'Начните вводить для поиска'}
+              {query
+                ? t('filter_nothing_found')
+                : selected.length === options.length
+                  ? t('autoselect_all_selected')
+                  : t('autoselect_start_typing')}
             </p>
           ) : (
             <div className="max-h-44 overflow-y-auto">
@@ -156,13 +164,13 @@ function TagInput({
                   key={opt.id}
                   type="button"
                   onMouseDown={e => { e.preventDefault(); onAdd(opt.id); setQuery('') }}
-                  className="group flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-gray-100 active:bg-gray-200"
+                  className="group flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-gray-100 active:bg-gray-200 dark:hover:bg-gray-800 dark:active:bg-gray-700"
                 >
-                  <span className="min-w-0 flex-1 text-sm font-medium text-gray-800">{opt.label}</span>
+                  <span className="min-w-0 flex-1 text-sm font-medium text-gray-800 dark:text-gray-200">{opt.label}</span>
                   {opt.sublabel && (
-                    <span className="shrink-0 text-xs text-gray-400">{opt.sublabel}</span>
+                    <span className="shrink-0 text-xs text-gray-400 dark:text-gray-500">{opt.sublabel}</span>
                   )}
-                  <Check className="h-4 w-4 shrink-0 text-gray-900 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <Check className="h-4 w-4 shrink-0 text-gray-900 opacity-0 transition-opacity group-hover:opacity-100 dark:text-gray-300" />
                 </button>
               ))}
             </div>
@@ -176,7 +184,7 @@ function TagInput({
           {selectedOptions.map(opt => (
             <span
               key={opt.id}
-              className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[13px] font-medium text-gray-700"
+              className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[13px] font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
             >
               {opt.label}
               <button
@@ -198,6 +206,7 @@ function TagInput({
 // ─── AutoSelectModal ──────────────────────────────────────────────────────────
 
 export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoSelectModalProps) {
+  const { t } = useTranslation()
 
   // ── Производные данные ───────────────────────────────────────────────────────
 
@@ -283,7 +292,6 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
       const manuLimited = s.manufacturerNames.length > 0
 
       const computed: LocalResult[] = medicines.map(medicine => {
-        // Уровень 3: производитель
         if (manuLimited && !s.manufacturerNames.includes(medicine.manufacturer)) {
           return { medicine, offer: null, reason: 'filtered_out' }
         }
@@ -294,14 +302,11 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
         const avgPrice = allMed.reduce((sum, o) => sum + o.priceWithVat, 0) / allMed.length
 
         const candidates = allMed.filter(o => {
-          // Уровень 1: город
           if (cityLimited) {
             const region = DIST_META[o.distributor.id]?.region ?? o.distributor.city
             if (!s.cityFilter.includes(region)) return false
           }
-          // Уровень 2: дистрибутор
           if (suppLimited && !s.supplierIds.includes(o.distributor.id)) return false
-          // Уровень 4: отклонение цены
           if (devPct !== null && o.priceWithVat > avgPrice * (1 + devPct / 100)) return false
           return true
         })
@@ -327,22 +332,22 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} />
 
       <div
-        className="relative z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl"
+        className="relative z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900"
         style={{ maxHeight: '90vh' }}
       >
 
         {/* ── Шапка ──────────────────────────────────────────────────────────── */}
-        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
           <div>
-            <p className="text-base font-semibold text-gray-900">Авто-подбор</p>
+            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">{t('autoselect_title')}</p>
             <p className="mt-0.5 text-xs text-gray-400">
-              {medicines.length} {medicines.length === 1 ? 'препарат' : 'препаратов'} · пустые поля = без ограничений
+              {medicines.length} {medicines.length === 1 ? t('autoselect_med_one') : t('autoselect_med_many')} · {t('autoselect_hint')}
             </p>
           </div>
           <button
             onClick={onClose}
-            aria-label="Закрыть"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            aria-label={t('modal_close')}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
           >
             <X className="h-4 w-4" />
           </button>
@@ -354,14 +359,13 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
           {/* ━━━ НАСТРОЙКИ ━━━ */}
           {step === 'settings' && (
             <>
-
               {/* Город */}
-              <div className="border-b border-gray-200 px-5 py-4">
+              <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
                 <Label
                   onClear={() => setS(p => ({ ...p, cityFilter: [] }))}
                   hasValue={s.cityFilter.length > 0}
                 >
-                  Город
+                  {t('filter_city')}
                 </Label>
                 <div className="flex flex-wrap gap-1.5">
                   {allCities.map(city => {
@@ -374,8 +378,8 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                         className={cn(
                           'rounded-full border px-3 py-1 text-[13px] font-medium transition-colors duration-150',
                           active
-                            ? 'border-gray-900 bg-gray-900 text-white'
-                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50',
+                            ? 'border-gray-900 bg-gray-900 text-white dark:border-blue-500 dark:bg-blue-600'
+                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-700',
                         )}
                       >
                         {city}
@@ -386,36 +390,36 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
               </div>
 
               {/* Дистрибутор */}
-              <div className="border-b border-gray-200 px-5 py-4">
+              <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
                 <Label
                   onClear={() => setS(p => ({ ...p, supplierIds: [] }))}
                   hasValue={s.supplierIds.length > 0}
                 >
-                  Дистрибутор
+                  {t('filter_distributor')}
                 </Label>
                 <TagInput
                   options={supplierOptions}
                   selected={s.supplierIds}
                   onAdd={addSupplier}
                   onRemove={removeSupplier}
-                  placeholder="Найти дистрибутора..."
+                  placeholder={t('autoselect_find_distributor')}
                 />
               </div>
 
               {/* Производитель */}
-              <div className="border-b border-gray-200 px-5 py-4">
+              <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
                 <Label
                   onClear={() => setS(p => ({ ...p, manufacturerNames: [] }))}
                   hasValue={s.manufacturerNames.length > 0}
                 >
-                  Производитель
+                  {t('filter_manufacturer')}
                 </Label>
                 <TagInput
                   options={manufacturerOptions}
                   selected={s.manufacturerNames}
                   onAdd={addManu}
                   onRemove={removeManu}
-                  placeholder="Найти производителя..."
+                  placeholder={t('autoselect_find_manufacturer')}
                 />
               </div>
 
@@ -425,7 +429,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                   onClear={() => setS(p => ({ ...p, priceDeviationPct: '' }))}
                   hasValue={s.priceDeviationPct !== ''}
                 >
-                  Макс. отклонение цены от средней
+                  {t('autoselect_max_deviation')}
                 </Label>
                 <div className="relative">
                   <input
@@ -434,13 +438,12 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                     max={100}
                     value={s.priceDeviationPct}
                     onChange={e => setS(p => ({ ...p, priceDeviationPct: e.target.value }))}
-                    placeholder="Без ограничений"
+                    placeholder={t('autoselect_no_limit')}
                     className={cn(inputCls, 'pr-8')}
                   />
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">%</span>
                 </div>
               </div>
-
             </>
           )}
 
@@ -449,8 +452,8 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
             <div className="flex flex-col items-center justify-center gap-4 py-20">
               <Loader2 className="h-8 w-8 animate-spin text-gray-300" />
               <div className="text-center">
-                <p className="text-sm font-medium text-gray-700">Подбираем предложения</p>
-                <p className="mt-1 text-xs text-gray-400">Анализируем цены и условия поставок...</p>
+                <p className="text-sm font-medium text-gray-700">{t('autoselect_loading')}</p>
+                <p className="mt-1 text-xs text-gray-400">{t('autoselect_loading_sub')}</p>
               </div>
             </div>
           )}
@@ -461,42 +464,42 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
 
               {/* Сводка */}
               <div className="mb-4 grid grid-cols-3 gap-3">
-                <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-center">
-                  <p className="text-2xl font-bold text-gray-900">{medicines.length}</p>
-                  <p className="mt-0.5 text-xs text-gray-500">Всего</p>
+                <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-center dark:border-gray-700 dark:bg-gray-800">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{medicines.length}</p>
+                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{t('autoselect_stat_total')}</p>
                 </div>
                 <div className="rounded-xl border border-[#D1FAE5] bg-[#F0FDF4] px-4 py-3 text-center">
                   <p className="text-2xl font-bold text-[#065F46]">{matched.length}</p>
-                  <p className="mt-0.5 text-xs text-[#065F46]/80">Подобрано</p>
+                  <p className="mt-0.5 text-xs text-[#065F46]/80">{t('autoselect_stat_matched')}</p>
                 </div>
-                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-center">
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-center dark:border-gray-700 dark:bg-gray-800">
                   <p className={cn(
                     'text-2xl font-bold',
                     (noOffers.length + filtered.length) > 0 ? 'text-gray-700' : 'text-gray-300',
                   )}>
                     {noOffers.length + filtered.length}
                   </p>
-                  <p className="mt-0.5 text-xs text-gray-400">Исключено</p>
+                  <p className="mt-0.5 text-xs text-gray-400">{t('autoselect_stat_excluded')}</p>
                 </div>
               </div>
 
               {/* Подобранные */}
               {matched.length > 0 && (
-                <div className="mb-3 overflow-hidden rounded-xl border border-gray-200">
-                  <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5">
+                <div className="mb-3 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-gray-800">
                     <CheckCircle2 className="h-4 w-4 text-[#22C55E]" />
-                    <p className="text-xs font-semibold text-gray-700">Подобрано — {matched.length}</p>
+                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{t('autoselect_section_matched', { count: matched.length })}</p>
                   </div>
-                  <div className="max-h-56 divide-y divide-gray-100 overflow-y-auto bg-white">
+                  <div className="max-h-56 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-gray-800 dark:bg-gray-900">
                     {matched.map(r => (
                       <div key={r.medicine.id} className="flex h-[52px] items-center gap-3 px-4">
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-gray-900">{r.medicine.name}</p>
-                          <p className="mt-0.5 text-xs text-gray-500">
+                          <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{r.medicine.name}</p>
+                          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                             {r.offer!.distributor.name} · {r.offer!.distributor.city}
                           </p>
                         </div>
-                        <span className="shrink-0 text-sm font-semibold text-gray-900">
+                        <span className="shrink-0 text-sm font-semibold text-gray-900 dark:text-gray-100">
                           {formatCurrency(r.offer!.priceWithVat)}
                         </span>
                       </div>
@@ -506,22 +509,22 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
               )}
 
               {matched.length === 0 && (
-                <div className="mb-3 rounded-xl border border-gray-200 bg-white px-6 py-10 text-center">
-                  <p className="text-sm font-medium text-gray-700">Подходящих предложений нет</p>
-                  <p className="mt-1 text-xs text-gray-400">Попробуйте смягчить настройки</p>
+                <div className="mb-3 rounded-xl border border-gray-200 bg-white px-6 py-10 text-center dark:border-gray-700 dark:bg-gray-800">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('autoselect_no_results')}</p>
+                  <p className="mt-1 text-xs text-gray-400">{t('autoselect_no_results_hint')}</p>
                 </div>
               )}
 
               {/* Нет предложений */}
               {noOffers.length > 0 && (
-                <div className="mb-3 overflow-hidden rounded-xl border border-gray-200">
-                  <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5">
+                <div className="mb-3 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-gray-800">
                     <AlertTriangle className="h-4 w-4 text-gray-400" />
-                    <p className="text-xs font-semibold text-gray-600">Нет предложений — {noOffers.length}</p>
+                    <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">{t('autoselect_section_no_offers', { count: noOffers.length })}</p>
                   </div>
-                  <div className="max-h-28 divide-y divide-gray-100 overflow-y-auto bg-white">
+                  <div className="max-h-28 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-gray-800 dark:bg-gray-900">
                     {noOffers.map(r => (
-                      <p key={r.medicine.id} className="flex h-9 items-center px-4 text-sm text-gray-600">
+                      <p key={r.medicine.id} className="flex h-9 items-center px-4 text-sm text-gray-600 dark:text-gray-400">
                         {r.medicine.name}
                       </p>
                     ))}
@@ -531,14 +534,14 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
 
               {/* Исключено */}
               {filtered.length > 0 && (
-                <div className="overflow-hidden rounded-xl border border-gray-200">
-                  <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5">
+                <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-gray-800">
                     <AlertTriangle className="h-4 w-4 text-gray-400" />
-                    <p className="text-xs font-semibold text-gray-600">Исключено по настройкам — {filtered.length}</p>
+                    <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">{t('autoselect_section_excluded', { count: filtered.length })}</p>
                   </div>
-                  <div className="max-h-28 divide-y divide-gray-100 overflow-y-auto bg-white">
+                  <div className="max-h-28 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-gray-800 dark:bg-gray-900">
                     {filtered.map(r => (
-                      <p key={r.medicine.id} className="flex h-9 items-center px-4 text-sm text-gray-600">
+                      <p key={r.medicine.id} className="flex h-9 items-center px-4 text-sm text-gray-600 dark:text-gray-400">
                         {r.medicine.name}
                       </p>
                     ))}
@@ -553,15 +556,15 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
 
         {/* ── Футер ──────────────────────────────────────────────────────────── */}
         {step !== 'loading' && (
-          <div className="flex shrink-0 items-center justify-end gap-3 border-t border-gray-200 px-4 py-4">
+          <div className="flex shrink-0 items-center justify-end gap-3 border-t border-gray-200 px-4 py-4 dark:border-gray-700">
             {step === 'settings' ? (
               <>
-                <Button variant="outline" onClick={onClose}>Отмена</Button>
-                <Button onClick={handleRun}>Запустить подбор</Button>
+                <Button variant="outline" onClick={onClose}>{t('confirm_cancel')}</Button>
+                <Button onClick={handleRun}>{t('autoselect_run')}</Button>
               </>
             ) : (
               <>
-                <Button variant="outline" onClick={() => setStep('settings')}>← Назад</Button>
+                <Button variant="outline" onClick={() => setStep('settings')}>{t('autoselect_back')}</Button>
                 <Button
                   disabled={matched.length === 0}
                   onClick={() => {
@@ -569,7 +572,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                     onClose()
                   }}
                 >
-                  Добавить в корзину ({matched.length})
+                  {t('autoselect_add_to_cart', { count: matched.length })}
                 </Button>
               </>
             )}

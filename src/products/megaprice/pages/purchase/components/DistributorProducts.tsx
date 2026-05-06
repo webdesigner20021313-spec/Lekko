@@ -1,5 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
 import { Package, ArrowUp, ArrowDown, ArrowUpDown, AlignJustify, Check, ChevronDown, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { mockSupplierOffers, mockMedicines } from '@/products/megaprice/mocks/purchase.mocks'
 import { usePurchaseCart } from '@/products/megaprice/pages/purchase/hooks/usePurchaseCart'
 import { QuantityControl } from './SupplierOffers/QuantityControl'
@@ -23,16 +24,6 @@ type ReorderColKey = 'medicine' | 'expiry' | 'payment' | 'price' | 'bonus' | 'ma
 const ALWAYS_VISIBLE = new Set<ReorderColKey>(['medicine', 'manufacturer', 'country'])
 const DEFAULT_ORDER: ReorderColKey[] = ['medicine', 'expiry', 'payment', 'price', 'bonus', 'manufacturer', 'country']
 
-const COL_LABELS: Record<ReorderColKey, string> = {
-  medicine:     'Препарат',
-  expiry:       'Годен до',
-  payment:      'Оплата',
-  price:        'Цена с НДС',
-  bonus:        'Бонусы',
-  manufacturer: 'Производитель',
-  country:      'Страна',
-}
-
 const INIT_COLS: ColWidths = {
   num: 48, medicine: 400, expiry: 160, payment: 160,
   price: 160, bonus: 160, manufacturer: 162, country: 134, quantity: 180,
@@ -40,26 +31,11 @@ const INIT_COLS: ColWidths = {
 
 const ROW_H = 56
 
-const bonusOptions: { value: BonusType; label: string }[] = [
-  { value: 'cashback',      label: 'Кэшбэк'         },
-  { value: 'gift',          label: '+Товар'          },
-  { value: 'free_delivery', label: 'Беспл. доставка' },
-  { value: 'discount',      label: 'Скидка'          },
-]
-
-const columnOptions: { key: ColumnKey; label: string }[] = [
-  { key: 'expiry',   label: 'Годен до'   },
-  { key: 'payment',  label: 'Оплата'     },
-  { key: 'price',    label: 'Цена с НДС' },
-  { key: 'bonus',    label: 'Бонусы'     },
-  { key: 'quantity', label: 'Количество' },
-]
-
 const bonusStyles: Record<BonusType, string> = {
-  cashback:      'bg-[#D1FAE5] text-[#065F46]',
-  gift:          'bg-[#FEF3C7] text-[#92400E]',
-  free_delivery: 'bg-[#DBEAFE] text-[#1E40AF]',
-  discount:      'bg-[#FEE2E2] text-[#991B1B]',
+  cashback:      'bg-[#D1FAE5] text-[#065F46] dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]',
+  gift:          'bg-[#FEF3C7] text-[#92400E] dark:bg-[#78350F]/40 dark:text-[#FCD34D]',
+  free_delivery: 'bg-[#DBEAFE] text-[#1E40AF] dark:bg-[#1E3A8A]/40 dark:text-[#93C5FD]',
+  discount:      'bg-[#FEE2E2] text-[#991B1B] dark:bg-[#7F1D1D]/40 dark:text-[#FCA5A5]',
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -89,18 +65,18 @@ function ResizeHandle({ onMouseDown }: { onMouseDown: (e: React.MouseEvent) => v
 }
 
 function SortIcon({ field, sortField, sortDir }: { field: SortField; sortField: SortField | null; sortDir: SortDirection }) {
-  if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
-  if (sortDir === 'asc')   return <ArrowUp    className="h-3.5 w-3.5 text-gray-700" />
-  return                          <ArrowDown   className="h-3.5 w-3.5 text-gray-700" />
+  if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+  if (sortDir === 'asc')   return <ArrowUp    className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
+  return                          <ArrowDown   className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
 }
 
 const thBase: React.CSSProperties = {
   position: 'sticky', top: 0, zIndex: 2,
-  background: '#F9FAFB', borderBottom: '1px solid #e5e7eb',
+  background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)',
   padding: '10px 16px', textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden',
 }
 const tdBase: React.CSSProperties = {
-  padding: 0, overflow: 'hidden', borderBottom: '1px solid #f3f4f6',
+  padding: 0, overflow: 'hidden', borderBottom: '1px solid var(--table-cell-border)',
 }
 const cellDiv = (extra?: React.CSSProperties): React.CSSProperties => ({
   height: ROW_H, display: 'flex', flexDirection: 'column', justifyContent: 'center',
@@ -131,6 +107,23 @@ function FiltersBar({
   visibleColumns: Record<ColumnKey, boolean>
   onToggleColumn: (k: ColumnKey) => void
 }) {
+  const { t } = useTranslation()
+
+  const bonusOptions: { value: BonusType; label: string }[] = [
+    { value: 'cashback',      label: t('bonus_cashback')      },
+    { value: 'gift',          label: t('bonus_gift')          },
+    { value: 'free_delivery', label: t('bonus_free_delivery') },
+    { value: 'discount',      label: t('bonus_discount')      },
+  ]
+
+  const columnOptions: { key: ColumnKey; label: string }[] = [
+    { key: 'expiry',   label: t('col_expiry')    },
+    { key: 'payment',  label: t('col_payment')   },
+    { key: 'price',    label: t('col_price_vat') },
+    { key: 'bonus',    label: t('filter_bonuses') },
+    { key: 'quantity', label: t('col_quantity')  },
+  ]
+
   const [openMfg,   setOpenMfg]   = useState(false)
   const [openCtry,  setOpenCtry]  = useState(false)
   const [openBonus, setOpenBonus] = useState(false)
@@ -164,33 +157,33 @@ function FiltersBar({
       <div ref={r} className="relative">
         <button onClick={onToggle} className={cn(
           'flex h-9 w-[180px] items-center justify-between gap-1.5 rounded-lg border px-3 text-sm transition-colors',
-          open ? 'border-gray-400 bg-white text-gray-900'
-            : count > 0 ? 'border-gray-300 bg-white text-gray-700'
-            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700'
+          open ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
+            : count > 0 ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
         )}>
           <span className="truncate">{count > 0 ? `${label} · ${count}` : label}</span>
           <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', open && 'rotate-180')} />
         </button>
         {open && (
-          <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
+          <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
             <div className="max-h-52 overflow-y-auto">
               {items.map((item) => {
                 const checked = selected.includes(item)
                 return (
                   <label key={item} onClick={() => onToggleItem(item)}
-                    className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50">
+                    className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
                     <div className={cn('flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                      checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300')}>
+                      checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600')}>
                       {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
                     </div>
-                    <span className="truncate text-sm text-gray-700">{item}</span>
+                    <span className="truncate text-sm text-gray-700 dark:text-gray-300">{item}</span>
                   </label>
                 )
               })}
             </div>
             {selected.length > 0 && (
-              <div className="border-t border-gray-100 px-3 py-2">
-                <button onClick={onClear} className="text-xs text-gray-400 hover:text-gray-600">Сбросить</button>
+              <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+                <button onClick={onClear} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">{t('filter_reset')}</button>
               </div>
             )}
           </div>
@@ -200,29 +193,29 @@ function FiltersBar({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-4 py-3">
+    <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
       <SimpleDropdown ref={mfgRef} open={openMfg} onToggle={() => setOpenMfg(v => !v)}
-        label="Производитель" count={manufacturerFilter.length}
+        label={t('filter_manufacturer')} count={manufacturerFilter.length}
         items={manufacturers} selected={manufacturerFilter}
         onToggleItem={(v) => toggle(manufacturerFilter, v, onManufacturer)} onClear={() => onManufacturer([])} />
       <SimpleDropdown ref={ctryRef} open={openCtry} onToggle={() => setOpenCtry(v => !v)}
-        label="Страна" count={countryFilter.length}
+        label={t('filter_country')} count={countryFilter.length}
         items={countries} selected={countryFilter}
         onToggleItem={(v) => toggle(countryFilter, v, onCountry)} onClear={() => onCountry([])} />
       {/* МНН с поиском */}
       <div ref={mnnRef} className="relative">
         <button onClick={() => setOpenMnn(v => !v)} className={cn(
           'flex h-9 w-[180px] items-center justify-between gap-1.5 rounded-lg border px-3 text-sm transition-colors',
-          openMnn ? 'border-gray-400 bg-white text-gray-900'
-            : mnnFilter.length > 0 ? 'border-gray-300 bg-white text-gray-700'
-            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700'
+          openMnn ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
+            : mnnFilter.length > 0 ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
         )}>
-          <span className="truncate">{mnnFilter.length > 0 ? `МНН · ${mnnFilter.length}` : 'МНН'}</span>
+          <span className="truncate">{mnnFilter.length > 0 ? `${t('filter_mnn')} · ${mnnFilter.length}` : t('filter_mnn')}</span>
           <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', openMnn && 'rotate-180')} />
         </button>
         {openMnn && (
-          <div className="absolute left-0 top-10 z-50 w-56 rounded-xl border border-gray-200 bg-white shadow-lg">
-            <div className="border-b border-gray-100 p-2">
+          <div className="absolute left-0 top-10 z-50 w-56 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
+            <div className="border-b border-gray-100 p-2 dark:border-gray-800">
               <div className="relative">
                 <svg className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                 <input
@@ -230,12 +223,12 @@ function FiltersBar({
                   type="text"
                   value={mnnSearch}
                   onChange={(e) => setMnnSearch(e.target.value)}
-                  placeholder="Поиск..."
+                  placeholder={t('filter_search_inner')}
                   onClick={(e) => e.stopPropagation()}
-                  className="h-8 w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-7 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 focus:bg-white"
+                  className="h-8 w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-7 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500 dark:focus:bg-gray-800"
                 />
                 {mnnSearch && (
-                  <button onClick={(e) => { e.stopPropagation(); setMnnSearch('') }} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <button onClick={(e) => { e.stopPropagation(); setMnnSearch('') }} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                     <X className="h-3 w-3" />
                   </button>
                 )}
@@ -243,26 +236,26 @@ function FiltersBar({
             </div>
             <div className="max-h-52 overflow-y-auto py-1">
               {mnns.filter(m => m.toLowerCase().includes(mnnSearch.toLowerCase())).length === 0 ? (
-                <p className="px-3 py-3 text-xs text-gray-400">Ничего не найдено</p>
+                <p className="px-3 py-3 text-xs text-gray-400 dark:text-gray-500">{t('filter_nothing_found')}</p>
               ) : (
                 mnns.filter(m => m.toLowerCase().includes(mnnSearch.toLowerCase())).map((m) => {
                   const checked = mnnFilter.includes(m)
                   return (
                     <label key={m} onClick={() => toggle(mnnFilter, m, onMnn)}
-                      className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50">
+                      className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
                       <div className={cn('flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                        checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300')}>
+                        checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600')}>
                         {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
                       </div>
-                      <span className="truncate text-sm text-gray-700">{m}</span>
+                      <span className="truncate text-sm text-gray-700 dark:text-gray-300">{m}</span>
                     </label>
                   )
                 })
               )}
             </div>
             {mnnFilter.length > 0 && (
-              <div className="border-t border-gray-100 px-3 py-2">
-                <button onClick={() => onMnn([])} className="text-xs text-gray-400 hover:text-gray-600">Сбросить всё</button>
+              <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+                <button onClick={() => onMnn([])} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">{t('filter_reset_all')}</button>
               </div>
             )}
           </div>
@@ -273,31 +266,31 @@ function FiltersBar({
       <div ref={bonusRef} className="relative">
         <button onClick={() => setOpenBonus((v) => !v)} className={cn(
           'flex h-9 w-[180px] items-center justify-between gap-1.5 rounded-lg border px-3 text-sm transition-colors',
-          openBonus ? 'border-gray-400 bg-white text-gray-900'
-            : bonusFilter.length ? 'border-gray-300 bg-white text-gray-700'
-            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700'
+          openBonus ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
+            : bonusFilter.length ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
         )}>
-          <span className="truncate">{bonusFilter.length ? `Бонусы · ${bonusFilter.length}` : 'Бонусы'}</span>
+          <span className="truncate">{bonusFilter.length ? `${t('filter_bonuses')} · ${bonusFilter.length}` : t('filter_bonuses')}</span>
           <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', openBonus && 'rotate-180')} />
         </button>
         {openBonus && (
-          <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
+          <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
             {bonusOptions.map((b) => {
               const checked = bonusFilter.includes(b.value)
               return (
                 <label key={b.value} onClick={() => toggle(bonusFilter, b.value, onBonus)}
-                  className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50">
+                  className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
                   <div className={cn('flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                    checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300')}>
+                    checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600')}>
                     {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
                   </div>
-                  <span className="text-sm text-gray-700">{b.label}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{b.label}</span>
                 </label>
               )
             })}
             {bonusFilter.length > 0 && (
-              <div className="border-t border-gray-100 px-3 py-2">
-                <button onClick={() => onBonus([])} className="text-xs text-gray-400 hover:text-gray-600">Сбросить</button>
+              <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+                <button onClick={() => onBonus([])} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">{t('filter_reset')}</button>
               </div>
             )}
           </div>
@@ -308,7 +301,7 @@ function FiltersBar({
         <button onClick={() => { onManufacturer([]); onCountry([]); onBonus([]); onMnn([]) }}
           className="flex h-9 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-500 transition-colors hover:bg-red-100">
           <X className="h-3.5 w-3.5" />
-          Очистить
+          {t('filter_clear')}
         </button>
       )}
 
@@ -316,23 +309,23 @@ function FiltersBar({
       <div ref={colsRef} className="relative ml-auto">
         <button onClick={() => setOpenCols((v) => !v)} className={cn(
           'flex h-9 w-9 items-center justify-center rounded-lg border transition-colors',
-          openCols ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+          openCols ? 'border-gray-900 bg-gray-900 text-white dark:border-gray-400 dark:bg-gray-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300'
         )}>
           <AlignJustify className="h-4 w-4" />
         </button>
         {openCols && (
-          <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
-            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Столбцы</p>
+          <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{t('filter_columns_header')}</p>
             {columnOptions.map((col) => {
               const checked = visibleColumns[col.key]
               return (
                 <label key={col.key} onClick={() => onToggleColumn(col.key)}
-                  className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50">
+                  className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
                   <div className={cn('flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                    checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300')}>
+                    checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600')}>
                     {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
                   </div>
-                  <span className="text-sm text-gray-700">{col.label}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{col.label}</span>
                 </label>
               )
             })}
@@ -346,6 +339,20 @@ function FiltersBar({
 // ─── DistributorProducts ──────────────────────────────────────────────────────
 
 export function DistributorProducts({ distributor }: DistributorProductsProps) {
+  const { t } = useTranslation()
+
+  function getColLabel(key: ReorderColKey): string {
+    switch (key) {
+      case 'medicine':     return t('col_product')
+      case 'expiry':       return t('col_expiry')
+      case 'payment':      return t('col_payment')
+      case 'price':        return t('col_price_vat')
+      case 'bonus':        return t('filter_bonuses')
+      case 'manufacturer': return t('filter_manufacturer')
+      case 'country':      return t('filter_country')
+    }
+  }
+
   const [manufacturerFilter, setManufacturerFilter] = useState<string[]>([])
   const [countryFilter,      setCountryFilter]      = useState<string[]>([])
   const [bonusFilter,        setBonusFilter]        = useState<BonusType[]>([])
@@ -462,7 +469,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
     }
     const borderStyle: React.CSSProperties = isDragOver
       ? { borderLeft: '2px solid #3B82F6' }
-      : { borderRight: '1px solid #e5e7eb' }
+      : { borderRight: '1px solid var(--table-border)' }
     const baseStyle: React.CSSProperties = {
       ...thBase, ...borderStyle,
       position: 'relative', cursor: 'grab',
@@ -474,7 +481,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
       return (
         <th key={key} {...dragProps} style={baseStyle} onClick={() => handleSort(field)}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, paddingRight: 8, cursor: 'pointer' }}>
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{COL_LABELS[key]}</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{getColLabel(key)}</span>
             <SortIcon field={field} sortField={sortField} sortDir={sortDir} />
           </span>
           <ResizeHandle onMouseDown={(e) => { e.stopPropagation(); startResize(e, colKey) }} />
@@ -485,7 +492,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
     return (
       <th key={key} {...dragProps} style={baseStyle}>
         <span className="text-xs font-semibold uppercase tracking-wide text-gray-500" style={{ paddingRight: 8 }}>
-          {COL_LABELS[key]}
+          {getColLabel(key)}
         </span>
         <ResizeHandle onMouseDown={(e) => { e.stopPropagation(); startResize(e, colKey) }} />
       </th>
@@ -499,8 +506,8 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
         return (
           <td key="medicine" style={tdBase}>
             <div style={cellDiv()}>
-              <p className="truncate text-sm font-medium text-gray-900">{medicine.name}</p>
-              <p className="truncate text-xs text-gray-400">{medicine.mnn}</p>
+              <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{medicine.name}</p>
+              <p className="truncate text-xs text-gray-400 dark:text-gray-500">{medicine.mnn}</p>
             </div>
           </td>
         )
@@ -508,7 +515,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
         return (
           <td key="expiry" style={tdBase}>
             <div style={cellDiv()}>
-              <p className={cn('text-sm', expiryLabel ? 'font-medium text-red-600' : 'text-gray-700')}>
+              <p className={cn('text-sm', expiryLabel ? 'font-medium text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300')}>
                 {formatDate(offer.expiryDate)}
               </p>
               {expiryLabel && <p className="text-xs text-red-500">{expiryLabel.text}</p>}
@@ -519,8 +526,8 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
         return (
           <td key="payment" style={tdBase}>
             <div style={cellDiv()}>
-              <p className="truncate text-sm text-gray-700">
-                {offer.paymentTypes.map((p) => p.percentage === null ? 'Договорная' : `${p.percentage}%`).join(' \\ ')}
+              <p className="truncate text-sm text-gray-700 dark:text-gray-300">
+                {offer.paymentTypes.map((p) => p.percentage === null ? t('payment_negotiable') : `${p.percentage}%`).join(' \\ ')}
               </p>
             </div>
           </td>
@@ -529,7 +536,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
         return (
           <td key="price" style={tdBase}>
             <div style={cellDiv({ alignItems: 'flex-end' })}>
-              <span className="text-sm font-semibold text-gray-900">{formatCurrency(offer.priceWithVat)}</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(offer.priceWithVat)}</span>
               {offer.originalPrice && discountPct && (
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-gray-400 line-through">{formatCurrency(offer.originalPrice)}</span>
@@ -562,7 +569,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
         return (
           <td key="manufacturer" style={tdBase}>
             <div style={cellDiv()}>
-              <p className="truncate text-sm text-gray-700">{medicine.manufacturer}</p>
+              <p className="truncate text-sm text-gray-700 dark:text-gray-300">{medicine.manufacturer}</p>
             </div>
           </td>
         )
@@ -570,7 +577,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
         return (
           <td key="country" style={tdBase}>
             <div style={cellDiv()}>
-              <p className="truncate text-sm text-gray-600">{medicine.country}</p>
+              <p className="truncate text-sm text-gray-600 dark:text-gray-400">{medicine.country}</p>
             </div>
           </td>
         )
@@ -580,12 +587,12 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
   if (!distributor) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-        <div className="rounded-xl bg-gray-100 p-5">
-          <Package className="h-10 w-10 text-gray-400" />
+        <div className="rounded-xl bg-gray-100 p-5 dark:bg-gray-800">
+          <Package className="h-10 w-10 text-gray-400 dark:text-gray-500" />
         </div>
         <div>
-          <p className="text-base font-medium text-gray-700">Выберите дистрибутора</p>
-          <p className="mt-1 text-sm text-gray-400">из списка слева</p>
+          <p className="text-base font-medium text-gray-700 dark:text-gray-300">{t('select_distributor_title')}</p>
+          <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">{t('select_from_left')}</p>
         </div>
       </div>
     )
@@ -611,7 +618,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
       <div style={{ flex: 1, minHeight: 0, overflowX: 'scroll', overflowY: 'scroll' }}>
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
-            <p className="text-sm text-gray-400">Нет товаров в прайсе</p>
+            <p className="text-sm text-gray-400">{t('products_empty')}</p>
           </div>
         ) : (
           <table style={{ tableLayout: 'fixed', width: tableWidth, borderCollapse: 'collapse' }}>
@@ -623,15 +630,15 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
 
             <thead>
               <tr style={{ height: 48 }}>
-                <th style={{ ...thBase, textAlign: 'center', borderRight: '1px solid #e5e7eb' }}>
+                <th style={{ ...thBase, textAlign: 'center', borderRight: '1px solid var(--table-border)' }}>
                   <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">№</span>
                 </th>
 
                 {visibleOrder.map((k) => renderTh(k))}
 
                 {col.quantity && (
-                  <th style={{ position: 'sticky', top: 0, right: 0, zIndex: 4, background: '#F9FAFB', borderBottom: '1px solid #e5e7eb', borderLeft: '1px solid #e5e7eb', padding: '10px 16px', whiteSpace: 'nowrap' }}>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Количество</span>
+                  <th style={{ position: 'sticky', top: 0, right: 0, zIndex: 4, background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)', borderLeft: '1px solid var(--table-border)', padding: '10px 16px', whiteSpace: 'nowrap' }}>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{t('col_quantity')}</span>
                   </th>
                 )}
               </tr>
@@ -641,25 +648,27 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
               {filtered.map(({ offer, medicine }, index) => {
                 const qty = quantities[offer.id] ?? 0
                 const days = Math.floor((new Date(offer.expiryDate).getTime() - Date.now()) / 86400000)
-                const expiryLabel = days < 0 ? { text: 'Просрочен', urgent: true }
-                  : days < 30  ? { text: 'Остался < 1 мес.', urgent: true }
-                  : days < 180 ? { text: `Осталось ${Math.floor(days / 30)} мес.`, urgent: true }
+                const months = Math.floor(days / 30)
+                const expiryLabel = days < 0    ? { text: t('expiry_overdue'),                    urgent: true }
+                  : days < 30                   ? { text: t('expiry_lt_1m'),                       urgent: true }
+                  : months === 1                ? { text: t('expiry_1m'),                          urgent: true }
+                  : days < 180                  ? { text: t('expiry_n_months', { n: months }),     urgent: true }
                   : null
                 const avgDiff = avgPrice && avgPrice !== offer.priceWithVat
                   ? Math.round(Math.abs((offer.priceWithVat - avgPrice) / avgPrice) * 100)
                   : 0
                 const priceCompare = avgDiff >= 3
                   ? offer.priceWithVat < avgPrice
-                    ? { text: `Цена ниже на ${avgDiff}%`, positive: true }
-                    : { text: `Цена выше на ${avgDiff}%`, positive: false }
+                    ? { text: t('price_lower', { diff: avgDiff }), positive: true }
+                    : { text: t('price_higher', { diff: avgDiff }), positive: false }
                   : null
                 const discountPct = offer.originalPrice
                   ? Math.round((1 - offer.priceWithVat / offer.originalPrice) * 100)
                   : null
 
                 return (
-                  <tr key={offer.id} className="group border-b border-gray-100 transition-colors hover:bg-gray-50">
-                    <td style={{ ...tdBase, borderRight: '1px solid #f3f4f6' }}>
+                  <tr key={offer.id} className="group border-b border-gray-100 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800">
+                    <td style={{ ...tdBase, borderRight: '1px solid var(--table-cell-border)' }}>
                       <div style={cellDiv({ alignItems: 'center' })}>
                         <span className="text-xs text-gray-400">{index + 1}</span>
                       </div>
@@ -668,8 +677,8 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
                     {visibleOrder.map((k) => renderTd(k, offer, medicine, expiryLabel, priceCompare, discountPct))}
 
                     {col.quantity && (
-                      <td style={{ padding: 0, position: 'sticky', right: 0, zIndex: 2, background: '#FFFFFF', borderLeft: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6', overflow: 'hidden' }}
-                        className="group-hover:bg-gray-50 transition-colors">
+                      <td style={{ padding: 0, position: 'sticky', right: 0, zIndex: 2, background: 'var(--table-row-bg)', borderLeft: '1px solid var(--table-cell-border)', borderBottom: '1px solid var(--table-cell-border)', overflow: 'hidden' }}
+                        className="group-hover:bg-gray-50 transition-colors dark:group-hover:bg-gray-800">
                         <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', padding: '0 16px' }}>
                           <QuantityControl value={qty} onChange={(v) => handleQtyChange(offer.id, v)} />
                         </div>

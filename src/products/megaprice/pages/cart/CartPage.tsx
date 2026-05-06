@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect, Fragment } from 'react'
 import {
   ShoppingCart, Trash2, Minus, Plus,
   ChevronDown, MapPin,
@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency } from '@/shared/utils/format'
 import { Button } from '@/shared/ui-kit/Button'
@@ -25,17 +26,17 @@ interface ConfirmPayload { groups: DistGroup[]; pharmacy: Pharmacy; orderNum: st
 
 function QtyControl({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
-    <div className="flex w-[112px] shrink-0 items-center rounded-lg border border-gray-200 bg-white">
+    <div className="flex w-[112px] shrink-0 items-center rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
       <button
         onClick={() => onChange(Math.max(1, value - 1))}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-l-lg text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-700"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-l-lg text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
       >
         <Minus className="h-3 w-3" />
       </button>
-      <span className="flex-1 text-center text-[13px] font-semibold tabular-nums text-gray-900">{value}</span>
+      <span className="flex-1 text-center text-[13px] font-semibold tabular-nums text-gray-900 dark:text-gray-100">{value}</span>
       <button
         onClick={() => onChange(value + 1)}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-r-lg text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-700"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-r-lg text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
       >
         <Plus className="h-3 w-3" />
       </button>
@@ -46,15 +47,16 @@ function QtyControl({ value, onChange }: { value: number; onChange: (v: number) 
 // ─── Empty Cart ───────────────────────────────────────────────────────────────
 
 function EmptyCart() {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-24">
-      <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100">
-        <ShoppingCart className="h-9 w-9 text-gray-300" />
+      <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 dark:bg-gray-800">
+        <ShoppingCart className="h-9 w-9 text-gray-300 dark:text-gray-600" />
       </div>
-      <p className="text-base font-semibold text-gray-800">Корзина пуста</p>
-      <p className="mt-1.5 text-sm text-gray-400">Добавьте препараты из раздела «Закупки»</p>
+      <p className="text-base font-semibold text-gray-800 dark:text-gray-200">{t('cart_empty_title')}</p>
+      <p className="mt-1.5 text-sm text-gray-400 dark:text-gray-500">{t('cart_empty_hint')}</p>
       <Link to={mp('/purchase')} className="mt-6">
-        <Button size="sm" variant="outline">Перейти к закупкам</Button>
+        <Button size="sm" variant="outline">{t('cart_go_purchase')}</Button>
       </Link>
     </div>
   )
@@ -63,6 +65,7 @@ function EmptyCart() {
 // ─── Success Modal ────────────────────────────────────────────────────────────
 
 function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: () => void }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const orderNum = payload.orderNum
   const totalSum = payload.groups.reduce((s, g) => s + (g as DistGroup & { subtotal?: number }).subtotal!, 0)
@@ -71,100 +74,93 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
       <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-xl">
+      <div className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-gray-900 dark:border dark:border-gray-700">
 
-        {/* Кнопка закрыть */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-          aria-label="Закрыть"
+          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+          aria-label={t('cart_close')}
         >
           <X className="h-4 w-4" />
         </button>
 
-        {/* Иконка + заголовок */}
         <div className="flex flex-col items-center px-6 pt-8 pb-6 text-center">
           <div className="relative mb-4 flex items-center justify-center">
-            <div className="absolute h-[80px] w-[80px] rounded-full border-[6px] border-green-100" />
+            <div className="absolute h-[80px] w-[80px] rounded-full border-[6px] border-green-100 dark:border-green-900/40" />
             <div className="relative flex h-[60px] w-[60px] items-center justify-center rounded-full bg-[#22C55E] shadow-md shadow-green-200">
               <Check className="h-7 w-7 text-white" strokeWidth={2.5} />
             </div>
           </div>
-          <p className="text-xl font-bold text-gray-900">Заказ успешно создан</p>
-          <p className="mt-1 text-sm text-gray-400">{payload.pharmacy.name}</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('cart_success_title')}</p>
+          <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">{payload.pharmacy.name}</p>
         </div>
 
-        {/* Детали заказа */}
         <div className="px-6 pb-4">
-          <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
+          <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:divide-gray-800 dark:border-gray-700 dark:bg-gray-800">
             <div className="flex items-center justify-between px-4 py-3">
-              <span className="text-sm text-gray-500">Номер заказа</span>
-              <span className="font-mono text-sm font-bold text-gray-900">{orderNum}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{t('cart_success_order_num')}</span>
+              <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{orderNum}</span>
             </div>
             <div className="flex items-center justify-between px-4 py-3">
-              <span className="text-sm text-gray-500">Сумма заказа</span>
-              <span className="text-sm font-bold tabular-nums text-gray-900">{formatCurrency(totalSum)}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{t('cart_success_order_sum')}</span>
+              <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(totalSum)}</span>
             </div>
             <div className="flex items-center justify-between px-4 py-3">
-              <span className="text-sm text-gray-500">Позиций</span>
-              <span className="text-sm font-bold text-gray-900">{totalItems}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{t('cart_success_positions')}</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{totalItems}</span>
             </div>
           </div>
         </div>
 
-        {/* Дистрибуторы */}
         <div className="px-6 pb-6">
-          <div className="overflow-hidden rounded-xl border border-gray-100">
-            {/* Шапка таблицы */}
-            <div className="grid grid-cols-[1fr_auto] border-b border-gray-100 bg-gray-50 px-4 py-2">
-              <span className="text-xs font-semibold text-gray-400">Дистрибутор</span>
-              <span className="text-xs font-semibold text-gray-400">Поз.</span>
+          <div className="overflow-hidden rounded-xl border border-gray-100 dark:border-gray-700">
+            <div className="grid grid-cols-[1fr_auto] border-b border-gray-100 bg-gray-50 px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
+              <span className="text-xs font-semibold text-gray-400 dark:text-gray-500">{t('cart_success_dist_col')}</span>
+              <span className="text-xs font-semibold text-gray-400 dark:text-gray-500">{t('cart_success_pos_col')}</span>
             </div>
-            {/* Строки */}
             {payload.groups.map((group, idx) => (
               <div
                 key={group.id}
-                className={cn('grid grid-cols-[1fr_auto] items-center px-4 py-3', idx !== payload.groups.length - 1 && 'border-b border-gray-100')}
+                className={cn('grid grid-cols-[1fr_auto] items-center bg-white px-4 py-3 dark:bg-gray-900', idx !== payload.groups.length - 1 && 'border-b border-gray-100 dark:border-gray-800')}
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-gray-900">{group.name}</p>
+                  <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{group.name}</p>
                   <div className="mt-0.5 flex items-center gap-1">
                     {group.contactType === 'telegram' ? (
                       <>
                         <svg className="h-3 w-3 shrink-0 text-sky-400" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z" />
                         </svg>
-                        <span className="text-xs text-gray-400">{group.contact}</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">{group.contact}</span>
                       </>
                     ) : (
                       <>
                         <svg className="h-3 w-3 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m2 7 10 7 10-7" />
                         </svg>
-                        <span className="text-xs text-gray-400">{group.contact}</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">{group.contact}</span>
                       </>
                     )}
                   </div>
                 </div>
-                <span className="text-sm font-semibold tabular-nums text-gray-900">{group.items.length}</span>
+                <span className="text-sm font-semibold tabular-nums text-gray-900 dark:text-gray-100">{group.items.length}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Кнопки */}
-        <div className="flex gap-3 border-t border-gray-100 px-6 py-4">
+        <div className="flex gap-3 border-t border-gray-100 px-6 py-4 dark:border-gray-700">
           <button
             onClick={() => { onClose(); navigate(mp('/orders')) }}
-            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           >
-            Мои заказы <ArrowRight className="h-3.5 w-3.5" />
+            {t('cart_my_orders')} <ArrowRight className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={onClose}
             className="flex h-11 flex-1 items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black"
           >
-            Готово
+            {t('cart_done')}
           </button>
         </div>
 
@@ -176,6 +172,7 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
 // ─── CartPage ─────────────────────────────────────────────────────────────────
 
 export function CartPage() {
+  const { t } = useTranslation()
   const items       = usePurchaseCart(s => s.items)
   const removeItem  = usePurchaseCart(s => s.removeItem)
   const updateQty   = usePurchaseCart(s => s.updateQuantity)
@@ -328,9 +325,9 @@ export function CartPage() {
 
   if (items.length === 0 && !successPayload) {
     return (
-      <div className="flex h-full flex-col bg-gray-50">
-        <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4">
-          <h1 className="text-xl font-bold text-gray-900">Корзина</h1>
+      <div className="flex h-full flex-col bg-gray-50 dark:bg-gray-900">
+        <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('cart_title')}</h1>
         </div>
         <EmptyCart />
       </div>
@@ -338,30 +335,28 @@ export function CartPage() {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-gray-900">
 
       {/* ── Шапка ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-3">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-900">
         <div className="flex items-center gap-4">
-          {/* Название + счётчик */}
           <div className="flex items-center gap-2 shrink-0">
-            <h1 className="text-xl font-bold text-gray-900">Корзина</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('cart_title')}</h1>
           </div>
 
-          <div className="h-5 w-px bg-gray-200 shrink-0" />
+          <div className="h-5 w-px bg-gray-200 shrink-0 dark:bg-gray-700" />
 
-          {/* Фильтр по дистрибуторам */}
           <div className="flex flex-1 gap-1.5 overflow-x-auto">
             <button
               onClick={() => setDistFilter(null)}
               className={cn(
                 'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-all duration-150',
                 distFilter === null
-                  ? 'bg-gray-900 text-white shadow-sm'
-                  : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50',
+                  ? 'bg-gray-900 text-white shadow-sm dark:bg-blue-600'
+                  : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800',
               )}
             >
-              Все ({items.length})
+              {t('cart_filter_all', { n: items.length })}
             </button>
             {groups.map(g => (
               <button
@@ -370,8 +365,8 @@ export function CartPage() {
                 className={cn(
                   'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-all duration-150',
                   distFilter === g.id
-                    ? 'bg-gray-900 text-white shadow-sm'
-                    : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50',
+                    ? 'bg-gray-900 text-white shadow-sm dark:bg-blue-600'
+                    : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800',
                 )}
               >
                 {g.name} ({g.items.length})
@@ -388,12 +383,10 @@ export function CartPage() {
         {/* ── Левая панель ── */}
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
 
-          {/* Таблица */}
           <div className="flex-1 overflow-auto">
             <table className="w-full border-collapse">
-              {/* Заголовки колонок */}
-              <thead className="sticky top-0 z-10 bg-white">
-                <tr className="h-12 border-b-2 border-gray-200">
+              <thead className="sticky top-0 z-10 bg-white dark:bg-gray-900">
+                <tr className="h-12 border-b-2 border-gray-200 dark:border-gray-700">
                   <th className="w-10 px-4 text-left">
                     <input
                       ref={cbRef}
@@ -403,8 +396,8 @@ export function CartPage() {
                       className="h-4 w-4 cursor-pointer rounded border-gray-300 accent-gray-900"
                     />
                   </th>
-                  <th className="px-3 text-left text-sm font-semibold text-gray-700" colSpan={5}>Дистрибутор</th>
-                  <th className="w-[150px] px-3 text-right text-sm font-semibold text-gray-700">Сумма</th>
+                  <th className="px-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300" colSpan={5}>{t('cart_col_distributor')}</th>
+                  <th className="w-[150px] px-3 text-right text-sm font-semibold text-gray-700 dark:text-gray-300">{t('cart_col_sum')}</th>
                   <th className="w-10 px-4" />
                 </tr>
               </thead>
@@ -418,9 +411,8 @@ export function CartPage() {
                   const groupQtyTotal    = group.items.reduce((s, i) => s + i.quantity, 0)
 
                   return (
-                    <>
-                      {/* ── Строка дистрибутора ── */}
-                      <tr key={`group-${group.id}`} className="border-t border-gray-200 bg-gray-100">
+                    <Fragment key={group.id}>
+                      <tr className="border-t border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
                         <td className="px-4 py-2.5">
                           <input
                             type="checkbox"
@@ -432,36 +424,35 @@ export function CartPage() {
                         </td>
                         <td className="px-3 py-2.5" colSpan={5}>
                           <div className="flex items-center gap-2">
-                            <Package className="h-4 w-4 shrink-0 text-gray-600" />
-                            <span className="text-sm font-semibold text-gray-800">{group.name}</span>
-                            <span className="text-xs text-gray-500">
-                              {group.city} · {group.items.length} поз. · {groupQtyTotal} ед.
+                            <Package className="h-4 w-4 shrink-0 text-gray-600 dark:text-gray-400" />
+                            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{group.name}</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {t('cart_group_info', { city: group.city, pos: group.items.length, qty: groupQtyTotal })}
                             </span>
                           </div>
                         </td>
-                        <td className="px-3 py-2.5 text-right text-sm font-bold text-gray-800">
+                        <td className="px-3 py-2.5 text-right text-sm font-bold text-gray-800 dark:text-gray-200">
                           {formatCurrency(groupTotal)}
                         </td>
                         <td className="px-4 py-2.5">
                           <button
                             onClick={() => toggleCollapse(group.id)}
-                            className="flex h-6 w-6 items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-200"
+                            className="flex h-6 w-6 items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
                           >
                             <ChevronDown className={cn('h-4 w-4 transition-transform duration-200', isCollapsed && '-rotate-90')} />
                           </button>
                         </td>
                       </tr>
 
-                      {/* ── Строки товаров ── */}
                       {!isCollapsed && (
-                        <tr className="border-b border-gray-200 bg-white">
+                        <tr className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
                           <td className="px-4 py-2" />
-                          <td className="px-3 py-2 text-xs font-semibold text-gray-500">Название</td>
-                          <td className="px-3 py-2 text-xs font-semibold text-gray-500">Производитель</td>
-                          <td className="px-3 py-2 text-xs font-semibold text-gray-500">Страна</td>
-                          <td className="px-3 py-2 text-right text-xs font-semibold text-gray-500">Цена за шт.</td>
-                          <td className="px-3 py-2 text-center text-xs font-semibold text-gray-500">Количество</td>
-                          <td className="px-3 py-2 text-right text-xs font-semibold text-gray-500">Итог</td>
+                          <td className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_name')}</td>
+                          <td className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_manufacturer')}</td>
+                          <td className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_country')}</td>
+                          <td className="px-3 py-2 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_price')}</td>
+                          <td className="px-3 py-2 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_qty')}</td>
+                          <td className="px-3 py-2 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_total')}</td>
                           <td className="px-4 py-2" />
                         </tr>
                       )}
@@ -473,11 +464,10 @@ export function CartPage() {
                           <tr
                             key={item.offerId}
                             className={cn(
-                              'border-b border-gray-100 transition-colors duration-100',
-                              isChecked ? 'bg-gray-50' : 'bg-white hover:bg-gray-50',
+                              'border-b border-gray-100 transition-colors duration-100 dark:border-gray-800',
+                              isChecked ? 'bg-gray-50 dark:bg-gray-800' : 'bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800',
                             )}
                           >
-                            {/* Чекбокс */}
                             <td className="px-4 py-3">
                               <input
                                 type="checkbox"
@@ -487,33 +477,28 @@ export function CartPage() {
                               />
                             </td>
 
-                            {/* Название */}
                             <td className="max-w-[220px] px-3 py-3">
-                              <p className="truncate text-sm font-medium text-gray-900">
+                              <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {item.medicine.name}
                               </p>
                             </td>
 
-                            {/* Производитель */}
                             <td className="px-3 py-3">
-                              <span className="truncate text-sm text-gray-600">
+                              <span className="truncate text-sm text-gray-600 dark:text-gray-400">
                                 {item.medicine.manufacturer}
                               </span>
                             </td>
 
-                            {/* Страна */}
                             <td className="px-3 py-3">
-                              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+                              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-700 dark:text-gray-400">
                                 {item.medicine.country}
                               </span>
                             </td>
 
-                            {/* Цена за шт */}
-                            <td className="px-3 py-3 text-right text-sm tabular-nums whitespace-nowrap text-gray-600">
+                            <td className="px-3 py-3 text-right text-sm tabular-nums whitespace-nowrap text-gray-600 dark:text-gray-400">
                               {formatCurrency(effPrice(item))}
                             </td>
 
-                            {/* Количество */}
                             <td className="px-3 py-3">
                               <div className="flex justify-center">
                                 <QtyControl
@@ -523,17 +508,15 @@ export function CartPage() {
                               </div>
                             </td>
 
-                            {/* Сумма */}
-                            <td className="px-3 py-3 text-right text-sm font-semibold tabular-nums whitespace-nowrap text-gray-900">
+                            <td className="px-3 py-3 text-right text-sm font-semibold tabular-nums whitespace-nowrap text-gray-900 dark:text-gray-100">
                               {formatCurrency(lineTotal)}
                             </td>
 
-                            {/* Удалить */}
                             <td className="px-4 py-3">
                               <button
                                 onClick={() => removeItem(item.offerId)}
-                                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
-                                aria-label="Удалить"
+                                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
+                                aria-label={t('cart_remove')}
                               >
                                 <Trash2 className="h-[14px] w-[14px]" />
                               </button>
@@ -541,7 +524,7 @@ export function CartPage() {
                           </tr>
                         )
                       })}
-                    </>
+                    </Fragment>
                   )
                 })}
               </tbody>
@@ -550,30 +533,29 @@ export function CartPage() {
         </div>
 
         {/* ── Правая панель: инвойс ── */}
-        <div className="flex w-[360px] shrink-0 flex-col overflow-hidden border-l border-gray-200 bg-white">
+        <div className="flex w-[360px] shrink-0 flex-col overflow-hidden border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
 
-          {/* Заголовок — выбор аптеки */}
           <div ref={pharmacyDropRef} className="relative shrink-0">
             <button
               onClick={() => setShowPharmacyDrop(v => !v)}
-              className="flex h-12 w-full items-center justify-between border-b border-gray-200 px-4 transition-colors hover:bg-gray-50"
+              className="flex h-12 w-full items-center justify-between border-b border-gray-200 px-4 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
             >
               <div className="flex items-center gap-2 min-w-0">
-                <MapPin className="h-4 w-4 shrink-0 text-gray-500" />
-                <span className="truncate text-sm font-semibold text-gray-900">{pharmacy.name}</span>
+                <MapPin className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-400" />
+                <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{pharmacy.name}</span>
               </div>
               <ChevronDown className={cn('h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150', showPharmacyDrop && 'rotate-180')} />
             </button>
 
             {showPharmacyDrop && (
-              <div className="absolute left-0 right-0 top-full z-50 border-b border-gray-200 bg-white shadow-md">
+              <div className="absolute left-0 right-0 top-full z-50 border-b border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900">
                 {mockPharmacies.map(p => (
                   <button
                     key={p.id}
                     onClick={() => { setPharmacyId(p.id); setShowPharmacyDrop(false) }}
                     className={cn(
-                      'flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50',
-                      p.id === pharmacyId ? 'font-semibold text-gray-900' : 'text-gray-600'
+                      'flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
+                      p.id === pharmacyId ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400'
                     )}
                   >
                     <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-400" />
@@ -586,70 +568,60 @@ export function CartPage() {
 
           {!hasSelection ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed border-gray-200">
-                <Receipt className="h-7 w-7 text-gray-300" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                <Receipt className="h-7 w-7 text-gray-300 dark:text-gray-600" />
               </div>
-              <p className="text-sm font-semibold text-gray-700">Выберите товары</p>
-              <p className="text-xs leading-relaxed text-gray-400">
-                Отметьте нужные позиции слева — они появятся здесь
-              </p>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('cart_select_title')}</p>
+              <p className="text-xs leading-relaxed text-gray-400 dark:text-gray-500">{t('cart_select_hint')}</p>
             </div>
           ) : (
             <>
-              {/* ── Верхняя фикс. часть ── */}
-              <div className="shrink-0 border-b border-gray-200">
-
-                {/* Итого — главное вверху */}
+              <div className="shrink-0 border-b border-gray-200 dark:border-gray-700">
                 <div className="px-4 pt-4 pb-0">
-                  <p className="text-xs text-gray-400 mb-1">Итого к оплате</p>
-                  <p className="text-[28px] font-bold tabular-nums text-gray-900 leading-none">{formatCurrency(invoiceTotal)}</p>
+                  <p className="text-xs text-gray-400 mb-1 dark:text-gray-500">{t('cart_total_label')}</p>
+                  <p className="text-[28px] font-bold tabular-nums text-gray-900 leading-none dark:text-gray-100">{formatCurrency(invoiceTotal)}</p>
                 </div>
 
-                {/* Детали */}
                 <div className="px-4 pb-3 pt-4 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600">Позиций</span>
-                    <span className="text-xs tabular-nums text-gray-600">{invoiceItemCnt}</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">{t('cart_positions')}</span>
+                    <span className="text-xs tabular-nums text-gray-600 dark:text-gray-400">{invoiceItemCnt}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600">Единиц товара</span>
-                    <span className="text-xs tabular-nums text-gray-600">{invoiceQtyCnt}</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">{t('cart_units')}</span>
+                    <span className="text-xs tabular-nums text-gray-600 dark:text-gray-400">{invoiceQtyCnt}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600">Дистрибуторов</span>
-                    <span className="text-xs tabular-nums text-gray-600">{invoiceGroups.length}</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">{t('cart_distributors')}</span>
+                    <span className="text-xs tabular-nums text-gray-600 dark:text-gray-400">{invoiceGroups.length}</span>
                   </div>
                 </div>
-
               </div>
 
-              {/* ── Скролл: список продуктов ── */}
               <div className="flex-1 overflow-y-auto">
                 <div className="px-4 py-3">
-                  <p className="mb-2 text-xs font-semibold text-gray-900">
-                    Состав заказа
-                  </p>
+                  <p className="mb-2 text-xs font-semibold text-gray-900 dark:text-gray-100">{t('cart_order_content')}</p>
                   <div className="space-y-3">
                     {invoiceGroups.map(g => (
-                      <div key={g.id} className="overflow-hidden rounded-lg border border-gray-200">
-                        <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2">
+                      <div key={g.id} className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800">
                           <div className="min-w-0">
-                            <p className="truncate text-xs font-semibold text-gray-900">{g.name}</p>
-                            <p className="text-[11px] text-gray-400">{g.city}</p>
+                            <p className="truncate text-xs font-semibold text-gray-900 dark:text-gray-100">{g.name}</p>
+                            <p className="text-[11px] text-gray-400 dark:text-gray-500">{g.city}</p>
                           </div>
                           <div className="ml-2 shrink-0 text-right">
-                            <p className="text-xs font-bold text-gray-900">{formatCurrency(g.subtotal)}</p>
-                            <p className="text-[11px] text-gray-400">{g.items.length} поз. · {g.qty} ед.</p>
+                            <p className="text-xs font-bold text-gray-900 dark:text-gray-100">{formatCurrency(g.subtotal)}</p>
+                            <p className="text-[11px] text-gray-400 dark:text-gray-500">{t('cart_group_pos_qty', { pos: g.items.length, qty: g.qty })}</p>
                           </div>
                         </div>
-                        <div className="divide-y divide-gray-100 bg-white">
+                        <div className="divide-y divide-gray-100 bg-white dark:divide-gray-800 dark:bg-gray-900">
                           {g.items.map(item => (
                             <div key={item.offerId} className="flex items-center gap-2 px-3 py-1.5">
-                              <p className="min-w-0 flex-1 truncate text-xs text-gray-600">
+                              <p className="min-w-0 flex-1 truncate text-xs text-gray-600 dark:text-gray-400">
                                 {item.medicine.name}
                               </p>
-                              <span className="shrink-0 text-[11px] text-gray-400">×{item.quantity}</span>
-                              <span className="w-16 shrink-0 text-right text-xs font-medium text-gray-800">
+                              <span className="shrink-0 text-[11px] text-gray-400 dark:text-gray-500">×{item.quantity}</span>
+                              <span className="w-16 shrink-0 text-right text-xs font-medium text-gray-800 dark:text-gray-200">
                                 {formatCurrency(effPrice(item) * item.quantity)}
                               </span>
                             </div>
@@ -661,13 +633,12 @@ export function CartPage() {
                 </div>
               </div>
 
-              {/* ── Фикс. кнопка внизу ── */}
-              <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-4">
+              <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-gray-900">
                 <button
                   onClick={createOrder}
                   className="flex h-11 w-full items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black"
                 >
-                  Создать заказ
+                  {t('cart_create_order')}
                 </button>
               </div>
             </>

@@ -113,14 +113,14 @@ export function RoleEditPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-gray-900">
       <div className="min-h-0 flex-1 overflow-y-auto">
 
         {/* Back */}
         <div className="px-6 pt-5 pb-0">
           <button
             onClick={() => navigate('/users/roles')}
-            className="flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-700"
+            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 transition-colors hover:text-gray-700 dark:hover:text-gray-300"
           >
             <ArrowLeft className="h-4 w-4" />
             Назад к ролям
@@ -131,31 +131,31 @@ export function RoleEditPage() {
 
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Редактирование роли</h1>
-            <p className="mt-1 text-sm text-gray-500">Измените доступы роли</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Редактирование роли</h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Измените доступы роли</p>
           </div>
 
           {/* Role name */}
           <div className="mb-6">
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Название роли</label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Название роли</label>
             <input
               type="text"
               value={name}
               autoFocus
               onChange={(e) => { setName(e.target.value); setNameError('') }}
               className={cn(
-                'h-10 w-full rounded-lg border px-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20',
-                nameError ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-gray-400',
+                'h-10 w-full rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                nameError ? 'border-red-300 focus:border-red-400' : 'border-gray-200 dark:border-gray-600 focus:border-gray-400',
               )}
             />
             {nameError && <p className="mt-1.5 text-xs text-red-500">{nameError}</p>}
           </div>
 
-          <div className="border-t border-gray-200" />
+          <div className="border-t border-gray-200 dark:border-gray-700" />
 
           {/* All sections */}
           <div className="mt-6 mb-3">
-            <h2 className="text-base font-semibold text-gray-900">Разделы</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Разделы</h2>
             <p className="text-xs text-gray-400">Настройте доступ к разделам платформы</p>
           </div>
 
@@ -167,11 +167,11 @@ export function RoleEditPage() {
               return (
                 <div key={config.id} className={cn(
                   'overflow-hidden rounded-xl border transition-colors',
-                  proj.enabled ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50/60'
+                  proj.enabled ? 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800' : 'border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/40'
                 )}>
                   <div className="flex items-center gap-3 px-4 py-3">
                     <div className="flex-1">
-                      <p className={cn('text-sm font-semibold transition-colors', proj.enabled ? 'text-gray-900' : 'text-gray-400')}>
+                      <p className={cn('text-sm font-semibold transition-colors', proj.enabled ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400')}>
                         {config.label}
                       </p>
                       {config.sections.length > 0 && (
@@ -184,7 +184,7 @@ export function RoleEditPage() {
                       onClick={() => toggleProjectEnabled(config.id)}
                       className={cn(
                         'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200',
-                        proj.enabled ? 'bg-gray-900' : 'bg-gray-200',
+                        proj.enabled ? 'bg-gray-900' : 'bg-gray-200 dark:bg-gray-600',
                       )}
                     >
                       <span className={cn(
@@ -195,17 +195,17 @@ export function RoleEditPage() {
                   </div>
 
                   {proj.enabled && config.sections.length > 0 && (
-                    <div className="border-t border-gray-100">
+                    <div className="border-t border-gray-100 dark:border-gray-700">
                       <table className="w-full">
                         <thead>
-                          <tr className="border-b border-gray-100 bg-gray-50/50">
+                          <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/50">
                             <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-400">Раздел</th>
                             {PERMS.map((p) => (
                               <th key={p} className="px-3 py-2 text-center text-[11px] font-semibold text-gray-400">{PERMISSION_LABELS[p]}</th>
                             ))}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50">
+                        <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
                           {config.sections.map((sec) => {
                             const acc = proj.sections[sec.id] ?? buildEmptySectionAccess()
                             return (
@@ -216,7 +216,7 @@ export function RoleEditPage() {
                                       onClick={() => toggleSectionEnabled(config.id, sec.id)}
                                       className={cn(
                                         'relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors',
-                                        acc.enabled ? 'bg-gray-900' : 'bg-gray-200'
+                                        acc.enabled ? 'bg-gray-900' : 'bg-gray-200 dark:bg-gray-600'
                                       )}
                                     >
                                       <span className={cn(
@@ -224,7 +224,7 @@ export function RoleEditPage() {
                                         acc.enabled ? 'translate-x-3.5' : 'translate-x-0.5'
                                       )} />
                                     </button>
-                                    <span className="text-sm text-gray-700">{sec.label}</span>
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">{sec.label}</span>
                                   </div>
                                 </td>
                                 {PERMS.map((perm) => (
@@ -233,7 +233,7 @@ export function RoleEditPage() {
                                       onClick={() => toggleSectionPerm(config.id, sec.id, perm)}
                                       className={cn(
                                         'mx-auto flex h-5 w-5 items-center justify-center rounded border-2 transition-colors',
-                                        acc[perm] ? 'border-gray-900 bg-gray-900' : 'border-gray-200 bg-white',
+                                        acc[perm] ? 'border-gray-900 bg-gray-900' : 'border-gray-200 dark:border-gray-500 bg-white dark:bg-gray-700',
                                       )}
                                     >
                                       {acc[perm] && <Check className="h-3 w-3 text-white" />}
@@ -249,7 +249,7 @@ export function RoleEditPage() {
                   )}
 
                   {proj.enabled && config.sections.length === 0 && (
-                    <div className="border-t border-gray-100 px-4 py-3 text-xs text-gray-400">
+                    <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-3 text-xs text-gray-400">
                       Разделы появятся позже
                     </div>
                   )}
@@ -262,11 +262,11 @@ export function RoleEditPage() {
               return (
                 <div key={sec.id} className={cn(
                   'overflow-hidden rounded-xl border transition-colors',
-                  acc.enabled ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50/60'
+                  acc.enabled ? 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800' : 'border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/40'
                 )}>
                   <div className="flex items-center gap-3 px-4 py-3">
                     <div className="flex-1">
-                      <p className={cn('text-sm font-semibold', acc.enabled ? 'text-gray-900' : 'text-gray-400')}>
+                      <p className={cn('text-sm font-semibold', acc.enabled ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400')}>
                         {sec.label}
                       </p>
                     </div>
@@ -274,7 +274,7 @@ export function RoleEditPage() {
                       onClick={() => togglePortalEnabled(sec.id)}
                       className={cn(
                         'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200',
-                        acc.enabled ? 'bg-gray-900' : 'bg-gray-200',
+                        acc.enabled ? 'bg-gray-900' : 'bg-gray-200 dark:bg-gray-600',
                       )}
                     >
                       <span className={cn(
@@ -285,10 +285,10 @@ export function RoleEditPage() {
                   </div>
 
                   {acc.enabled && (
-                    <div className="border-t border-gray-100">
+                    <div className="border-t border-gray-100 dark:border-gray-700">
                       <table className="w-full">
                         <thead>
-                          <tr className="border-b border-gray-100 bg-gray-50/50">
+                          <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/50">
                             <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-400">Раздел</th>
                             {PERMS.map((p) => (
                               <th key={p} className="px-3 py-2 text-center text-[11px] font-semibold text-gray-400">{PERMISSION_LABELS[p]}</th>
@@ -297,14 +297,14 @@ export function RoleEditPage() {
                         </thead>
                         <tbody>
                           <tr>
-                            <td className="px-4 py-2.5 text-sm text-gray-700">{sec.label}</td>
+                            <td className="px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300">{sec.label}</td>
                             {PERMS.map((perm) => (
                               <td key={perm} className="px-3 py-2.5 text-center">
                                 <button
                                   onClick={() => togglePortalPerm(sec.id, perm)}
                                   className={cn(
                                     'mx-auto flex h-5 w-5 items-center justify-center rounded border-2 transition-colors',
-                                    acc[perm] ? 'border-gray-900 bg-gray-900' : 'border-gray-200 bg-white',
+                                    acc[perm] ? 'border-gray-900 bg-gray-900' : 'border-gray-200 dark:border-gray-500 bg-white dark:bg-gray-700',
                                   )}
                                 >
                                   {acc[perm] && <Check className="h-3 w-3 text-white" />}
@@ -325,11 +325,11 @@ export function RoleEditPage() {
       </div>
 
       {/* Sticky footer */}
-      <div className="shrink-0 border-t border-gray-200 bg-white px-6 py-4 shadow-sm">
+      <div className="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-end gap-3">
           <button
             onClick={() => navigate('/users/roles')}
-            className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Отмена
           </button>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Camera, Eye, EyeOff, ChevronDown } from 'lucide-react'
 import {
   Modal, ModalContent, ModalHeader, ModalTitle,
@@ -33,10 +34,11 @@ const EMPTY: FormState = {
 type FieldError = Partial<Record<keyof FormState, string>>
 
 export function UserCreateModal({ open, onClose, editUser }: Props) {
+  const { t } = useTranslation()
   const { roles, addUser, updateUser } = useUsersStore()
-  const [form,        setForm]        = useState<FormState>(EMPTY)
-  const [errors,      setErrors]      = useState<FieldError>({})
-  const [showPass,    setShowPass]    = useState(false)
+  const [form,     setForm]     = useState<FormState>(EMPTY)
+  const [errors,   setErrors]   = useState<FieldError>({})
+  const [showPass, setShowPass] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const isEdit = !!editUser
@@ -76,10 +78,10 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
 
   function validate(): FieldError {
     const e: FieldError = {}
-    if (!form.name.trim())    e.name     = 'Введите имя и фамилию'
-    if (!form.phone.trim())   e.phone    = 'Телефон обязателен'
-    if (!form.login.trim())   e.login    = 'Введите логин'
-    if (!isEdit && !form.password.trim()) e.password = 'Введите пароль'
+    if (!form.name.trim())    e.name     = t('user_name_error')
+    if (!form.phone.trim())   e.phone    = t('user_phone_error')
+    if (!form.login.trim())   e.login    = t('user_login_error')
+    if (!isEdit && !form.password.trim()) e.password = t('user_password_error')
     return e
   }
 
@@ -114,42 +116,42 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
     <Modal open={open} onOpenChange={(v) => { if (!v) onClose() }}>
       <ModalContent className="max-w-lg">
         <ModalHeader>
-          <ModalTitle>{isEdit ? 'Редактировать пользователя' : 'Новый пользователь'}</ModalTitle>
-          <ModalDescription>Заполните данные пользователя</ModalDescription>
+          <ModalTitle>{isEdit ? t('user_edit_title') : t('user_create_title')}</ModalTitle>
+          <ModalDescription>{t('user_modal_desc')}</ModalDescription>
         </ModalHeader>
 
         <div className="flex flex-col gap-4 py-2">
 
-          {/* ── Фото + статус (edit only) ── */}
+          {/* Avatar + status */}
           <div className="flex flex-col items-center gap-3">
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="group relative h-[130px] w-[130px] overflow-hidden rounded-full border-2 border-dashed border-gray-200 transition-colors hover:border-gray-400"
+              className="group relative h-[130px] w-[130px] overflow-hidden rounded-full border-2 border-dashed border-gray-200 dark:border-gray-600 transition-colors hover:border-gray-400 dark:hover:border-gray-400"
             >
               {form.avatar ? (
                 <img src={form.avatar} alt="avatar" className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-gray-50 text-lg font-semibold text-gray-400">
+                <div className="flex h-full w-full items-center justify-center bg-gray-50 dark:bg-gray-800 text-lg font-semibold text-gray-400">
                   {initials}
                 </div>
               )}
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                 <Camera className="h-4 w-4 text-white" />
-                <span className="text-[10px] font-medium text-white">Фото</span>
+                <span className="text-[10px] font-medium text-white">{t('user_photo')}</span>
               </div>
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
 
             {isEdit && (
               <div className="flex w-full items-center justify-between">
-                <p className="text-sm font-medium text-gray-700">Статус</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('user_status')}</p>
                 <button
                   type="button"
                   onClick={() => set('isActive', !form.isActive)}
                   className={cn(
                     'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200',
-                    form.isActive ? 'bg-gray-900' : 'bg-gray-200'
+                    form.isActive ? 'bg-gray-900' : 'bg-gray-200 dark:bg-gray-600'
                   )}
                 >
                   <span className={cn(
@@ -161,34 +163,34 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
             )}
           </div>
 
-          {/* ── Строка 1: Имя Фамилия + Роль ── */}
+          {/* Row 1: Name + Role */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">Имя Фамилия</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('user_name_label')}</label>
               <input
                 type="text"
-                placeholder="Имя и фамилия"
+                placeholder={t('user_name_placeholder')}
                 value={form.name}
                 onChange={(e) => set('name', e.target.value)}
                 className={cn(
-                  'h-10 rounded-lg border px-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20',
-                  errors.name ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-gray-400'
+                  'h-10 rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                  errors.name ? 'border-red-300 focus:border-red-400' : 'border-gray-200 dark:border-gray-600 focus:border-gray-400'
                 )}
               />
               {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">Роль</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('user_role_label')}</label>
               <div className="relative">
                 <select
                   value={form.roleId}
                   onChange={(e) => set('roleId', e.target.value)}
                   className={cn(
-                    'h-10 w-full appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-8 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20',
-                    form.roleId === '' ? 'text-gray-400' : 'text-gray-900'
+                    'h-10 w-full appearance-none rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 pl-3 pr-8 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                    form.roleId === '' ? 'text-gray-400' : 'text-gray-900 dark:text-gray-100'
                   )}
                 >
-                  <option value="">Без роли</option>
+                  <option value="">{t('user_no_role')}</option>
                   {roles.map((r) => (
                     <option key={r.id} value={r.id}>{r.name}</option>
                   ))}
@@ -198,11 +200,11 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
             </div>
           </div>
 
-          {/* ── Строка 3: Телефон + Email ── */}
+          {/* Row 2: Phone + Email */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">
-                Телефон <span className="text-red-500">*</span>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t('user_phone_label')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="tel"
@@ -210,53 +212,53 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
                 value={form.phone}
                 onChange={(e) => set('phone', e.target.value)}
                 className={cn(
-                  'h-10 rounded-lg border px-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20',
-                  errors.phone ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-gray-400'
+                  'h-10 rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                  errors.phone ? 'border-red-300 focus:border-red-400' : 'border-gray-200 dark:border-gray-600 focus:border-gray-400'
                 )}
               />
               {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">Email</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
               <input
                 type="email"
                 placeholder="email@example.com"
                 value={form.email}
                 onChange={(e) => set('email', e.target.value)}
-                className="h-10 rounded-lg border border-gray-200 px-3 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20"
+                className="h-10 rounded-lg border border-gray-200 dark:border-gray-600 px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20"
               />
             </div>
           </div>
 
-          {/* ── Строка 4: Логин + Пароль ── */}
+          {/* Row 3: Login + Password */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">Логин</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('user_login_label')}</label>
               <input
                 type="text"
-                placeholder="Логин"
+                placeholder={t('user_login_label')}
                 value={form.login}
                 onChange={(e) => set('login', e.target.value)}
                 className={cn(
-                  'h-10 rounded-lg border px-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20',
-                  errors.login ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-gray-400'
+                  'h-10 rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                  errors.login ? 'border-red-300 focus:border-red-400' : 'border-gray-200 dark:border-gray-600 focus:border-gray-400'
                 )}
               />
               {errors.login && <p className="text-xs text-red-500">{errors.login}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">
-                Пароль {!isEdit && <span className="text-red-500">*</span>}
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t('user_password_label')} {!isEdit && <span className="text-red-500">*</span>}
               </label>
               <div className="relative">
                 <input
                   type={showPass ? 'text' : 'password'}
-                  placeholder={isEdit ? 'Оставьте пустым чтобы не менять' : 'Пароль'}
+                  placeholder={isEdit ? t('user_password_placeholder_edit') : t('user_password_placeholder')}
                   value={form.password}
                   onChange={(e) => set('password', e.target.value)}
                   className={cn(
-                    'h-10 w-full rounded-lg border px-3 pr-9 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20',
-                    errors.password ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-gray-400'
+                    'h-10 w-full rounded-lg border px-3 pr-9 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                    errors.password ? 'border-red-300 focus:border-red-400' : 'border-gray-200 dark:border-gray-600 focus:border-gray-400'
                   )}
                 />
                 <button
@@ -276,15 +278,15 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
         <ModalFooter>
           <button
             onClick={onClose}
-            className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
-            Отмена
+            {t('confirm_cancel')}
           </button>
           <button
             onClick={handleSubmit}
             className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-black"
           >
-            {isEdit ? 'Сохранить' : 'Создать'}
+            {isEdit ? t('confirm_save') : t('confirm_create')}
           </button>
         </ModalFooter>
       </ModalContent>

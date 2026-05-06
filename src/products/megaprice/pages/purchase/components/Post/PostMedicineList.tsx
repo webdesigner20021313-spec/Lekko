@@ -140,7 +140,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
     <div className="flex h-full flex-col overflow-hidden">
 
       {/* Поиск + Выбор аптеки */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
         <div className="flex items-stretch gap-2">
 
           {/* Поиск */}
@@ -151,7 +151,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
               placeholder="Поиск..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-full w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-gray-400"
+              className="h-full w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500"
             />
           </div>
 
@@ -162,8 +162,8 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
               className={cn(
                 'flex h-full w-full items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors',
                 pharmOpen
-                  ? 'border-gray-400 bg-white text-gray-900'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300',
+                  ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600',
               )}
             >
               <Building2 className="h-3.5 w-3.5 shrink-0 text-gray-400" />
@@ -172,8 +172,8 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
             </button>
 
             {pharmOpen && (
-              <div className="absolute right-0 top-10 z-50 w-64 rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
-                <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+              <div className="absolute right-0 top-10 z-50 w-64 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
                   Аптека
                 </p>
                 {mockPharmacies.map((ph) => {
@@ -182,17 +182,17 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                     <button
                       key={ph.id}
                       onClick={() => { setPharmacy(ph); setPharmOpen(false) }}
-                      className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-gray-50"
+                      className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                     >
                       <div className={cn(
                         'flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors',
-                        isActive ? 'border-gray-900 bg-gray-900' : 'border-gray-300',
+                        isActive ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600',
                       )}>
                         {isActive && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-gray-900">{ph.name}</p>
-                        <p className="truncate text-xs text-gray-400">{ph.city}, {ph.address}</p>
+                        <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{ph.name}</p>
+                        <p className="truncate text-xs text-gray-400 dark:text-gray-500">{ph.city}, {ph.address}</p>
                       </div>
                     </button>
                   )
@@ -207,14 +207,14 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
               onClick={() => setColsOpen(v => !v)}
               className={cn(
                 'flex h-9 w-9 items-center justify-center rounded-lg border transition-colors',
-                colsOpen ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700',
+                colsOpen ? 'border-gray-900 bg-gray-900 text-white dark:border-gray-400 dark:bg-gray-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300',
               )}
             >
               <AlignJustify className="h-4 w-4" />
             </button>
             {colsOpen && (
-              <div className="absolute right-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
-                <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Столбцы</p>
+              <div className="absolute right-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Столбцы</p>
                 {([
                   { key: 'stock',  label: 'Остаток'     },
                   { key: 'needed', label: 'Потребность'  },
@@ -222,12 +222,12 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                   const checked = visibleCols[col.key]
                   return (
                     <label key={col.key} onClick={() => setVisibleCols(prev => ({ ...prev, [col.key]: !prev[col.key] }))}
-                      className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50">
+                      className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
                       <div className={cn('flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors',
-                        checked ? 'border-gray-900 bg-gray-900' : 'border-gray-300')}>
+                        checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600')}>
                         {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
                       </div>
-                      <span className="text-sm text-gray-700">{col.label}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{col.label}</span>
                     </label>
                   )
                 })}
@@ -251,7 +251,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
             <tr>
               <th style={{
                 position: 'sticky', top: 0, zIndex: 2, height: 48,
-                background: '#F9FAFB', borderBottom: '1px solid #e5e7eb',
+                background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)',
                 padding: 0,
               }}>
                 <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -266,26 +266,26 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
               </th>
               <th style={{
                 position: 'sticky', top: 0, zIndex: 2, height: 48,
-                background: '#F9FAFB', borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb',
+                background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)', borderRight: '1px solid var(--table-border)',
                 padding: '0 12px', textAlign: 'left', overflow: 'hidden',
               }}>
                 <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Название</span>
               </th>
               {visibleCols.stock && (
-                <th style={{ position: 'sticky', top: 0, zIndex: 2, height: 48, background: '#F9FAFB', borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', padding: '0 12px', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                <th style={{ position: 'sticky', top: 0, zIndex: 2, height: 48, background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)', borderRight: '1px solid var(--table-border)', padding: '0 12px', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden' }}>
                   <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Остаток</span>
                 </th>
               )}
               {visibleCols.needed && (
-                <th style={{ position: 'sticky', top: 0, zIndex: 2, height: 48, background: '#F9FAFB', borderBottom: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', padding: '0 16px', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                <th style={{ position: 'sticky', top: 0, zIndex: 2, height: 48, background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)', borderRight: '1px solid var(--table-border)', padding: '0 16px', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden' }}>
                   <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Потребность</span>
                 </th>
               )}
               {/* Heart header — sticky right */}
               <th style={{
                 position: 'sticky', top: 0, right: 0, zIndex: 4, height: 48,
-                background: '#F9FAFB', borderBottom: '1px solid #e5e7eb',
-                boxShadow: '-1px 0 0 #f3f4f6', padding: 0,
+                background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)',
+                boxShadow: '-1px 0 0 var(--table-cell-border)', padding: 0,
               }} />
             </tr>
           </thead>
@@ -307,8 +307,8 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                     key={row.id}
                     onClick={() => onSelect(isSelected ? null : row.medicine)}
                     className={cn(
-                      'group cursor-pointer border-b border-gray-100 transition-colors',
-                      isSelected ? 'bg-gray-100' : 'bg-white hover:bg-gray-50',
+                      'group cursor-pointer border-b border-gray-100 transition-colors dark:border-gray-800',
+                      isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800',
                     )}
                   >
                     {/* Checkbox (батч) + индикатор выбора */}
@@ -316,7 +316,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                       {isSelected && (
                         <span style={{
                           position: 'absolute', left: 0, top: 0, bottom: 0,
-                          width: 3, background: '#111827', borderRadius: '0 2px 2px 0',
+                          width: 3, background: 'var(--selection-indicator)', borderRadius: '0 2px 2px 0',
                         }} />
                       )}
                       <div className="flex h-14 items-center justify-center">
@@ -335,11 +335,11 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                       <div className="flex h-14 flex-col justify-center overflow-hidden">
                         <p className={cn(
                           'truncate text-sm',
-                          isSelected ? 'font-semibold text-gray-900' : 'font-medium text-gray-900',
+                          isSelected ? 'font-semibold text-gray-900 dark:text-gray-100' : 'font-medium text-gray-900 dark:text-gray-100',
                         )}>
                           {row.medicine.name}
                         </p>
-                        <p className="mt-0.5 truncate text-xs text-gray-400">
+                        <p className="mt-0.5 truncate text-xs text-gray-400 dark:text-gray-500">
                           {row.medicine.manufacturer} · {row.medicine.country}
                         </p>
                       </div>
@@ -348,7 +348,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                     {/* Остаток */}
                     {visibleCols.stock && (
                       <td className="whitespace-nowrap px-3 py-0 text-right">
-                        <span className={cn('text-sm tabular-nums font-medium', row.stock === 0 ? 'text-gray-400' : 'text-gray-700')}>
+                        <span className={cn('text-sm tabular-nums font-medium', row.stock === 0 ? 'text-gray-400 dark:text-gray-600' : 'text-gray-700 dark:text-gray-300')}>
                           {row.stock === 0 ? '—' : row.stock}
                         </span>
                       </td>
@@ -358,15 +358,15 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                     {visibleCols.needed && (
                       <td className="px-4 py-0 text-right">
                         {row.needed > 0 ? (
-                          <span className="inline-flex items-center rounded-full bg-[#FEE2E2] px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[#991B1B]">
+                          <span className="inline-flex items-center rounded-full bg-[#FEE2E2] px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[#991B1B] dark:bg-[#7F1D1D]/40 dark:text-[#FCA5A5]">
                             +{row.needed} нужно
                           </span>
                         ) : row.excess > 0 ? (
-                          <span className="inline-flex items-center rounded-full bg-[#FEF3C7] px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[#92400E]">
+                          <span className="inline-flex items-center rounded-full bg-[#FEF3C7] px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[#92400E] dark:bg-[#78350F]/40 dark:text-[#FCD34D]">
                             −{row.excess} лишних
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-[#D1FAE5] px-2.5 py-0.5 text-xs font-semibold text-[#065F46]">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-[#D1FAE5] px-2.5 py-0.5 text-xs font-semibold text-[#065F46] dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]">
                             <Check className="h-3 w-3" />
                             Достаточно
                           </span>
@@ -379,11 +379,11 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                       style={{
                         position: 'sticky', right: 0, zIndex: 2,
                         width: 56, padding: 0,
-                        boxShadow: '-1px 0 0 #f3f4f6',
+                        boxShadow: '-1px 0 0 var(--table-cell-border)',
                       }}
                       className={cn(
                         'transition-colors',
-                        isSelected ? 'bg-gray-100' : 'bg-white group-hover:bg-gray-50',
+                        isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white group-hover:bg-gray-50 dark:bg-gray-900 dark:group-hover:bg-gray-800',
                       )}
                     >
                       <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -392,8 +392,8 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                           className={cn(
                             'flex h-8 w-8 items-center justify-center rounded-lg border transition-all',
                             isFav
-                              ? 'border-amber-400 bg-amber-50 text-amber-400'
-                              : 'border-gray-200 text-gray-400 hover:border-gray-900 hover:text-gray-900',
+                              ? 'border-amber-400 bg-amber-50 text-amber-400 dark:bg-amber-900/30'
+                              : 'border-gray-200 text-gray-400 hover:border-gray-900 hover:text-gray-900 dark:border-gray-700 dark:hover:border-gray-400 dark:hover:text-gray-200',
                           )}
                         >
                           <Heart className={cn('h-4 w-4', isFav && 'fill-amber-400')} />
@@ -410,15 +410,15 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
 
       {/* Авто-подбор — появляется при 2+ отмеченных */}
       {checkedIds.length >= 2 && (
-        <div className="shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3">
-          <span className="text-sm text-gray-600">
-            Выбрано: <span className="font-semibold text-gray-900">{checkedIds.length}</span>
+        <div className="shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            Выбрано: <span className="font-semibold text-gray-900 dark:text-gray-100">{checkedIds.length}</span>
           </span>
 
           <div className="flex items-center gap-3">
             {/* Переключатель «По требованию» */}
             <label className="flex cursor-pointer items-center gap-2 select-none">
-              <span className="text-sm text-gray-600">По требованию</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">По требованию</span>
               <button
                 type="button"
                 role="switch"
@@ -426,7 +426,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                 onClick={() => setByDemand((v) => !v)}
                 className={cn(
                   'relative inline-flex h-5 w-9 items-center rounded-full border-2 transition-colors duration-200',
-                  byDemand ? 'border-gray-900 bg-gray-900' : 'border-gray-300 bg-gray-200',
+                  byDemand ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 bg-gray-200 dark:border-gray-600 dark:bg-gray-700',
                 )}
               >
                 <span className={cn(

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { SupplierRow } from './SupplierRow'
 import type { SupplierOffer, SortField, SortDirection, ColumnKey } from '@/products/megaprice/pages/purchase/types/purchase.types'
 
@@ -41,20 +42,23 @@ function ResizeHandle({ onMouseDown }: { onMouseDown: (e: React.MouseEvent) => v
 }
 
 function SortIcon({ field, sortField, sortDir }: { field: SortField; sortField: SortField | null; sortDir: SortDirection }) {
-  if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
-  if (sortDir === 'asc') return <ArrowUp className="h-3.5 w-3.5 text-gray-700" />
-  return <ArrowDown className="h-3.5 w-3.5 text-gray-700" />
-}
-
-const COL_LABELS: Record<ReorderColKey, string> = {
-  distributor: 'Дистрибутор',
-  expiry:      'Годен до',
-  payment:     'Оплата',
-  price:       'Цена с НДС',
-  bonus:       'Бонусы',
+  if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+  if (sortDir === 'asc') return <ArrowUp className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
+  return <ArrowDown className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
 }
 
 export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, sortField, sortDir, onSort, visibleColumns }: SupplierTableProps) {
+  const { t } = useTranslation()
+
+  function colLabel(key: ReorderColKey): string {
+    switch (key) {
+      case 'distributor': return t('col_distributor')
+      case 'expiry':      return t('col_expiry')
+      case 'payment':     return t('col_payment')
+      case 'price':       return t('col_price_vat')
+      case 'bonus':       return t('filter_bonuses')
+    }
+  }
   const col = visibleColumns
   const [cols, setCols] = useState<Col2Widths>(INIT_COLS)
   const [colOrder, setColOrder] = useState<ReorderColKey[]>(DEFAULT_ORDER)
@@ -107,7 +111,7 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
 
   const thBase: React.CSSProperties = {
     position: 'sticky', top: 0, zIndex: 2,
-    background: '#F9FAFB', borderBottom: '1px solid #e5e7eb',
+    background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)',
     padding: '10px 16px', textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden',
   }
 
@@ -122,7 +126,7 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
     }
     const borderStyle: React.CSSProperties = isDragOver
       ? { borderLeft: '2px solid #3B82F6' }
-      : { borderRight: '1px solid #e5e7eb' }
+      : { borderRight: '1px solid var(--table-border)' }
 
     if (key === 'expiry' || key === 'price') {
       const field = key === 'expiry' ? 'expiry' : 'price'
@@ -132,7 +136,7 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
           onClick={() => onSort(field)}
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, paddingRight: 8, cursor: 'pointer' }}>
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{COL_LABELS[key]}</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{colLabel(key)}</span>
             <SortIcon field={field} sortField={sortField} sortDir={sortDir} />
           </span>
           <ResizeHandle onMouseDown={(e) => { e.stopPropagation(); startResize(e, key) }} />
@@ -162,7 +166,7 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
         </colgroup>
         <thead>
           <tr style={{ height: 48 }}>
-            <th style={{ ...thBase, textAlign: 'center', borderRight: '1px solid #e5e7eb' }}>
+            <th style={{ ...thBase, textAlign: 'center', borderRight: '1px solid var(--table-border)' }}>
               <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">№</span>
             </th>
 
@@ -171,10 +175,10 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
             {col.quantity && (
               <th style={{
                 position: 'sticky', top: 0, right: 0, zIndex: 4,
-                background: '#F9FAFB', borderBottom: '1px solid #e5e7eb',
-                borderLeft: '1px solid #e5e7eb', padding: '10px 16px', whiteSpace: 'nowrap',
+                background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)',
+                borderLeft: '1px solid var(--table-border)', padding: '10px 16px', whiteSpace: 'nowrap',
               }}>
-                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Количество</span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{t('col_quantity')}</span>
               </th>
             )}
           </tr>
