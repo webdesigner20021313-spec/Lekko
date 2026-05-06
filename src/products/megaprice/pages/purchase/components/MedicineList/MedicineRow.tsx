@@ -27,7 +27,7 @@ export function MedicineRow({
     <tr
       onClick={onSelect}
       className={cn(
-        'group cursor-pointer border-b border-gray-100 transition-colors',
+        'group cursor-pointer border-b border-gray-100 dark:border-[#333333] transition-colors',
         isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white hover:bg-gray-50 dark:bg-[#111111] dark:hover:bg-gray-800',
       )}
     >
