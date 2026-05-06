@@ -1,65 +1,121 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
-import { Search, Package, Pencil, Send, Phone, Check, X } from 'lucide-react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import { Search, Package, Pencil, Send, Phone, X, Percent } from 'lucide-react'
+import { cn } from '@/shared/utils/utils'
 import { formatCurrency } from '@/shared/utils/format'
 import { mockWholesalers, type Wholesaler } from '@/products/megaprice/mocks/wholesalers.mocks'
 import { useWholesalersStore } from '@/products/megaprice/stores/useWholesalersStore'
 
-// ─── Discount Cell ────────────────────────────────────────────────────────────
+// ─── Discount Modal ───────────────────────────────────────────────────────────
 
-interface DiscountCellProps {
+interface DiscountModalProps {
   wholesaler: Wholesaler
-  isEditing: boolean
-  editValue: string
-  onStartEdit: (id: string, current: number | null) => void
-  onEditChange: (val: string) => void
-  onSave: (id: string) => void
-  onCancel: () => void
+  initialValue: string
+  onSave: (value: string) => void
+  onRemove: () => void
+  onClose: () => void
 }
 
-function DiscountCell({
-  wholesaler, isEditing, editValue,
-  onStartEdit, onEditChange, onSave, onCancel,
-}: DiscountCellProps) {
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter')  onSave(wholesaler.id)
-    if (e.key === 'Escape') onCancel()
-  }
+function DiscountModal({ wholesaler, initialValue, onSave, onRemove, onClose }: DiscountModalProps) {
+  const [value, setValue] = useState(initialValue)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const isEdit = wholesaler.discountPercent !== null
 
-  if (isEditing) {
-    return (
-      <div className="flex items-center gap-1">
-        <div className="flex items-center rounded-lg border border-gray-300 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-900/20">
-          <input
-            type="number"
-            min="0"
-            max="99"
-            step="0.5"
-            autoFocus
-            value={editValue}
-            onChange={e => onEditChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="h-7 w-14 rounded-lg bg-transparent px-2 text-center text-sm text-gray-900 focus:outline-none"
-          />
-          <span className="pr-2 text-xs text-gray-400">%</span>
+  useEffect(() => {
+    setTimeout(() => inputRef.current?.focus(), 50)
+  }, [])
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+      if (e.key === 'Enter') onSave(value)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [value, onClose, onSave])
+
+  const parsed = parseFloat(value)
+  const valid = value.trim() !== '' && !isNaN(parsed) && parsed > 0 && parsed <= 99
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      onClick={onClose}>
+      <div className="w-[360px] rounded-2xl bg-white shadow-2xl"
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">
+              {isEdit ? 'Изменить скидку' : 'Добавить скидку'}
+            </p>
+            <p className="mt-0.5 text-xs text-gray-400">{wholesaler.name}</p>
+          </div>
+          <button onClick={onClose}
+            className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+            <X className="h-4 w-4" />
+          </button>
         </div>
-        <button
-          onClick={() => onSave(wholesaler.id)}
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-green-600 hover:bg-green-50"
-          title="Сохранить"
-        >
-          <Check className="h-3.5 w-3.5" />
-        </button>
-        <button
-          onClick={onCancel}
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100"
-          title="Отмена"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      </div>
-    )
-  }
 
+        {/* Body */}
+        <div className="px-5 py-5">
+          <label className="mb-1.5 block text-xs font-medium text-gray-500">Скидка</label>
+          <div className={cn(
+            'flex items-center rounded-xl border transition-colors',
+            valid ? 'border-gray-300 focus-within:border-gray-900 focus-within:ring-2 focus-within:ring-gray-900/20'
+                  : value ? 'border-red-300 focus-within:border-red-400' : 'border-gray-200 focus-within:border-gray-400',
+          )}>
+            <input
+              ref={inputRef}
+              type="number"
+              min="0.1"
+              max="99"
+              step="0.5"
+              placeholder="например, 7"
+              value={value}
+              onChange={e => setValue(e.target.value)}
+              className="h-10 flex-1 rounded-xl bg-transparent pl-3 text-sm text-gray-900 focus:outline-none"
+            />
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center text-gray-400">
+              <Percent className="h-4 w-4" />
+            </span>
+          </div>
+          {value && !valid && (
+            <p className="mt-1.5 text-xs text-red-500">Введите значение от 0.1 до 99</p>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center gap-2 border-t border-gray-100 px-5 py-4">
+          {isEdit && (
+            <button onClick={onRemove}
+              className="mr-auto text-xs text-red-500 hover:text-red-600 transition-colors">
+              Удалить скидку
+            </button>
+          )}
+          <button onClick={onClose}
+            className="ml-auto rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+            Отмена
+          </button>
+          <button
+            onClick={() => valid && onSave(value)}
+            disabled={!valid}
+            className={cn(
+              'rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+              valid
+                ? 'bg-gray-900 text-white hover:bg-black'
+                : 'cursor-not-allowed bg-gray-100 text-gray-400',
+            )}>
+            Сохранить
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Discount Cell ────────────────────────────────────────────────────────────
+
+function DiscountCell({ wholesaler, onOpen }: { wholesaler: Wholesaler; onOpen: () => void }) {
   if (wholesaler.discountPercent !== null) {
     return (
       <div className="flex items-center gap-2">
@@ -67,7 +123,7 @@ function DiscountCell({
           −{wholesaler.discountPercent}%
         </span>
         <button
-          onClick={() => onStartEdit(wholesaler.id, wholesaler.discountPercent)}
+          onClick={onOpen}
           className="flex h-6 w-6 items-center justify-center rounded text-gray-500 hover:text-gray-800 transition-colors"
           title="Изменить скидку"
         >
@@ -79,7 +135,7 @@ function DiscountCell({
 
   return (
     <button
-      onClick={() => onStartEdit(wholesaler.id, null)}
+      onClick={onOpen}
       className="text-xs text-blue-600 hover:text-blue-700 hover:underline transition-colors"
     >
       + Добавить скидку
@@ -93,7 +149,6 @@ export function WholesalersPage() {
   const storeDiscounts = useWholesalersStore(s => s.discounts)
   const setDiscount    = useWholesalersStore(s => s.setDiscount)
 
-  // Merge mock list with store: store overrides mock if user has explicitly set a value
   const wholesalers = useMemo<Wholesaler[]>(() =>
     mockWholesalers.map(w => ({
       ...w,
@@ -102,15 +157,8 @@ export function WholesalersPage() {
     [storeDiscounts],
   )
 
-  const [search,    setSearch]    = useState('')
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editValue, setEditValue] = useState('')
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setEditingId(null) }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [])
+  const [search,          setSearch]          = useState('')
+  const [modalWholesaler, setModalWholesaler] = useState<Wholesaler | null>(null)
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
@@ -120,24 +168,19 @@ export function WholesalersPage() {
     )
   }, [wholesalers, search])
 
-  const handleStartEdit = useCallback((id: string, current: number | null) => {
-    setEditingId(id)
-    setEditValue(current !== null ? String(current) : '')
-  }, [])
+  const handleSave = useCallback((value: string) => {
+    if (!modalWholesaler) return
+    const parsed = parseFloat(value)
+    const newDiscount = !value.trim() || isNaN(parsed) || parsed <= 0 ? null : parsed
+    setDiscount(modalWholesaler.name, newDiscount)
+    setModalWholesaler(null)
+  }, [modalWholesaler, setDiscount])
 
-  const handleSave = useCallback((id: string) => {
-    const parsed = parseFloat(editValue)
-    const newDiscount = !editValue.trim() || isNaN(parsed) || parsed <= 0 ? null : parsed
-    const w = wholesalers.find(w => w.id === id)
-    if (w) setDiscount(w.name, newDiscount)
-    setEditingId(null)
-    setEditValue('')
-  }, [editValue, wholesalers, setDiscount])
-
-  const handleCancel = useCallback(() => {
-    setEditingId(null)
-    setEditValue('')
-  }, [])
+  const handleRemove = useCallback(() => {
+    if (!modalWholesaler) return
+    setDiscount(modalWholesaler.name, null)
+    setModalWholesaler(null)
+  }, [modalWholesaler, setDiscount])
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-white">
@@ -241,12 +284,7 @@ export function WholesalersPage() {
                     <td className="px-4 py-3.5">
                       <DiscountCell
                         wholesaler={w}
-                        isEditing={editingId === w.id}
-                        editValue={editValue}
-                        onStartEdit={handleStartEdit}
-                        onEditChange={setEditValue}
-                        onSave={handleSave}
-                        onCancel={handleCancel}
+                        onOpen={() => setModalWholesaler(w)}
                       />
                     </td>
 
@@ -254,10 +292,20 @@ export function WholesalersPage() {
                 ))}
               </tbody>
             </table>
-
           </div>
         )}
       </div>
+
+      {/* ── Modal ── */}
+      {modalWholesaler && (
+        <DiscountModal
+          wholesaler={modalWholesaler}
+          initialValue={modalWholesaler.discountPercent !== null ? String(modalWholesaler.discountPercent) : ''}
+          onSave={handleSave}
+          onRemove={handleRemove}
+          onClose={() => setModalWholesaler(null)}
+        />
+      )}
     </div>
   )
 }
