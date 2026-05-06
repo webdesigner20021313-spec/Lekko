@@ -490,7 +490,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                     <CheckCircle2 className="h-4 w-4 text-[#22C55E]" />
                     <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{t('autoselect_section_matched', { count: matched.length })}</p>
                   </div>
-                  <div className="max-h-56 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-gray-800 dark:bg-[#111111]">
+                  <div className="max-h-56 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-[#333333] dark:bg-[#111111]">
                     {matched.map(r => (
                       <div key={r.medicine.id} className="flex h-[52px] items-center gap-3 px-4">
                         <div className="min-w-0 flex-1">
@@ -522,7 +522,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                     <AlertTriangle className="h-4 w-4 text-gray-400" />
                     <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">{t('autoselect_section_no_offers', { count: noOffers.length })}</p>
                   </div>
-                  <div className="max-h-28 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-gray-800 dark:bg-[#111111]">
+                  <div className="max-h-28 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-[#333333] dark:bg-[#111111]">
                     {noOffers.map(r => (
                       <p key={r.medicine.id} className="flex h-9 items-center px-4 text-sm text-gray-600 dark:text-gray-400">
                         {r.medicine.name}
@@ -539,7 +539,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                     <AlertTriangle className="h-4 w-4 text-gray-400" />
                     <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">{t('autoselect_section_excluded', { count: filtered.length })}</p>
                   </div>
-                  <div className="max-h-28 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-gray-800 dark:bg-[#111111]">
+                  <div className="max-h-28 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-[#333333] dark:bg-[#111111]">
                     {filtered.map(r => (
                       <p key={r.medicine.id} className="flex h-9 items-center px-4 text-sm text-gray-600 dark:text-gray-400">
                         {r.medicine.name}

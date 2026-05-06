@@ -78,7 +78,7 @@ function SearchableDropdown({
       {open && (
         <div className="absolute left-0 top-10 z-50 w-[200px] rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#111111]">
           {/* Поиск */}
-          <div className="p-2 border-b border-gray-100 dark:border-gray-800">
+          <div className="p-2 border-b border-gray-100 dark:border-[#333333]">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
               <input
@@ -127,7 +127,7 @@ function SearchableDropdown({
           </div>
 
           {selected.length > 0 && (
-            <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+            <div className="border-t border-gray-100 px-3 py-2 dark:border-[#333333]">
               <button onClick={onClear} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">
                 {t('filter_reset_all')}
               </button>
@@ -274,7 +274,7 @@ export function SupplierFilters({
               })}
             </div>
             {bonusFilter.length > 0 && (
-              <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+              <div className="border-t border-gray-100 px-3 py-2 dark:border-[#333333]">
                 <button onClick={() => onBonus([])} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">
                   {t('filter_reset_all')}
                 </button>

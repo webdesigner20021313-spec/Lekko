@@ -182,7 +182,7 @@ function FiltersBar({
               })}
             </div>
             {selected.length > 0 && (
-              <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+              <div className="border-t border-gray-100 px-3 py-2 dark:border-[#333333]">
                 <button onClick={onClear} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">{t('filter_reset')}</button>
               </div>
             )}
@@ -215,7 +215,7 @@ function FiltersBar({
         </button>
         {openMnn && (
           <div className="absolute left-0 top-10 z-50 w-56 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#111111]">
-            <div className="border-b border-gray-100 p-2 dark:border-gray-800">
+            <div className="border-b border-gray-100 p-2 dark:border-[#333333]">
               <div className="relative">
                 <svg className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                 <input
@@ -254,7 +254,7 @@ function FiltersBar({
               )}
             </div>
             {mnnFilter.length > 0 && (
-              <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+              <div className="border-t border-gray-100 px-3 py-2 dark:border-[#333333]">
                 <button onClick={() => onMnn([])} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">{t('filter_reset_all')}</button>
               </div>
             )}
@@ -289,7 +289,7 @@ function FiltersBar({
               )
             })}
             {bonusFilter.length > 0 && (
-              <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+              <div className="border-t border-gray-100 px-3 py-2 dark:border-[#333333]">
                 <button onClick={() => onBonus([])} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">{t('filter_reset')}</button>
               </div>
             )}
@@ -667,7 +667,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
                   : null
 
                 return (
-                  <tr key={offer.id} className="group border-b border-gray-100 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800">
+                  <tr key={offer.id} className="group border-b border-gray-100 transition-colors hover:bg-gray-50 dark:border-[#333333] dark:hover:bg-gray-800">
                     <td style={{ ...tdBase, borderRight: '1px solid var(--table-cell-border)' }}>
                       <div style={cellDiv({ alignItems: 'center' })}>
                         <span className="text-xs text-gray-400">{index + 1}</span>

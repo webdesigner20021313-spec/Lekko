@@ -463,7 +463,7 @@ function DistributorCard({
                 </button>
                 {isOrderActive && !isCancelled && (
                   <>
-                    <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
+                    <div className="my-1 border-t border-gray-100 dark:border-[#333333]" />
                     <button
                       onClick={() => { onCancelOrder(); setShowMenu(false) }}
                       className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
@@ -506,7 +506,7 @@ function DistributorCard({
             </thead>
             <tbody>
               {group.items.map(item => (
-                <tr key={item.id} className="border-b border-gray-100 transition-colors hover:bg-gray-50/50 dark:border-gray-800 dark:hover:bg-gray-800">
+                <tr key={item.id} className="border-b border-gray-100 transition-colors hover:bg-gray-50/50 dark:border-[#333333] dark:hover:bg-gray-800">
                   <td className="px-5 py-3.5">
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.medicineName}</p>
                   </td>

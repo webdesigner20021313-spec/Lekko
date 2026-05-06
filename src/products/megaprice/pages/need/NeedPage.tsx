@@ -379,7 +379,7 @@ function OffersModal({ item, currentOfferId, onSelectOffer, onClose }: {
                     <tr key={offer.id}
                       onClick={() => { onSelectOffer(offer); onClose() }}
                       className={cn(
-                        'cursor-pointer border-b border-gray-100 last:border-0 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800',
+                        'cursor-pointer border-b border-gray-100 last:border-0 transition-colors hover:bg-gray-50 dark:border-[#333333] dark:hover:bg-gray-800',
                         isBest && !isSelected ? 'bg-green-50 dark:bg-green-900/20' : 'bg-white dark:bg-[#111111]',
                       )}>
                       <td className="px-3 py-3">
@@ -515,7 +515,7 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
 
         <div className="mx-4 mt-6 grid grid-cols-3 gap-2">
           {metrics.map(({ label, value, color }) => (
-            <div key={label} className="rounded-lg border border-gray-100 bg-gray-50 p-2 dark:border-gray-800 dark:bg-gray-800">
+            <div key={label} className="rounded-lg border border-gray-100 bg-gray-50 p-2 dark:border-[#333333] dark:bg-gray-800">
               <p className="text-xs font-normal text-gray-400 dark:text-gray-500">{label}</p>
               <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100" style={color ? { color } : undefined}>{value}</p>
             </div>
@@ -589,7 +589,7 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
                   const phStyle = STATUS_STYLE[ph.status]
                   return (
                     <tr key={ph.id}
-                      className={cn('border-b border-gray-100 last:border-0 dark:border-gray-800', idx % 2 === 1 ? 'bg-gray-50/50 dark:bg-gray-800/50' : 'bg-white dark:bg-[#111111]')}>
+                      className={cn('border-b border-gray-100 last:border-0 dark:border-[#333333]', idx % 2 === 1 ? 'bg-gray-50/50 dark:bg-gray-800/50' : 'bg-white dark:bg-[#111111]')}>
                       <td className="px-3 py-2.5">
                         <p className="truncate text-xs font-medium text-gray-800 dark:text-gray-300" style={{ maxWidth: 130 }}>{ph.name}</p>
                       </td>
@@ -856,7 +856,7 @@ function AIAdviceModal({ item, onClose }: { item: NeedItem; onClose: () => void 
         style={{ maxHeight: '88vh' }}
         onClick={e => e.stopPropagation()}
       >
-        <div className="shrink-0 flex items-center justify-between gap-3 px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+        <div className="shrink-0 flex items-center justify-between gap-3 px-5 py-4 border-b border-gray-100 dark:border-[#333333]">
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-900 dark:bg-gray-700">
               <Sparkles className="h-3.5 w-3.5 text-white" />
@@ -881,7 +881,7 @@ function AIAdviceModal({ item, onClose }: { item: NeedItem; onClose: () => void 
               <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{t('need_ai_ok_desc')}</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <div className="divide-y divide-gray-100 dark:divide-[#333333]">
               {recs.map((rec) => {
                 const sev = SEV_STYLE[rec.severity]
                 return (
@@ -906,7 +906,7 @@ function AIAdviceModal({ item, onClose }: { item: NeedItem; onClose: () => void 
                         </p>
                       )}
                       {rec.tableRows && rec.tableRows.length > 0 && (
-                        <div className="mb-4 overflow-hidden rounded-lg border border-gray-100 dark:border-gray-800">
+                        <div className="mb-4 overflow-hidden rounded-lg border border-gray-100 dark:border-[#333333]">
                           {rec.tableHeaders && (
                             <div className="grid grid-cols-3 bg-gray-50 px-3 py-1.5 border-b border-gray-100 dark:bg-gray-800 dark:border-gray-700">
                               {rec.tableHeaders.map((h, hi) => (
@@ -915,7 +915,7 @@ function AIAdviceModal({ item, onClose }: { item: NeedItem; onClose: () => void 
                             </div>
                           )}
                           {rec.tableRows.map((row, ri) => (
-                            <div key={ri} className={cn('grid grid-cols-3 px-3 py-2 bg-white dark:bg-[#111111]', ri < rec.tableRows!.length - 1 && 'border-b border-gray-100 dark:border-gray-800')}>
+                            <div key={ri} className={cn('grid grid-cols-3 px-3 py-2 bg-white dark:bg-[#111111]', ri < rec.tableRows!.length - 1 && 'border-b border-gray-100 dark:border-[#333333]')}>
                               <p className="truncate text-xs font-medium text-gray-700 dark:text-gray-300">{row[0]}</p>
                               <p className="text-right text-xs text-gray-500 dark:text-gray-400">{row[1]}</p>
                               <p className="text-right text-xs font-semibold text-gray-900 dark:text-gray-100">{row[2]}</p>
@@ -942,7 +942,7 @@ function AIAdviceModal({ item, onClose }: { item: NeedItem; onClose: () => void 
           )}
         </div>
 
-        <div className="shrink-0 border-t border-gray-100 bg-white px-5 py-3 dark:border-gray-800 dark:bg-[#111111]">
+        <div className="shrink-0 border-t border-gray-100 bg-white px-5 py-3 dark:border-[#333333] dark:bg-[#111111]">
           <button onClick={onClose} className="h-10 w-full rounded-lg bg-gray-900 text-sm font-semibold text-white transition-all duration-200 hover:bg-black dark:bg-gray-700 dark:hover:bg-gray-600">
             {t('need_ai_ok_btn')}
           </button>
@@ -1381,7 +1381,7 @@ export function NeedPage() {
                   )
                 })}
                 {selectedPharmacyIds.length > 0 && (
-                  <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+                  <div className="border-t border-gray-100 px-3 py-2 dark:border-[#333333]">
                     <button onClick={() => setSelectedPharmacyIds([])} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
                       {t('filter_reset_all')}
                     </button>
@@ -1466,7 +1466,7 @@ export function NeedPage() {
                     ))}
                   </div>
                   {period === 'custom' && (
-                    <div className="border-t border-gray-100 px-3 py-3 dark:border-gray-800">
+                    <div className="border-t border-gray-100 px-3 py-3 dark:border-[#333333]">
                       <RangeCalendar from={customFrom} to={customTo} onChange={(f, t) => { setCustomFrom(f); setCustomTo(t) }} />
                       <button
                         disabled={!customFrom || !customTo}
@@ -1614,7 +1614,7 @@ export function NeedPage() {
                   return (
                     <tr key={item.id}
                       onClick={() => setDrawerItem(isOpen ? null : item)}
-                      className="group cursor-pointer border-b border-gray-100 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800"
+                      className="group cursor-pointer border-b border-gray-100 transition-colors hover:bg-gray-50 dark:border-[#333333] dark:hover:bg-gray-800"
                       style={{ background: isOpen ? 'var(--need-open-row-bg)' : (cfg.rowBg ? 'var(--need-oos-row-bg)' : undefined) }}>
 
                       <td style={{ padding: 0, position: 'relative', borderRight: '1px solid var(--table-cell-border)' }}

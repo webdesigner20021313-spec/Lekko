@@ -96,7 +96,7 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
         </div>
 
         <div className="px-6 pb-4">
-          <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:divide-gray-800 dark:border-gray-700 dark:bg-gray-800">
+          <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:divide-[#333333] dark:border-gray-700 dark:bg-gray-800">
             <div className="flex items-center justify-between px-4 py-3">
               <span className="text-sm text-gray-500 dark:text-gray-400">{t('cart_success_order_num')}</span>
               <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{orderNum}</span>
@@ -121,7 +121,7 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
             {payload.groups.map((group, idx) => (
               <div
                 key={group.id}
-                className={cn('grid grid-cols-[1fr_auto] items-center bg-white px-4 py-3 dark:bg-[#111111]', idx !== payload.groups.length - 1 && 'border-b border-gray-100 dark:border-gray-800')}
+                className={cn('grid grid-cols-[1fr_auto] items-center bg-white px-4 py-3 dark:bg-[#111111]', idx !== payload.groups.length - 1 && 'border-b border-gray-100 dark:border-[#333333]')}
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{group.name}</p>
@@ -464,7 +464,7 @@ export function CartPage() {
                           <tr
                             key={item.offerId}
                             className={cn(
-                              'border-b border-gray-100 transition-colors duration-100 dark:border-gray-800',
+                              'border-b border-gray-100 transition-colors duration-100 dark:border-[#333333]',
                               isChecked ? 'bg-gray-50 dark:bg-gray-800' : 'bg-white hover:bg-gray-50 dark:bg-[#111111] dark:hover:bg-gray-800',
                             )}
                           >
@@ -614,7 +614,7 @@ export function CartPage() {
                             <p className="text-[11px] text-gray-400 dark:text-gray-500">{t('cart_group_pos_qty', { pos: g.items.length, qty: g.qty })}</p>
                           </div>
                         </div>
-                        <div className="divide-y divide-gray-100 bg-white dark:divide-gray-800 dark:bg-[#111111]">
+                        <div className="divide-y divide-gray-100 bg-white dark:divide-[#333333] dark:bg-[#111111]">
                           {g.items.map(item => (
                             <div key={item.offerId} className="flex items-center gap-2 px-3 py-1.5">
                               <p className="min-w-0 flex-1 truncate text-xs text-gray-600 dark:text-gray-400">

@@ -107,7 +107,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
                 )
               })}
               {cityFilter.length > 0 && (
-                <div className="border-t border-gray-100 px-3 py-2 dark:border-gray-800">
+                <div className="border-t border-gray-100 px-3 py-2 dark:border-[#333333]">
                   <button onClick={() => setCityFilter([])} className="text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400">
                     {t('filter_reset')}
                   </button>
@@ -166,7 +166,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
                     key={dist.id}
                     onClick={() => onSelect(dist)}
                     className={cn(
-                      'cursor-pointer border-b border-gray-100 transition-colors dark:border-gray-800',
+                      'cursor-pointer border-b border-gray-100 transition-colors dark:border-[#333333]',
                       isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                     )}
                   >

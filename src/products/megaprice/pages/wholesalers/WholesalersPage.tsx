@@ -231,7 +231,7 @@ export function WholesalersPage() {
                   <th className="px-4 py-3.5 w-12" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              <tbody className="divide-y divide-gray-100 dark:divide-[#333333]">
                 {filtered.map((w, idx) => (
                   <tr key={w.id} className="h-14 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
 

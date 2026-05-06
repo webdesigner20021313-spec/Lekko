@@ -195,7 +195,7 @@ export function RoleEditModal({ open, roleId, onClose }: Props) {
                             ))}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+                        <tbody className="divide-y divide-gray-50 dark:divide-[#333333]">
                           {config.sections.map((sec) => {
                             const acc = proj.sections[sec.id] ?? buildEmptySectionAccess()
                             return (

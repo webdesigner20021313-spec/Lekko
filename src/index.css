@@ -14,9 +14,9 @@
 
 .dark {
   --table-header-bg: #1f2937;
-  --table-border: #374151;
+  --table-border: #333333;
   --table-row-bg: #111111;
-  --table-cell-border: #1f2937;
+  --table-cell-border: #333333;
   --selection-indicator: #93C5FD;
   --need-open-row-bg: #1f2937;
   --need-oos-row-bg: transparent;

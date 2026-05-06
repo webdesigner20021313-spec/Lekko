@@ -94,7 +94,7 @@ export function Header() {
   const langLabels: Record<string, string> = { uz: 'UZ', ru: 'RU' }
 
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6 dark:border-gray-800 dark:bg-[#111111]">
+    <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6 dark:border-[#333333] dark:bg-[#111111]">
       {/* Left */}
       <div className="flex items-center gap-4">
         <div
@@ -224,7 +224,7 @@ export function Header() {
 
           {showNotifications && (
             <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[360px] rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#111111]">
-              <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+              <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-[#333333]">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t('notifications')}</h3>
                   {unread > 0 && (
@@ -279,7 +279,7 @@ export function Header() {
                 ))}
               </div>
 
-              <div className="border-t border-gray-100 px-4 py-2.5 dark:border-gray-800">
+              <div className="border-t border-gray-100 px-4 py-2.5 dark:border-[#333333]">
                 <button className="text-xs font-medium text-[#3872FA] hover:underline">
                   {t('all_notifications')}
                 </button>
@@ -308,7 +308,7 @@ export function Header() {
 
           {showProfile && (
             <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[220px] rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
-              <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+              <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3 dark:border-[#333333]">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white dark:bg-white dark:text-gray-900">
                   {user.avatar}
                 </div>
@@ -318,7 +318,7 @@ export function Header() {
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 py-1 dark:border-gray-800">
+              <div className="border-t border-gray-100 py-1 dark:border-[#333333]">
                 <button
                   onClick={() => {
                     setShowProfile(false)

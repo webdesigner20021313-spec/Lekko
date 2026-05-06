@@ -224,7 +224,7 @@ export function OrderHistoryPage() {
                   <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('orders_col_status')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              <tbody className="divide-y divide-gray-100 dark:divide-[#333333]">
                 {filteredOrders.map((order, idx) => {
                   const totalItems  = order.groups.reduce((s, g) => s + g.items.length, 0)
                   const isChecked   = checked.includes(order.id)
@@ -299,7 +299,7 @@ export function OrderHistoryPage() {
               </tbody>
             </table>
 
-            <div className="border-t border-gray-100 bg-gray-50 px-4 py-2 dark:border-gray-800 dark:bg-gray-800">
+            <div className="border-t border-gray-100 bg-gray-50 px-4 py-2 dark:border-[#333333] dark:bg-gray-800">
               <p className="text-xs text-gray-400 dark:text-gray-500">
                 {checked.length > 0
                   ? t('orders_selected_n_of_m', { n: checked.length, m: filteredOrders.length })

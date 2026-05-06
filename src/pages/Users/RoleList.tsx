@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Pencil, Trash2 } from 'lucide-react'
+import { useUsersStore } from '@/pages/Users/stores/useUsersStore'
 import { PROJECTS_CONFIG, PORTAL_SECTIONS_CONFIG } from './types/users.types'
 import { ConfirmDeleteModal } from './ConfirmDeleteModal'
 import { RoleEditModal } from './RoleEditModal'
@@ -52,10 +53,10 @@ export function RoleList() {
 
   return (
     <>
-      <div className="overflow-hidden border-b border-gray-200 dark:border-gray-700">
+      <div className="overflow-hidden border-b border-gray-200 dark:border-[#333333]">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <tr className="border-b border-gray-200 dark:border-[#333333] bg-gray-50 dark:bg-gray-800">
               <th className="w-10 px-4 py-3 text-center text-xs font-semibold text-gray-400">#</th>
               <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('roles_col_name')}</th>
               <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('roles_col_sections')}</th>
@@ -64,7 +65,7 @@ export function RoleList() {
               <th className="w-20 px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+          <tbody className="divide-y divide-gray-100 dark:divide-[#333333]">
             {roles.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-16 text-center text-sm text-gray-400">{t('roles_empty')}</td>

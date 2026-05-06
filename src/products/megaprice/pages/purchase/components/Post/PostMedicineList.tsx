@@ -307,7 +307,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                     key={row.id}
                     onClick={() => onSelect(isSelected ? null : row.medicine)}
                     className={cn(
-                      'group cursor-pointer border-b border-gray-100 transition-colors dark:border-gray-800',
+                      'group cursor-pointer border-b border-gray-100 transition-colors dark:border-[#333333]',
                       isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white hover:bg-gray-50 dark:bg-[#111111] dark:hover:bg-gray-800',
                     )}
                   >

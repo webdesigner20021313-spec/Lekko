@@ -351,7 +351,7 @@ export function ExcelUploadView({
                       </thead>
                       <tbody>
                         {preview.map((row, ri) => (
-                          <tr key={ri} className="border-b border-gray-100 last:border-0 dark:border-gray-800">
+                          <tr key={ri} className="border-b border-gray-100 last:border-0 dark:border-[#333333]">
                             {activeCols.map(ci => (
                               <td key={ci} className="max-w-[160px] truncate whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-400">
                                 {String((row as unknown[])[ci] ?? '')}
@@ -429,7 +429,7 @@ export function ExcelUploadView({
       )}
 
       {/* Medicine list */}
-      <div className="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+      <div className="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-[#333333]">
         {medicines.map(medicine => {
           const isSelected  = medicine.id === selectedId
           const isChecked   = checkedIds.includes(medicine.id)

@@ -34,7 +34,7 @@ export function UserList({ onEditUser }: Props) {
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+          <tbody className="divide-y divide-gray-100 dark:divide-[#333333]">
             {users.length === 0 ? (
               <tr>
                 <td colSpan={7} className="py-16 text-center text-sm text-gray-400">
