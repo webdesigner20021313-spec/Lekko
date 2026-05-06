@@ -118,7 +118,7 @@ function getMultiPharmacyItems(ids: string[]): NeedItem[] {
       status,
       optimalStock:      Math.max(1, Math.round(item.optimalStock * salesRatio)),
       lostRevenuePerDay: status === 'oos' ? item.lostRevenuePerDay * salesRatio : 0,
-      frozenAmount:      (status === 'overstock' || status === 'dead')
+      frozenAmount:      (status === 'overstock')
         ? item.frozenAmount * (item.stock > 0 ? stockSum / item.stock : 0)
         : 0,
       recommendedQty:    Math.max(0, Math.ceil(salesSum * 7) - stockSum),

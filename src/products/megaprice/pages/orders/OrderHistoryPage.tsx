@@ -170,7 +170,6 @@ export function OrderHistoryPage() {
             { status: 'completed' as OrderStatus, label: 'Завершённые' },
             { status: 'cancelled' as OrderStatus, label: 'Отменённые' },
           ] as const).map(({ status, label }) => {
-            const { bg, text } = ORDER_STATUS_CONFIG[status]
             const { count, total } = stats[status]
             const isActive = statusFilter === status
             return (
