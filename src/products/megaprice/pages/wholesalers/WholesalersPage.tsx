@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
-import { Search, Package, Pencil, Send, Phone, X, Percent } from 'lucide-react'
+import { Search, Package, Pencil, Send, Phone, X, Percent, Plus } from 'lucide-react'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency } from '@/shared/utils/format'
 import { mockWholesalers, type Wholesaler } from '@/products/megaprice/mocks/wholesalers.mocks'
@@ -113,32 +113,38 @@ function DiscountModal({ wholesaler, initialValue, onSave, onRemove, onClose }: 
   )
 }
 
-// ─── Discount Cell ────────────────────────────────────────────────────────────
+// ─── Discount Cells ───────────────────────────────────────────────────────────
 
-function DiscountCell({ wholesaler, onOpen }: { wholesaler: Wholesaler; onOpen: () => void }) {
+function DiscountValueCell({ wholesaler }: { wholesaler: Wholesaler }) {
   if (wholesaler.discountPercent !== null) {
     return (
-      <div className="flex items-center gap-2">
-        <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700">
-          −{wholesaler.discountPercent}%
-        </span>
-        <button
-          onClick={onOpen}
-          className="flex h-6 w-6 items-center justify-center rounded text-gray-500 hover:text-gray-800 transition-colors"
-          title="Изменить скидку"
-        >
-          <Pencil className="h-3 w-3" />
-        </button>
-      </div>
+      <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700">
+        −{wholesaler.discountPercent}%
+      </span>
     )
   }
+  return <span className="text-sm text-gray-300">—</span>
+}
 
+function DiscountActionCell({ wholesaler, onOpen }: { wholesaler: Wholesaler; onOpen: () => void }) {
+  if (wholesaler.discountPercent !== null) {
+    return (
+      <button
+        onClick={onOpen}
+        className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-800 transition-colors"
+        title="Изменить скидку"
+      >
+        <Pencil className="h-3.5 w-3.5" />
+      </button>
+    )
+  }
   return (
     <button
       onClick={onOpen}
-      className="text-xs text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+      className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-800 transition-colors"
+      title="Добавить скидку"
     >
-      + Добавить скидку
+      <Plus className="h-3.5 w-3.5" />
     </button>
   )
 }
@@ -236,7 +242,8 @@ export function WholesalersPage() {
                   <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500">Телеграм</th>
                   <th className="px-4 py-3.5 text-right text-xs font-semibold uppercase text-gray-500">Мин. заказ</th>
                   <th className="px-4 py-3.5 text-center text-xs font-semibold uppercase text-gray-500">Доставка</th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500" style={{ minWidth: 160 }}>Моя скидка</th>
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500">Моя скидка</th>
+                  <th className="px-4 py-3.5 w-12" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -282,10 +289,10 @@ export function WholesalersPage() {
                     </td>
 
                     <td className="px-4 py-3.5">
-                      <DiscountCell
-                        wholesaler={w}
-                        onOpen={() => setModalWholesaler(w)}
-                      />
+                      <DiscountValueCell wholesaler={w} />
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <DiscountActionCell wholesaler={w} onOpen={() => setModalWholesaler(w)} />
                     </td>
 
                   </tr>
