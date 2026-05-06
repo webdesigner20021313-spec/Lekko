@@ -137,7 +137,7 @@ function StandaloneSidebar({ productId }: { productId: ProductId }) {
   }))
 
   return (
-    <aside className="flex h-screen w-[140px] shrink-0 flex-col bg-black">
+    <aside className="flex h-screen w-[140px] shrink-0 flex-col bg-[#1C1917] dark:bg-black">
       <div className="flex h-16 shrink-0 items-center justify-center border-b border-white/10" />
 
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3">
@@ -237,7 +237,7 @@ function PortalSidebar() {
   return (
     <aside className="flex h-screen shrink-0">
       {/* Outer icon column */}
-      <div className="flex w-[96px] shrink-0 flex-col bg-black">
+      <div className="flex w-[96px] shrink-0 flex-col bg-[#1C1917] dark:bg-black">
         <div className="flex h-16 shrink-0 items-center justify-center border-b border-white/10">
           <button
             type="button"
@@ -304,7 +304,7 @@ function PortalSidebar() {
 
       {/* Expanded sub-items panel */}
       {collapsed ? null : (
-        <div className="flex w-[200px] shrink-0 flex-col border-r border-white/10 bg-[#111111]">
+        <div className="flex w-[200px] shrink-0 flex-col border-r border-white/10 bg-[#1C1917] dark:bg-[#111111]">
           <div className="flex h-16 shrink-0 items-center gap-2 px-3">
             <span className="flex-1 text-[15px] font-semibold text-white">{getCategoryLabel(expanded)}</span>
             {expanded.domain && (
