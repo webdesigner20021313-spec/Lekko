@@ -11,11 +11,10 @@ interface DiscountModalProps {
   wholesaler: Wholesaler
   initialValue: string
   onSave: (value: string) => void
-  onRemove: () => void
   onClose: () => void
 }
 
-function DiscountModal({ wholesaler, initialValue, onSave, onRemove, onClose }: DiscountModalProps) {
+function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountModalProps) {
   const [value, setValue] = useState(initialValue)
   const inputRef = useRef<HTMLInputElement>(null)
   const isEdit = wholesaler.discountPercent !== null
@@ -86,12 +85,6 @@ function DiscountModal({ wholesaler, initialValue, onSave, onRemove, onClose }: 
 
         {/* Footer */}
         <div className="flex items-center gap-2 border-t border-gray-100 px-5 py-4">
-          {isEdit && (
-            <button onClick={onRemove}
-              className="mr-auto text-xs text-red-500 hover:text-red-600 transition-colors">
-              Удалить скидку
-            </button>
-          )}
           <button onClick={onClose}
             className="ml-auto rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
             Отмена
@@ -182,11 +175,6 @@ export function WholesalersPage() {
     setModalWholesaler(null)
   }, [modalWholesaler, setDiscount])
 
-  const handleRemove = useCallback(() => {
-    if (!modalWholesaler) return
-    setDiscount(modalWholesaler.name, null)
-    setModalWholesaler(null)
-  }, [modalWholesaler, setDiscount])
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-white">
@@ -309,7 +297,6 @@ export function WholesalersPage() {
           wholesaler={modalWholesaler}
           initialValue={modalWholesaler.discountPercent !== null ? String(modalWholesaler.discountPercent) : ''}
           onSave={handleSave}
-          onRemove={handleRemove}
           onClose={() => setModalWholesaler(null)}
         />
       )}
