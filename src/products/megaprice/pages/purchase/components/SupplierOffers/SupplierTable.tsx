@@ -149,7 +149,7 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
         style={{ ...thBase, ...borderStyle, cursor: 'grab' }}
       >
         <span className="text-xs font-semibold uppercase tracking-wide text-gray-500" style={{ paddingRight: 8 }}>
-          {COL_LABELS[key]}
+          {colLabel(key)}
         </span>
         <ResizeHandle onMouseDown={(e) => { e.stopPropagation(); startResize(e, key) }} />
       </th>
