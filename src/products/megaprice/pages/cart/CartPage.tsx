@@ -604,7 +604,7 @@ export function CartPage() {
                   <div className="space-y-3">
                     {invoiceGroups.map(g => (
                       <div key={g.id} className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800">
+                        <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-[#222222]">
                           <div className="min-w-0">
                             <p className="truncate text-xs font-semibold text-gray-900 dark:text-gray-100">{g.name}</p>
                             <p className="text-[11px] text-gray-400 dark:text-gray-500">{g.city}</p>
