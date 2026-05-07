@@ -57,11 +57,11 @@ export function RoleList() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200 dark:border-[#333333] bg-gray-50 dark:bg-[#222222]">
-              <th className="w-10 px-4 py-3 text-center text-xs font-semibold text-gray-400">#</th>
-              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('roles_col_name')}</th>
-              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('roles_col_sections')}</th>
-              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('roles_col_perms')}</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">{t('roles_col_users')}</th>
+              <th className="w-10 px-4 py-3 text-center text-xs font-semibold text-gray-400 dark:text-[#929292]">#</th>
+              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('roles_col_name')}</th>
+              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('roles_col_sections')}</th>
+              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('roles_col_perms')}</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('roles_col_users')}</th>
               <th className="w-20 px-4 py-3" />
             </tr>
           </thead>
@@ -74,7 +74,7 @@ export function RoleList() {
               roles.map((role, idx) => {
                 const { sections, perms } = getActiveLabels(role, t)
                 return (
-                  <tr key={role.id} className="bg-white dark:bg-[#111111] transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr key={role.id} className="bg-white dark:bg-[#111111] transition-colors hover:bg-gray-50 dark:hover:bg-[#222222]">
                     <td className="px-4 py-3 text-center text-xs text-gray-400">{idx + 1}</td>
                     <td className="px-4 py-3">
                       <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{role.name}</span>
@@ -82,7 +82,7 @@ export function RoleList() {
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
                         {sections.length > 0 ? sections.map((s) => (
-                          <span key={s} className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300">{s}</span>
+                          <span key={s} className="inline-flex items-center rounded-full bg-gray-100 dark:bg-[#222222] px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300">{s}</span>
                         )) : (
                           <span className="text-xs text-gray-400">{t('roles_no_access')}</span>
                         )}
@@ -91,7 +91,7 @@ export function RoleList() {
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
                         {perms.length > 0 ? perms.map((p) => (
-                          <span key={p} className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300">{p}</span>
+                          <span key={p} className="inline-flex items-center rounded-full bg-gray-100 dark:bg-[#222222] px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300">{p}</span>
                         )) : (
                           <span className="text-xs text-gray-400">—</span>
                         )}
@@ -102,7 +102,7 @@ export function RoleList() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => setEditRoleId(role.id)}
-                          className="rounded p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
+                          className="rounded p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-[#222222] hover:text-gray-600 dark:hover:text-gray-300"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>

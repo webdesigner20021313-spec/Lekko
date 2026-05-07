@@ -65,7 +65,7 @@ function ResizeHandle({ onMouseDown }: { onMouseDown: (e: React.MouseEvent) => v
 }
 
 function SortIcon({ field, sortField, sortDir }: { field: SortField; sortField: SortField | null; sortDir: SortDirection }) {
-  if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+  if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 text-gray-400 dark:text-[#929292]" />
   if (sortDir === 'asc')   return <ArrowUp    className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
   return                          <ArrowDown   className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
 }
@@ -157,8 +157,8 @@ function FiltersBar({
       <div ref={r} className="relative">
         <button onClick={onToggle} className={cn(
           'flex h-9 w-[180px] items-center justify-between gap-1.5 rounded-lg border px-3 text-sm transition-colors',
-          open ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
-            : count > 0 ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+          open ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-[#222222] dark:text-gray-100'
+            : count > 0 ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-[#222222] dark:text-gray-200'
             : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
         )}>
           <span className="truncate">{count > 0 ? `${label} · ${count}` : label}</span>
@@ -206,8 +206,8 @@ function FiltersBar({
       <div ref={mnnRef} className="relative">
         <button onClick={() => setOpenMnn(v => !v)} className={cn(
           'flex h-9 w-[180px] items-center justify-between gap-1.5 rounded-lg border px-3 text-sm transition-colors',
-          openMnn ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
-            : mnnFilter.length > 0 ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+          openMnn ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-[#222222] dark:text-gray-100'
+            : mnnFilter.length > 0 ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-[#222222] dark:text-gray-200'
             : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
         )}>
           <span className="truncate">{mnnFilter.length > 0 ? `${t('filter_mnn')} · ${mnnFilter.length}` : t('filter_mnn')}</span>
@@ -225,7 +225,7 @@ function FiltersBar({
                   onChange={(e) => setMnnSearch(e.target.value)}
                   placeholder={t('filter_search_inner')}
                   onClick={(e) => e.stopPropagation()}
-                  className="h-8 w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-7 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500 dark:focus:bg-gray-800"
+                  className="h-8 w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-7 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 focus:bg-white dark:border-gray-700 dark:bg-[#222222] dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500 dark:focus:bg-gray-800"
                 />
                 {mnnSearch && (
                   <button onClick={(e) => { e.stopPropagation(); setMnnSearch('') }} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
@@ -236,7 +236,7 @@ function FiltersBar({
             </div>
             <div className="max-h-52 overflow-y-auto py-1">
               {mnns.filter(m => m.toLowerCase().includes(mnnSearch.toLowerCase())).length === 0 ? (
-                <p className="px-3 py-3 text-xs text-gray-400 dark:text-gray-500">{t('filter_nothing_found')}</p>
+                <p className="px-3 py-3 text-xs text-gray-400 dark:text-[#929292]">{t('filter_nothing_found')}</p>
               ) : (
                 mnns.filter(m => m.toLowerCase().includes(mnnSearch.toLowerCase())).map((m) => {
                   const checked = mnnFilter.includes(m)
@@ -266,8 +266,8 @@ function FiltersBar({
       <div ref={bonusRef} className="relative">
         <button onClick={() => setOpenBonus((v) => !v)} className={cn(
           'flex h-9 w-[180px] items-center justify-between gap-1.5 rounded-lg border px-3 text-sm transition-colors',
-          openBonus ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
-            : bonusFilter.length ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+          openBonus ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-[#222222] dark:text-gray-100'
+            : bonusFilter.length ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-[#222222] dark:text-gray-200'
             : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
         )}>
           <span className="truncate">{bonusFilter.length ? `${t('filter_bonuses')} · ${bonusFilter.length}` : t('filter_bonuses')}</span>
@@ -315,7 +315,7 @@ function FiltersBar({
         </button>
         {openCols && (
           <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
-            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{t('filter_columns_header')}</p>
+            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('filter_columns_header')}</p>
             {columnOptions.map((col) => {
               const checked = visibleColumns[col.key]
               return (
@@ -481,7 +481,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
       return (
         <th key={key} {...dragProps} style={baseStyle} onClick={() => handleSort(field)}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, paddingRight: 8, cursor: 'pointer' }}>
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{getColLabel(key)}</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">{getColLabel(key)}</span>
             <SortIcon field={field} sortField={sortField} sortDir={sortDir} />
           </span>
           <ResizeHandle onMouseDown={(e) => { e.stopPropagation(); startResize(e, colKey) }} />
@@ -491,7 +491,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
 
     return (
       <th key={key} {...dragProps} style={baseStyle}>
-        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500" style={{ paddingRight: 8 }}>
+        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]" style={{ paddingRight: 8 }}>
           {getColLabel(key)}
         </span>
         <ResizeHandle onMouseDown={(e) => { e.stopPropagation(); startResize(e, colKey) }} />
@@ -507,7 +507,7 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
           <td key="medicine" style={tdBase}>
             <div style={cellDiv()}>
               <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{medicine.name}</p>
-              <p className="truncate text-xs text-gray-400 dark:text-gray-500">{medicine.mnn}</p>
+              <p className="truncate text-xs text-gray-400 dark:text-[#929292]">{medicine.mnn}</p>
             </div>
           </td>
         )
@@ -587,12 +587,12 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
   if (!distributor) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-        <div className="rounded-xl bg-gray-100 p-5 dark:bg-gray-800">
-          <Package className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+        <div className="rounded-xl bg-gray-100 p-5 dark:bg-[#222222]">
+          <Package className="h-10 w-10 text-gray-400 dark:text-[#929292]" />
         </div>
         <div>
           <p className="text-base font-medium text-gray-700 dark:text-gray-300">{t('select_distributor_title')}</p>
-          <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">{t('select_from_left')}</p>
+          <p className="mt-1 text-sm text-gray-400 dark:text-[#929292]">{t('select_from_left')}</p>
         </div>
       </div>
     )
@@ -631,14 +631,14 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
             <thead>
               <tr style={{ height: 48 }}>
                 <th style={{ ...thBase, textAlign: 'center', borderRight: '1px solid var(--table-border)' }}>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">№</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">№</span>
                 </th>
 
                 {visibleOrder.map((k) => renderTh(k))}
 
                 {col.quantity && (
                   <th style={{ position: 'sticky', top: 0, right: 0, zIndex: 4, background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)', borderLeft: '1px solid var(--table-border)', padding: '10px 16px', whiteSpace: 'nowrap' }}>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{t('col_quantity')}</span>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">{t('col_quantity')}</span>
                   </th>
                 )}
               </tr>

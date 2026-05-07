@@ -22,14 +22,14 @@ function SuccessModal({ roleName, onClose }: SuccessModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm px-4"
          style={{ paddingTop: 80 }}>
-      <div className="flex w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-xl">
+      <div className="flex w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white dark:bg-[#222222] shadow-xl">
         <div className="flex flex-col items-center px-6 pt-8 pb-6 text-center">
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
             <CheckCircle2 className="h-7 w-7 text-green-600" />
           </div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Роль успешно создана</h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Новая роль добавлена в систему</p>
-          <div className="mt-4 w-full flex items-center gap-3 rounded-xl bg-gray-50 dark:bg-gray-700 px-4 py-3 text-left">
+          <p className="mt-1 text-sm text-gray-500 dark:text-[#929292]">Новая роль добавлена в систему</p>
+          <div className="mt-4 w-full flex items-center gap-3 rounded-xl bg-gray-50 dark:bg-[#333333] px-4 py-3 text-left">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-900">
               <ShieldCheck className="h-4 w-4 text-white" />
             </div>
@@ -147,7 +147,7 @@ export function RoleCreatePage() {
           <div className="px-6 pt-5 pb-0">
             <button
               onClick={() => navigate('/users/roles')}
-              className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-[#929292] hover:text-gray-700 dark:hover:text-gray-300"
             >
               <ArrowLeft className="h-4 w-4" />
               Назад к ролям
@@ -158,7 +158,7 @@ export function RoleCreatePage() {
 
             <div className="mb-6">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Создание роли</h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Настройте доступы для новой роли</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-[#929292]">Настройте доступы для новой роли</p>
             </div>
 
             {/* Role name */}
@@ -171,7 +171,7 @@ export function RoleCreatePage() {
                 autoFocus
                 onChange={(e) => { setName(e.target.value); setNameError('') }}
                 className={cn(
-                  'h-10 w-full rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                  'h-10 w-full rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-[#222222] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
                   nameError ? 'border-red-300 focus:border-red-400' : 'border-gray-200 dark:border-gray-600 focus:border-gray-400',
                 )}
               />
@@ -193,7 +193,7 @@ export function RoleCreatePage() {
                 return (
                   <div key={config.id} className={cn(
                     'overflow-hidden rounded-xl border transition-colors',
-                    proj.enabled ? 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800' : 'border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/40'
+                    proj.enabled ? 'border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222]' : 'border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-[#222222]/40'
                   )}>
                     <div className="flex items-center gap-3 px-4 py-3">
                       <div className="flex-1">
@@ -224,7 +224,7 @@ export function RoleCreatePage() {
                       <div className="border-t border-gray-100 dark:border-gray-700">
                         <table className="w-full">
                           <thead>
-                            <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/50">
+                            <tr className="border-b border-gray-100 dark:border-[#333333] bg-gray-50/50 dark:bg-[#1a1a1a]">
                               <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-400">Раздел</th>
                               {PERMS.map((p) => (
                                 <th key={p} className="px-3 py-2 text-center text-[11px] font-semibold text-gray-400">{PERMISSION_LABELS[p]}</th>
@@ -242,12 +242,12 @@ export function RoleCreatePage() {
                                         onClick={() => toggleSectionEnabled(config.id, sec.id)}
                                         className={cn(
                                           'relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors',
-                                          acc.enabled ? 'bg-gray-900' : 'bg-gray-200 dark:bg-gray-600'
+                                          acc.enabled ? 'bg-gray-900 dark:bg-[#f1f1f1]' : 'bg-gray-200 dark:bg-gray-600'
                                         )}
                                       >
                                         <span className={cn(
                                           'inline-block h-3 w-3 rounded-full bg-white shadow transition-transform',
-                                          acc.enabled ? 'translate-x-3.5' : 'translate-x-0.5'
+                                          acc.enabled ? 'translate-x-3.5 dark:bg-gray-900' : 'translate-x-0.5'
                                         )} />
                                       </button>
                                       <span className="text-sm text-gray-700 dark:text-gray-300">{sec.label}</span>
@@ -260,11 +260,11 @@ export function RoleCreatePage() {
                                         onClick={() => toggleSectionPerm(config.id, sec.id, perm)}
                                         className={cn(
                                           'mx-auto flex h-5 w-5 items-center justify-center rounded border-2 transition-colors',
-                                          acc[perm] && acc.enabled ? 'border-gray-900 bg-gray-900' : 'border-gray-200 dark:border-gray-500 bg-white dark:bg-gray-700',
+                                          acc[perm] && acc.enabled ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1]' : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222]',
                                           !acc.enabled && 'pointer-events-none'
                                         )}
                                       >
-                                        {acc[perm] && acc.enabled && <Check className="h-3 w-3 text-white" />}
+                                        {acc[perm] && acc.enabled && <Check className="h-3 w-3 text-white dark:text-gray-900" />}
                                       </button>
                                     </td>
                                   ))}
@@ -290,7 +290,7 @@ export function RoleCreatePage() {
                 return (
                   <div key={sec.id} className={cn(
                     'overflow-hidden rounded-xl border transition-colors',
-                    acc.enabled ? 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800' : 'border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/40'
+                    acc.enabled ? 'border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222]' : 'border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-[#222222]/40'
                   )}>
                     <div className="flex items-center gap-3 px-4 py-3">
                       <div className="flex-1">
@@ -316,7 +316,7 @@ export function RoleCreatePage() {
                       <div className="border-t border-gray-100 dark:border-gray-700">
                         <table className="w-full">
                           <thead>
-                            <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/50">
+                            <tr className="border-b border-gray-100 dark:border-[#333333] bg-gray-50/50 dark:bg-[#1a1a1a]">
                               <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-400">Раздел</th>
                               {PERMS.map((p) => (
                                 <th key={p} className="px-3 py-2 text-center text-[11px] font-semibold text-gray-400">{PERMISSION_LABELS[p]}</th>
@@ -332,10 +332,10 @@ export function RoleCreatePage() {
                                     onClick={() => togglePortalPerm(sec.id, perm)}
                                     className={cn(
                                       'mx-auto flex h-5 w-5 items-center justify-center rounded border-2 transition-colors',
-                                      acc[perm] ? 'border-gray-900 bg-gray-900' : 'border-gray-200 dark:border-gray-500 bg-white dark:bg-gray-700',
+                                      acc[perm] ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1]' : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222]',
                                     )}
                                   >
-                                    {acc[perm] && <Check className="h-3 w-3 text-white" />}
+                                    {acc[perm] && <Check className="h-3 w-3 text-white dark:text-gray-900" />}
                                   </button>
                                 </td>
                               ))}
@@ -357,7 +357,7 @@ export function RoleCreatePage() {
           <div className="flex items-center justify-end gap-3">
             <button
               onClick={() => navigate('/users/roles')}
-              className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222] px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#333333]"
             >
               Отмена
             </button>

@@ -76,9 +76,9 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
             className={cn(
               'flex h-9 w-full items-center justify-between gap-1.5 rounded-lg border px-3 text-sm transition-colors',
               openCity
-                ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
+                ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-[#222222] dark:text-gray-100'
                 : cityFilter.length
-                  ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+                  ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-[#222222] dark:text-gray-200'
                   : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
             )}
           >
@@ -138,15 +138,15 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
           <thead>
             <tr style={{ height: 48, background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)', position: 'sticky', top: 0, zIndex: 2 }}>
               <th style={{ padding: '0 16px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden' }}
-                className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">
                 №
               </th>
               <th style={{ padding: '0 16px', textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden' }}
-                className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">
                 {t('col_distributor')}
               </th>
               <th style={{ padding: '0 16px', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden' }}
-                className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">
                 {t('col_price_date')}
               </th>
             </tr>
@@ -167,7 +167,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
                     onClick={() => onSelect(dist)}
                     className={cn(
                       'cursor-pointer border-b border-gray-100 transition-colors dark:border-[#333333]',
-                      isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                      isSelected ? 'bg-gray-100 dark:bg-[#222222]' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                     )}
                   >
                     <td className={cn(
@@ -180,7 +180,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
                       <p className={cn('text-sm text-gray-900 dark:text-gray-100', isSelected ? 'font-semibold' : 'font-medium')}>
                         {dist.name}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{dist.city}</p>
+                      <p className="text-xs text-gray-500 dark:text-[#929292]">{dist.city}</p>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span className="text-sm text-gray-600 dark:text-gray-400">{formatDate(dist.lastPriceDate)}</span>

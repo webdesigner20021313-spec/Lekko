@@ -120,7 +120,7 @@ export function RoleEditPage() {
         <div className="px-6 pt-5 pb-0">
           <button
             onClick={() => navigate('/users/roles')}
-            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 transition-colors hover:text-gray-700 dark:hover:text-gray-300"
+            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-[#929292] transition-colors hover:text-gray-700 dark:hover:text-gray-300"
           >
             <ArrowLeft className="h-4 w-4" />
             Назад к ролям
@@ -132,7 +132,7 @@ export function RoleEditPage() {
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Редактирование роли</h1>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Измените доступы роли</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-[#929292]">Измените доступы роли</p>
           </div>
 
           {/* Role name */}
@@ -144,7 +144,7 @@ export function RoleEditPage() {
               autoFocus
               onChange={(e) => { setName(e.target.value); setNameError('') }}
               className={cn(
-                'h-10 w-full rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                'h-10 w-full rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-[#222222] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
                 nameError ? 'border-red-300 focus:border-red-400' : 'border-gray-200 dark:border-gray-600 focus:border-gray-400',
               )}
             />
@@ -167,7 +167,7 @@ export function RoleEditPage() {
               return (
                 <div key={config.id} className={cn(
                   'overflow-hidden rounded-xl border transition-colors',
-                  proj.enabled ? 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800' : 'border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/40'
+                  proj.enabled ? 'border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222]' : 'border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-[#222222]/40'
                 )}>
                   <div className="flex items-center gap-3 px-4 py-3">
                     <div className="flex-1">
@@ -184,12 +184,12 @@ export function RoleEditPage() {
                       onClick={() => toggleProjectEnabled(config.id)}
                       className={cn(
                         'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200',
-                        proj.enabled ? 'bg-gray-900' : 'bg-gray-200 dark:bg-gray-600',
+                        proj.enabled ? 'bg-gray-900 dark:bg-[#f1f1f1]' : 'bg-gray-200 dark:bg-gray-600',
                       )}
                     >
                       <span className={cn(
                         'inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
-                        proj.enabled ? 'translate-x-5' : 'translate-x-0.5',
+                        proj.enabled ? 'translate-x-5 dark:bg-gray-900' : 'translate-x-0.5',
                       )} />
                     </button>
                   </div>
@@ -198,7 +198,7 @@ export function RoleEditPage() {
                     <div className="border-t border-gray-100 dark:border-gray-700">
                       <table className="w-full">
                         <thead>
-                          <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/50">
+                          <tr className="border-b border-gray-100 dark:border-[#333333] bg-gray-50/50 dark:bg-[#1a1a1a]">
                             <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-400">Раздел</th>
                             {PERMS.map((p) => (
                               <th key={p} className="px-3 py-2 text-center text-[11px] font-semibold text-gray-400">{PERMISSION_LABELS[p]}</th>
@@ -216,12 +216,12 @@ export function RoleEditPage() {
                                       onClick={() => toggleSectionEnabled(config.id, sec.id)}
                                       className={cn(
                                         'relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors',
-                                        acc.enabled ? 'bg-gray-900' : 'bg-gray-200 dark:bg-gray-600'
+                                        acc.enabled ? 'bg-gray-900 dark:bg-[#f1f1f1]' : 'bg-gray-200 dark:bg-gray-600'
                                       )}
                                     >
                                       <span className={cn(
                                         'inline-block h-3 w-3 rounded-full bg-white shadow transition-transform',
-                                        acc.enabled ? 'translate-x-3.5' : 'translate-x-0.5'
+                                        acc.enabled ? 'translate-x-3.5 dark:bg-gray-900' : 'translate-x-0.5'
                                       )} />
                                     </button>
                                     <span className="text-sm text-gray-700 dark:text-gray-300">{sec.label}</span>
@@ -233,10 +233,10 @@ export function RoleEditPage() {
                                       onClick={() => toggleSectionPerm(config.id, sec.id, perm)}
                                       className={cn(
                                         'mx-auto flex h-5 w-5 items-center justify-center rounded border-2 transition-colors',
-                                        acc[perm] ? 'border-gray-900 bg-gray-900' : 'border-gray-200 dark:border-gray-500 bg-white dark:bg-gray-700',
+                                        acc[perm] ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1]' : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222]',
                                       )}
                                     >
-                                      {acc[perm] && <Check className="h-3 w-3 text-white" />}
+                                      {acc[perm] && <Check className="h-3 w-3 text-white dark:text-gray-900" />}
                                     </button>
                                   </td>
                                 ))}
@@ -262,7 +262,7 @@ export function RoleEditPage() {
               return (
                 <div key={sec.id} className={cn(
                   'overflow-hidden rounded-xl border transition-colors',
-                  acc.enabled ? 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800' : 'border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/40'
+                  acc.enabled ? 'border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222]' : 'border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-[#222222]/40'
                 )}>
                   <div className="flex items-center gap-3 px-4 py-3">
                     <div className="flex-1">
@@ -274,12 +274,12 @@ export function RoleEditPage() {
                       onClick={() => togglePortalEnabled(sec.id)}
                       className={cn(
                         'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200',
-                        acc.enabled ? 'bg-gray-900' : 'bg-gray-200 dark:bg-gray-600',
+                        acc.enabled ? 'bg-gray-900 dark:bg-[#f1f1f1]' : 'bg-gray-200 dark:bg-gray-600',
                       )}
                     >
                       <span className={cn(
                         'inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
-                        acc.enabled ? 'translate-x-5' : 'translate-x-0.5',
+                        acc.enabled ? 'translate-x-5 dark:bg-gray-900' : 'translate-x-0.5',
                       )} />
                     </button>
                   </div>
@@ -288,7 +288,7 @@ export function RoleEditPage() {
                     <div className="border-t border-gray-100 dark:border-gray-700">
                       <table className="w-full">
                         <thead>
-                          <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/50">
+                          <tr className="border-b border-gray-100 dark:border-[#333333] bg-gray-50/50 dark:bg-[#1a1a1a]">
                             <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-400">Раздел</th>
                             {PERMS.map((p) => (
                               <th key={p} className="px-3 py-2 text-center text-[11px] font-semibold text-gray-400">{PERMISSION_LABELS[p]}</th>
@@ -304,10 +304,10 @@ export function RoleEditPage() {
                                   onClick={() => togglePortalPerm(sec.id, perm)}
                                   className={cn(
                                     'mx-auto flex h-5 w-5 items-center justify-center rounded border-2 transition-colors',
-                                    acc[perm] ? 'border-gray-900 bg-gray-900' : 'border-gray-200 dark:border-gray-500 bg-white dark:bg-gray-700',
+                                    acc[perm] ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1]' : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222]',
                                   )}
                                 >
-                                  {acc[perm] && <Check className="h-3 w-3 text-white" />}
+                                  {acc[perm] && <Check className="h-3 w-3 text-white dark:text-gray-900" />}
                                 </button>
                               </td>
                             ))}
@@ -329,7 +329,7 @@ export function RoleEditPage() {
         <div className="flex items-center justify-end gap-3">
           <button
             onClick={() => navigate('/users/roles')}
-            className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222] px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#333333]"
           >
             Отмена
           </button>

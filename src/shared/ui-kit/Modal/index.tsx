@@ -93,7 +93,7 @@ const ModalDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-gray-400 dark:text-gray-500", className)}
+    className={cn("text-sm text-gray-400", className)}
     {...props}
   />
 ));

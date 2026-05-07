@@ -27,7 +27,7 @@ export function DevModeSwitcher() {
     <div className="fixed bottom-3 right-3 z-[100] font-sans text-xs">
       {open && (
         <div className="mb-2 w-[200px] rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
-          <div className="mb-1 px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">
+          <div className="mb-1 px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">
             Dev mode
           </div>
           {OPTIONS.map((opt) => {

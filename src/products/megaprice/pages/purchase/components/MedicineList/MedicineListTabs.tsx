@@ -15,7 +15,7 @@ const tabs: { id: MedicineListTab; label: string }[] = [
 
 export function MedicineListTabs({ active, onChange, posCount }: MedicineListTabsProps) {
   return (
-    <div className="flex gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
+    <div className="flex gap-1 rounded-lg bg-gray-100 p-1 dark:bg-[#222222]">
       {tabs.map((tab) => (
         <button
           key={tab.id}

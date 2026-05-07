@@ -162,7 +162,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
               className={cn(
                 'flex h-full w-full items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors',
                 pharmOpen
-                  ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
+                  ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-[#222222] dark:text-gray-100'
                   : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300 dark:hover:border-gray-600',
               )}
             >
@@ -173,7 +173,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
 
             {pharmOpen && (
               <div className="absolute right-0 top-10 z-50 w-64 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
-                <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">
                   Аптека
                 </p>
                 {mockPharmacies.map((ph) => {
@@ -192,7 +192,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{ph.name}</p>
-                        <p className="truncate text-xs text-gray-400 dark:text-gray-500">{ph.city}, {ph.address}</p>
+                        <p className="truncate text-xs text-gray-400 dark:text-[#929292]">{ph.city}, {ph.address}</p>
                       </div>
                     </button>
                   )
@@ -214,7 +214,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
             </button>
             {colsOpen && (
               <div className="absolute right-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
-                <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Столбцы</p>
+                <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">Столбцы</p>
                 {([
                   { key: 'stock',  label: 'Остаток'     },
                   { key: 'needed', label: 'Потребность'  },
@@ -269,16 +269,16 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                 background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)', borderRight: '1px solid var(--table-border)',
                 padding: '0 12px', textAlign: 'left', overflow: 'hidden',
               }}>
-                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Название</span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">Название</span>
               </th>
               {visibleCols.stock && (
                 <th style={{ position: 'sticky', top: 0, zIndex: 2, height: 48, background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)', borderRight: '1px solid var(--table-border)', padding: '0 12px', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Остаток</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">Остаток</span>
                 </th>
               )}
               {visibleCols.needed && (
                 <th style={{ position: 'sticky', top: 0, zIndex: 2, height: 48, background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)', borderRight: '1px solid var(--table-border)', padding: '0 16px', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Потребность</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">Потребность</span>
                 </th>
               )}
               {/* Heart header — sticky right */}
@@ -308,7 +308,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                     onClick={() => onSelect(isSelected ? null : row.medicine)}
                     className={cn(
                       'group cursor-pointer border-b border-gray-100 transition-colors dark:border-[#333333]',
-                      isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white hover:bg-gray-50 dark:bg-[#111111] dark:hover:bg-gray-800',
+                      isSelected ? 'bg-gray-100 dark:bg-[#222222]' : 'bg-white hover:bg-gray-50 dark:bg-[#111111] dark:hover:bg-gray-800',
                     )}
                   >
                     {/* Checkbox (батч) + индикатор выбора */}
@@ -339,7 +339,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                         )}>
                           {row.medicine.name}
                         </p>
-                        <p className="mt-0.5 truncate text-xs text-gray-400 dark:text-gray-500">
+                        <p className="mt-0.5 truncate text-xs text-gray-400 dark:text-[#929292]">
                           {row.medicine.manufacturer} · {row.medicine.country}
                         </p>
                       </div>
@@ -383,7 +383,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                       }}
                       className={cn(
                         'transition-colors',
-                        isSelected ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white group-hover:bg-gray-50 dark:bg-[#111111] dark:group-hover:bg-gray-800',
+                        isSelected ? 'bg-gray-100 dark:bg-[#222222]' : 'bg-white group-hover:bg-gray-50 dark:bg-[#111111] dark:group-hover:bg-gray-800',
                       )}
                     >
                       <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -431,7 +431,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
               >
                 <span className={cn(
                   'inline-block h-3 w-3 rounded-full bg-white shadow transition-transform duration-200',
-                  byDemand ? 'translate-x-4' : 'translate-x-0.5',
+                  byDemand ? 'translate-x-4 dark:bg-gray-900' : 'translate-x-0.5',
                 )} />
               </button>
             </label>

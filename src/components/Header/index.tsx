@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/shared/utils/utils'
 import { detectMode } from '@/config/mode'
-import { getLogoForMode } from '@/config/products'
+import { getLogoForMode, getLogoDarkForMode } from '@/config/products'
 import { useUIStore } from '@/shared/stores/useUIStore'
 import { useUserStore } from '@/shared/stores/useUserStore'
 import { useNotificationStore } from '@/shared/stores/useNotificationStore'
@@ -23,8 +23,10 @@ import { formatDateTime } from '@/shared/utils/format'
 export function Header() {
   const { t } = useTranslation()
   const appMode = detectMode()
-  const logoSvg = getLogoForMode(appMode.productId)
   const { language, setLanguage, theme, setTheme } = useUIStore()
+  const logoSvg = theme === 'dark'
+    ? getLogoDarkForMode(appMode.productId)
+    : getLogoForMode(appMode.productId)
   const { user } = useUserStore()
   const { notifications, markAsRead, markAllRead, unreadCount } = useNotificationStore()
   const logout = useAuthStore((s) => s.logout)
@@ -142,7 +144,7 @@ export function Header() {
                   className="flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <span className="font-medium text-gray-700 dark:text-gray-300">{page.label}</span>
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500 dark:bg-[#222222] dark:text-gray-400">
                     {page.section}
                   </span>
                 </button>
@@ -167,7 +169,7 @@ export function Header() {
             className={cn(
               'flex h-9 items-center gap-1.5 rounded-lg border px-2.5 text-sm font-medium transition-colors',
               showLang
-                ? 'border-gray-300 bg-gray-100 text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+                ? 'border-gray-300 bg-gray-100 text-gray-900 dark:border-gray-600 dark:bg-[#222222] dark:text-gray-100'
                 : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300'
             )}
           >
@@ -183,7 +185,7 @@ export function Header() {
                   onClick={() => { setLanguage(lang); setShowLang(false) }}
                   className={cn(
                     'flex w-full items-center justify-center py-2 text-sm font-medium transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
-                    language === lang ? 'text-[#3872FA]' : 'text-gray-700 dark:text-gray-300'
+                    language === lang ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-[#929292]'
                   )}
                 >
                   {langLabels[lang]}
@@ -209,7 +211,7 @@ export function Header() {
             className={cn(
               'relative flex h-9 w-9 items-center justify-center rounded-lg border transition-colors',
               showNotifications
-                ? 'border-gray-300 bg-gray-100 text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+                ? 'border-gray-300 bg-gray-100 text-gray-900 dark:border-gray-600 dark:bg-[#222222] dark:text-gray-100'
                 : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300'
             )}
             aria-label={t('notifications')}
@@ -251,7 +253,7 @@ export function Header() {
                     onClick={() => markAsRead(n.id)}
                     className={cn(
                       'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
-                      !n.read && 'bg-gray-50 dark:bg-gray-800/50'
+                      !n.read && 'bg-gray-50 dark:bg-[#222222]/50'
                     )}
                   >
                     <span className={cn(
@@ -294,7 +296,7 @@ export function Header() {
             onClick={() => { setShowProfile(!showProfile); setShowNotifications(false); setShowLang(false) }}
             className={cn(
               'flex items-center gap-2.5 rounded-lg p-1.5 pr-3 transition-colors',
-              showProfile ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+              showProfile ? 'bg-gray-100 dark:bg-[#222222]' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
             )}
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white shadow-sm">

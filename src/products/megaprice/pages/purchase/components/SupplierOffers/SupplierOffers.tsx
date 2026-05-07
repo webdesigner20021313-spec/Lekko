@@ -99,7 +99,7 @@ export function SupplierOffers({ medicine }: SupplierOffersProps) {
   if (!medicine) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-        <div className="rounded-xl bg-gray-100 p-5 dark:bg-gray-800">
+        <div className="rounded-xl bg-gray-100 p-5 dark:bg-[#222222]">
           <Package className="h-10 w-10 text-gray-400" />
         </div>
         <div>

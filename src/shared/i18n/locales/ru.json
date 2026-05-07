@@ -75,6 +75,7 @@
   "users_col_name": "Имя",
   "users_col_contact": "Телефон / Email",
   "users_col_role": "Роль",
+  "users_col_pharmacies": "Аптеки",
   "users_col_status": "Статус",
   "users_col_created": "Добавлен",
   "users_empty": "Пользователей пока нет",
@@ -142,6 +143,14 @@
   "user_password_placeholder": "Пароль",
   "user_password_placeholder_edit": "Оставьте пустым чтобы не менять",
   "user_password_error": "Введите пароль",
+
+  "user_pharmacies_title": "Доступ к аптекам",
+  "user_pharmacies_all": "Все аптеки",
+  "user_pharmacies_selected": "Выбранные",
+  "user_pharmacies_search": "Поиск по названию...",
+  "user_pharmacies_empty": "Аптек не найдено",
+  "user_pharmacies_none": "Нет аптек, соответствующих запросу",
+  "user_pharmacies_count": "{{count}} аптек",
 
   "confirm_cancel": "Отмена",
   "confirm_delete": "Удалить",

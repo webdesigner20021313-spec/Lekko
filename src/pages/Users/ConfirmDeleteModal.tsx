@@ -22,7 +22,7 @@ export function ConfirmDeleteModal({ open, title, description, onConfirm, onCanc
             <AlertTriangle className="h-7 w-7 text-red-500" />
           </div>
           <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">{title}</h2>
-          <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">{description}</p>
+          <p className="mt-1.5 text-sm text-gray-500 dark:text-[#929292]">{description}</p>
         </div>
 
         <div className="flex gap-3 border-t border-gray-100 dark:border-gray-700 px-6 py-4">

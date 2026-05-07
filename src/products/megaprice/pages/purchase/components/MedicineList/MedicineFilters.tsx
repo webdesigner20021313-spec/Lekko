@@ -101,9 +101,9 @@ export function MedicineFilters({
           className={cn(
             'flex h-9 w-full items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors',
             open
-              ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
+              ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-[#222222] dark:text-gray-100'
               : hasSelected
-                ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+                ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-[#222222] dark:text-gray-200'
                 : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
           )}
         >
@@ -125,7 +125,7 @@ export function MedicineFilters({
                   onChange={(e) => setInnerSearch(e.target.value)}
                   placeholder={t('filter_search_inner')}
                   onClick={(e) => e.stopPropagation()}
-                  className="h-8 w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-7 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:border-gray-600 dark:focus:bg-gray-700"
+                  className="h-8 w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-7 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 focus:bg-white dark:border-gray-700 dark:bg-[#222222] dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:border-gray-600 dark:focus:bg-gray-700"
                 />
                 {innerSearch && (
                   <button
@@ -192,7 +192,7 @@ export function MedicineFilters({
         </button>
         {openCols && (
           <div className="absolute right-0 top-10 z-50 w-40 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
-            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{t('filter_columns_header')}</p>
+            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('filter_columns_header')}</p>
             {resolvedColumnOptions.map(col => {
               const checked = visibleColumns[col.key]
               return (

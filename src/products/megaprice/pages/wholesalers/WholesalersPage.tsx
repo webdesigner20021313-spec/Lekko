@@ -48,7 +48,7 @@ function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountMo
             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
               {isEdit ? t('ws_modal_edit_title') : t('ws_modal_add_title')}
             </p>
-            <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{wholesaler.name}</p>
+            <p className="mt-0.5 text-xs text-gray-400 dark:text-[#929292]">{wholesaler.name}</p>
           </div>
           <button onClick={onClose}
             className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors dark:hover:bg-gray-800 dark:hover:text-gray-300">
@@ -57,7 +57,7 @@ function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountMo
         </div>
 
         <div className="px-5 py-5">
-          <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-gray-400">{t('ws_modal_discount_label')}</label>
+          <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-[#929292]">{t('ws_modal_discount_label')}</label>
           <div className={cn(
             'flex items-center rounded-xl border transition-colors',
             valid ? 'border-gray-300 focus-within:border-gray-900 focus-within:ring-2 focus-within:ring-gray-900/20 dark:border-gray-600 dark:focus-within:border-blue-400'
@@ -95,7 +95,7 @@ function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountMo
               'rounded-lg px-4 py-2 text-sm font-medium transition-colors',
               valid
                 ? 'bg-gray-900 text-white hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]'
-                : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600',
+                : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-[#222222] dark:text-[#929292]',
             )}>
             {t('ws_modal_save')}
           </button>
@@ -185,11 +185,11 @@ export function WholesalersPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('ws_title')}</h1>
-              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-[#222222] dark:text-gray-400">
                 {wholesalers.length}
               </span>
             </div>
-            <p className="mt-0.5 text-sm text-gray-400 dark:text-gray-500">{t('ws_subtitle')}</p>
+            <p className="mt-0.5 text-sm text-gray-400 dark:text-[#929292]">{t('ws_subtitle')}</p>
           </div>
 
           <div className="relative w-60">
@@ -209,25 +209,25 @@ export function WholesalersPage() {
       <div className="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111111]">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
-              <Package className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-[#222222]">
+              <Package className="h-5 w-5 text-gray-400 dark:text-[#929292]" />
             </div>
             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t('ws_no_results')}</p>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('ws_no_results_hint')}</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-[#929292]">{t('ws_no_results_hint')}</p>
           </div>
         ) : (
           <div className="overflow-hidden border-b border-gray-200 dark:border-gray-700">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]">
-                  <th className="w-10 px-4 py-3.5 text-center text-xs font-semibold uppercase text-gray-400">#</th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400" style={{ minWidth: 160 }}>{t('ws_col_name')}</th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('ws_col_city')}</th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('ws_col_phone')}</th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('ws_col_telegram')}</th>
-                  <th className="px-4 py-3.5 text-right text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('ws_col_min_order')}</th>
-                  <th className="px-4 py-3.5 text-center text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('ws_col_delivery')}</th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('ws_col_my_discount')}</th>
+                  <th className="w-10 px-4 py-3.5 text-center text-xs font-semibold uppercase text-gray-400 dark:text-[#929292]">#</th>
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]" style={{ minWidth: 160 }}>{t('ws_col_name')}</th>
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]">{t('ws_col_city')}</th>
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]">{t('ws_col_phone')}</th>
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]">{t('ws_col_telegram')}</th>
+                  <th className="px-4 py-3.5 text-right text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]">{t('ws_col_min_order')}</th>
+                  <th className="px-4 py-3.5 text-center text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]">{t('ws_col_delivery')}</th>
+                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]">{t('ws_col_my_discount')}</th>
                   <th className="px-4 py-3.5 w-12" />
                 </tr>
               </thead>

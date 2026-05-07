@@ -75,7 +75,7 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
                   className={cn(
                     'h-11 w-full rounded-xl border bg-gray-50 px-4 text-sm text-gray-800 placeholder:text-gray-400',
                     'transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1',
-                    'dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500',
+                    'dark:bg-[#222222] dark:text-gray-200 dark:placeholder:text-gray-500',
                     phoneError
                       ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
                       : 'border-gray-200 focus:border-gray-400 focus:ring-gray-200 dark:border-gray-700 dark:focus:border-gray-500'
@@ -115,7 +115,7 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
                   className={cn(
                     'h-11 w-full rounded-xl border bg-gray-50 px-4 text-sm tracking-widest text-gray-800 placeholder:text-gray-400',
                     'transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1',
-                    'dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500',
+                    'dark:bg-[#222222] dark:text-gray-200 dark:placeholder:text-gray-500',
                     codeError
                       ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
                       : 'border-gray-200 focus:border-gray-400 focus:ring-gray-200 dark:border-gray-700 dark:focus:border-gray-500'
@@ -237,7 +237,7 @@ export function LoginPage() {
                 className={cn(
                   'h-11 w-full rounded-xl border bg-gray-50 pl-10 pr-4 text-sm text-gray-800 placeholder:text-gray-400',
                   'transition-colors focus:outline-none focus:bg-white focus:ring-2 focus:ring-offset-1',
-                  'dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:bg-gray-700',
+                  'dark:bg-[#222222] dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:bg-gray-700',
                   loginError || authError
                     ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
                     : 'border-gray-200 focus:border-gray-400 focus:ring-gray-900/10 dark:border-gray-700 dark:focus:border-gray-500'
@@ -274,7 +274,7 @@ export function LoginPage() {
                 className={cn(
                   'h-11 w-full rounded-xl border bg-gray-50 pl-10 pr-10 text-sm text-gray-800 placeholder:text-gray-400',
                   'transition-colors focus:outline-none focus:bg-white focus:ring-2 focus:ring-offset-1',
-                  'dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:bg-gray-700',
+                  'dark:bg-[#222222] dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:bg-gray-700',
                   passwordError || authError
                     ? 'border-red-300 focus:border-red-400 focus:ring-red-200'
                     : 'border-gray-200 focus:border-gray-400 focus:ring-gray-900/10 dark:border-gray-700 dark:focus:border-gray-500'

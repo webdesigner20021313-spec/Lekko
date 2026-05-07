@@ -11,7 +11,7 @@ const buttonVariants = cva(
         primary:
           "bg-gray-900 text-white hover:bg-black active:bg-black shadow-sm dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0] dark:active:bg-[#d4d4d4]",
         secondary:
-          "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600",
+          "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100 shadow-sm dark:bg-[#222222] dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600",
         outline:
           "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 dark:border-gray-700 dark:bg-transparent dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:border-gray-600",
       },

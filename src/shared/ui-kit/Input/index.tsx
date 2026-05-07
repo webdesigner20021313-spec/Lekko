@@ -12,7 +12,7 @@ const inputVariants = cva(
         error:
           "border-[#ee0000] text-gray-700 focus-visible:border-[#ee0000] focus-visible:ring-[#ee0000]/20 dark:text-gray-300",
         disabled:
-          "border-gray-200 bg-gray-50 text-gray-400 placeholder:text-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-600 dark:placeholder:text-gray-700",
+          "border-gray-200 bg-gray-50 text-gray-400 placeholder:text-gray-300 dark:border-gray-700 dark:bg-[#222222] dark:text-gray-600 dark:placeholder:text-gray-700",
       },
     },
     defaultVariants: {
@@ -60,7 +60,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <p className="text-xs text-[#ee0000]">{error}</p>
         )}
         {!error && helperText && (
-          <p className="text-xs text-gray-400 dark:text-gray-500">{helperText}</p>
+          <p className="text-xs text-gray-400">{helperText}</p>
         )}
       </div>
     );

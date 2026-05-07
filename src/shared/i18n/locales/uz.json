@@ -75,6 +75,7 @@
   "users_col_name": "Ism",
   "users_col_contact": "Telefon / Email",
   "users_col_role": "Rol",
+  "users_col_pharmacies": "Dorixonalar",
   "users_col_status": "Holat",
   "users_col_created": "Qo'shilgan",
   "users_empty": "Hali foydalanuvchilar yo'q",
@@ -142,6 +143,14 @@
   "user_password_placeholder": "Parol",
   "user_password_placeholder_edit": "O'zgartirmaslik uchun bo'sh qoldiring",
   "user_password_error": "Parolni kiriting",
+
+  "user_pharmacies_title": "Dorixonalarga kirish",
+  "user_pharmacies_all": "Barcha dorixonalar",
+  "user_pharmacies_selected": "Tanlanganlar",
+  "user_pharmacies_search": "Nomi bo'yicha qidirish...",
+  "user_pharmacies_empty": "Dorixonalar topilmadi",
+  "user_pharmacies_none": "So'rovga mos dorixonalar yo'q",
+  "user_pharmacies_count": "{{count}} ta dorixona",
 
   "confirm_cancel": "Bekor qilish",
   "confirm_delete": "O'chirish",

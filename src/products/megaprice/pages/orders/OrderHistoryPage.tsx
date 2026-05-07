@@ -31,13 +31,13 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
   const { t } = useTranslation()
   return (
     <div className="flex flex-col items-center justify-center py-20">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
-        <Package className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-[#222222]">
+        <Package className="h-5 w-5 text-gray-400 dark:text-[#929292]" />
       </div>
       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
         {hasFilters ? t('orders_no_results_title') : t('orders_empty_title')}
       </p>
-      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      <p className="mt-1 text-sm text-gray-500 dark:text-[#929292]">
         {hasFilters ? t('orders_no_results_hint') : t('orders_empty_hint')}
       </p>
     </div>
@@ -179,16 +179,16 @@ export function OrderHistoryPage() {
                 key={status}
                 onClick={() => setStatusFilter(isActive ? 'all' : status)}
                 className={cn(
-                  'flex flex-col rounded-xl border bg-white p-4 cursor-pointer transition-all dark:bg-gray-800',
-                  isActive ? 'border-gray-900 ring-1 ring-gray-900 dark:border-blue-400 dark:ring-blue-400' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600',
+                  'flex flex-col rounded-xl border bg-white p-4 cursor-pointer transition-all dark:bg-[#222222]',
+                  isActive ? 'border-gray-900 ring-1 ring-gray-900 dark:border-[#f1f1f1] dark:ring-[#f1f1f1]' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600',
                 )}
               >
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{t(labelKey)}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t(labelKey)}</p>
                 <div className="mt-auto flex items-end justify-between gap-2 pt-3">
                   <p className="text-2xl font-bold tabular-nums leading-none text-gray-900 dark:text-gray-100">
-                    {count} <span className="text-sm font-medium text-gray-400 dark:text-gray-500">{t('orders_kpi_pcs')}</span>
+                    {count} <span className="text-sm font-medium text-gray-400 dark:text-[#929292]">{t('orders_kpi_pcs')}</span>
                   </p>
-                  <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">{formatCurrency(total)}</p>
+                  <p className="text-sm font-semibold text-gray-500 dark:text-[#929292]">{formatCurrency(total)}</p>
                 </div>
               </div>
             )
@@ -213,15 +213,15 @@ export function OrderHistoryPage() {
                       className="h-3.5 w-3.5 cursor-pointer rounded border-gray-300 accent-gray-900"
                     />
                   </th>
-                  <th className="w-8 px-2 py-2.5 text-center text-xs font-semibold uppercase text-gray-400">#</th>
-                  <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('orders_col_number')}</th>
-                  <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400" style={{ minWidth: 160 }}>{t('orders_col_pharmacy')}</th>
-                  <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400" style={{ minWidth: 160 }}>{t('orders_col_distributor')}</th>
-                  <th className="px-3 py-2.5 text-center text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('orders_col_positions')}</th>
-                  <th className="px-3 py-2.5 text-center text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('orders_col_qty')}</th>
-                  <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('orders_col_sum')}</th>
-                  <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('orders_col_date')}</th>
-                  <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('orders_col_status')}</th>
+                  <th className="w-8 px-2 py-2.5 text-center text-xs font-semibold uppercase text-gray-400 dark:text-[#929292]">#</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]">{t('orders_col_number')}</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]" style={{ minWidth: 160 }}>{t('orders_col_pharmacy')}</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]" style={{ minWidth: 160 }}>{t('orders_col_distributor')}</th>
+                  <th className="px-3 py-2.5 text-center text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]">{t('orders_col_positions')}</th>
+                  <th className="px-3 py-2.5 text-center text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]">{t('orders_col_qty')}</th>
+                  <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]">{t('orders_col_sum')}</th>
+                  <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]">{t('orders_col_date')}</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-[#929292]">{t('orders_col_status')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-[#333333]">
@@ -235,7 +235,7 @@ export function OrderHistoryPage() {
                       key={order.id}
                       className={cn(
                         'h-14 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
-                        isChecked && 'bg-gray-50 dark:bg-gray-800',
+                        isChecked && 'bg-gray-50 dark:bg-[#222222]',
                       )}
                     >
                       <td className="px-3 py-2.5 text-center align-middle" onClick={e => { e.stopPropagation(); toggleOne(order.id) }}>
@@ -254,18 +254,18 @@ export function OrderHistoryPage() {
                       </td>
                       <td className="px-3 py-2.5" onClick={() => navigate(mp(`/orders/${order.id}`))}>
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{order.pharmacyName}</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">{order.pharmacyCity}</p>
+                        <p className="text-xs text-gray-400 dark:text-[#929292]">{order.pharmacyCity}</p>
                       </td>
                       <td className="px-3 py-2.5" onClick={() => navigate(mp(`/orders/${order.id}`))}>
                         {order.groups.length === 1 ? (
                           <>
                             <p className="text-sm text-gray-700 dark:text-gray-300">{order.groups[0].distributorName}</p>
-                            <p className="text-xs text-gray-400 dark:text-gray-500">{order.groups[0].distributorCity}</p>
+                            <p className="text-xs text-gray-400 dark:text-[#929292]">{order.groups[0].distributorCity}</p>
                           </>
                         ) : (
                           <>
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('orders_n_distributors', { n: order.groups.length })}</p>
-                            <p className="truncate text-xs text-gray-400 dark:text-gray-500" style={{ maxWidth: 180 }}>
+                            <p className="truncate text-xs text-gray-400 dark:text-[#929292]" style={{ maxWidth: 180 }}>
                               {order.groups.map(g => g.distributorName).join(', ')}
                             </p>
                           </>
@@ -281,7 +281,7 @@ export function OrderHistoryPage() {
                         <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(order.totalSum)}</span>
                       </td>
                       <td className="px-3 py-2.5 text-right" onClick={() => navigate(mp(`/orders/${order.id}`))}>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">{formatDate(order.createdAt)}</span>
+                        <span className="text-sm text-gray-500 dark:text-[#929292]">{formatDate(order.createdAt)}</span>
                       </td>
                       <td className="px-3 py-2.5" onClick={() => navigate(mp(`/orders/${order.id}`))}>
                         <div className="flex items-center gap-1.5">
@@ -299,8 +299,8 @@ export function OrderHistoryPage() {
               </tbody>
             </table>
 
-            <div className="border-t border-gray-100 bg-gray-50 px-4 py-2 dark:border-[#333333] dark:bg-gray-800">
-              <p className="text-xs text-gray-400 dark:text-gray-500">
+            <div className="border-t border-gray-100 bg-gray-50 px-4 py-2 dark:border-[#333333] dark:bg-[#222222]">
+              <p className="text-xs text-gray-400 dark:text-[#929292]">
                 {checked.length > 0
                   ? t('orders_selected_n_of_m', { n: checked.length, m: filteredOrders.length })
                   : t('orders_shown_n_of_m', { n: filteredOrders.length, m: orders.length })}

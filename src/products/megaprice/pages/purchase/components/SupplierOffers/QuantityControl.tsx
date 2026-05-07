@@ -15,7 +15,7 @@ export function QuantityControl({ value, onChange }: QuantityControlProps) {
         className={cn(
           'flex h-7 w-7 items-center justify-center rounded-md border text-sm transition-colors',
           value === 0
-            ? 'border-gray-200 text-gray-300 cursor-not-allowed dark:border-gray-700 dark:text-gray-600'
+            ? 'border-gray-200 text-gray-300 cursor-not-allowed dark:border-gray-700 dark:text-[#929292]'
             : 'border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'
         )}
       >
@@ -32,8 +32,8 @@ export function QuantityControl({ value, onChange }: QuantityControlProps) {
         className={cn(
           'h-7 min-w-0 flex-1 rounded-md border text-center text-sm font-medium outline-none transition-colors focus:ring-1',
           value > 0
-            ? 'border-gray-400 text-gray-900 focus:ring-gray-200 dark:border-gray-500 dark:text-gray-100 dark:bg-gray-800 dark:focus:ring-gray-600'
-            : 'border-gray-200 text-gray-500 focus:ring-gray-100 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:focus:ring-gray-700'
+            ? 'border-gray-400 text-gray-900 focus:ring-gray-200 dark:border-gray-500 dark:text-gray-100 dark:bg-[#222222] dark:focus:ring-gray-600'
+            : 'border-gray-200 text-gray-500 focus:ring-gray-100 dark:border-gray-700 dark:text-gray-400 dark:bg-[#222222] dark:focus:ring-gray-700'
         )}
       />
       <button

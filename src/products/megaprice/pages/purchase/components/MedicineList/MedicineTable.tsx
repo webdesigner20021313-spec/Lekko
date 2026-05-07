@@ -87,7 +87,7 @@ export function MedicineTable({
               overflow: 'hidden',
             }}
           >
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]"
               style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {t('col_name')}
             </span>
@@ -101,7 +101,7 @@ export function MedicineTable({
                 overflow: 'hidden',
               }}
             >
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]"
                 style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {t('col_mnn')}
               </span>

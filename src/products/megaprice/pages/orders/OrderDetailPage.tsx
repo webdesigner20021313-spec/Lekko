@@ -271,7 +271,7 @@ function ConfirmModal({
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
       <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-[#111111] dark:border dark:border-gray-700">
         <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">{description}</p>
+        <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-[#929292]">{description}</p>
         <div className="mt-5 flex gap-2.5">
           <button
             onClick={onClose}
@@ -322,7 +322,7 @@ function ProposalBlock({
             {proposal.changes.map((change, idx) => {
               const item = items.find(i => i.id === change.itemId)
               return (
-                <div key={idx} className="rounded-lg border border-amber-200 bg-white px-3 py-2.5 dark:border-[#78350F]/40 dark:bg-gray-800">
+                <div key={idx} className="rounded-lg border border-amber-200 bg-white px-3 py-2.5 dark:border-[#78350F]/40 dark:bg-[#222222]">
                   <p className="text-xs font-medium text-gray-400 mb-1 dark:text-gray-500">
                     {change.type === 'substitute' ? String(change.oldValue) : item?.medicineName}
                   </p>
@@ -330,7 +330,7 @@ function ProposalBlock({
                     <p className="text-sm text-gray-900 dark:text-gray-200">
                       {t('orders_proposal_qty')}{' '}
                       <span className="font-medium line-through text-red-400">{change.oldValue}</span>
-                      <span className="mx-1.5 text-gray-400 dark:text-gray-500">→</span>
+                      <span className="mx-1.5 text-gray-400 dark:text-[#929292]">→</span>
                       <span className="font-semibold text-green-700 dark:text-green-400">{change.newValue}</span>
                     </p>
                   )}
@@ -338,7 +338,7 @@ function ProposalBlock({
                     <p className="text-sm text-gray-900 dark:text-gray-200">
                       {t('orders_proposal_price')}{' '}
                       <span className="font-medium line-through text-red-400">{formatCurrency(Number(change.oldValue))}</span>
-                      <span className="mx-1.5 text-gray-400 dark:text-gray-500">→</span>
+                      <span className="mx-1.5 text-gray-400 dark:text-[#929292]">→</span>
                       <span className="font-semibold text-green-700 dark:text-green-400">{formatCurrency(Number(change.newValue))}</span>
                     </p>
                   )}
@@ -347,7 +347,7 @@ function ProposalBlock({
                       {t('orders_proposal_substitute')}{' '}
                       <span className="font-semibold text-green-700 dark:text-green-400">{String(change.newValue)}</span>
                       {change.newManufacturer && (
-                        <span className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">
+                        <span className="ml-1.5 text-xs text-gray-500 dark:text-[#929292]">
                           ({change.newManufacturer}{change.newCountry ? `, ${change.newCountry}` : ''})
                         </span>
                       )}
@@ -361,7 +361,7 @@ function ProposalBlock({
           <div className="mt-4 flex gap-2">
             <button
               onClick={onReject}
-              className="flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-[#222222] dark:text-gray-300 dark:hover:bg-gray-700"
             >
               {t('orders_proposal_reject')}
             </button>
@@ -412,11 +412,11 @@ function DistributorCard({
     )}>
 
       {/* ── Card header ── */}
-      <div className="flex items-start gap-4 border-b border-gray-200 bg-gray-50 px-5 py-4 dark:border-gray-700 dark:bg-gray-800">
+      <div className="flex items-start gap-4 border-b border-gray-200 bg-gray-50 px-5 py-4 dark:border-gray-700 dark:bg-[#222222]">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{group.distributorName}</p>
-            <span className="text-xs text-gray-400 dark:text-gray-500">{group.distributorCity}</span>
+            <span className="text-xs text-gray-400 dark:text-[#929292]">{group.distributorCity}</span>
             <DistributorStatusBadge status={group.distributorStatus} />
           </div>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -424,11 +424,11 @@ function DistributorCard({
               ? <MessageCircle className="h-3 w-3 text-[#1E40AF] dark:text-blue-400" />
               : <Mail className="h-3 w-3 text-gray-400" />
             }
-            <span className="text-xs text-gray-500 dark:text-gray-400">{group.contact}</span>
+            <span className="text-xs text-gray-500 dark:text-[#929292]">{group.contact}</span>
             {group.sentAt && (
               <>
                 <span className="text-gray-300 dark:text-gray-600">·</span>
-                <span className="text-xs text-gray-400 dark:text-gray-500">{t('orders_sent_date', { date: formatDate(group.sentAt) })}</span>
+                <span className="text-xs text-gray-400 dark:text-[#929292]">{t('orders_sent_date', { date: formatDate(group.sentAt) })}</span>
               </>
             )}
           </div>
@@ -451,14 +451,14 @@ function DistributorCard({
                   onClick={() => { onDownloadExcel(); setShowMenu(false) }}
                   className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
-                  <Download className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                  <Download className="h-4 w-4 text-gray-400 dark:text-[#929292]" />
                   {t('orders_dl_excel')}
                 </button>
                 <button
                   onClick={() => { onPrintInvoice(); setShowMenu(false) }}
                   className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
-                  <FileText className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                  <FileText className="h-4 w-4 text-gray-400 dark:text-[#929292]" />
                   {t('orders_dl_invoice')}
                 </button>
                 {isOrderActive && !isCancelled && (
@@ -497,11 +497,11 @@ function DistributorCard({
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/60 dark:border-gray-700 dark:bg-[#222222]">
-                <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">{t('orders_col_medicine')}</th>
-                <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">{t('orders_col_manufacturer')}</th>
-                <th className="px-5 py-2.5 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">{t('orders_col_qty')}</th>
-                <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">{t('orders_col_price_per')}</th>
-                <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">{t('orders_col_total')}</th>
+                <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_medicine')}</th>
+                <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_manufacturer')}</th>
+                <th className="px-5 py-2.5 text-center text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_qty')}</th>
+                <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_price_per')}</th>
+                <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_total')}</th>
               </tr>
             </thead>
             <tbody>
@@ -512,7 +512,7 @@ function DistributorCard({
                   </td>
                   <td className="px-5 py-3.5">
                     <p className="text-sm text-gray-600 dark:text-gray-400">{item.manufacturer}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">{item.country}</p>
+                    <p className="text-xs text-gray-400 dark:text-[#929292]">{item.country}</p>
                   </td>
                   <td className="px-5 py-3.5 text-center">
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.quantity}</span>
@@ -533,8 +533,8 @@ function DistributorCard({
       </div>
 
       {/* ── Card footer ── */}
-      <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-5 py-3.5 dark:border-gray-700 dark:bg-gray-800">
-        <span className="text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-5 py-3.5 dark:border-gray-700 dark:bg-[#222222]">
+        <span className="text-sm text-gray-500 dark:text-[#929292]">
           {isCancelled ? (
             <span className="text-red-400">{t('orders_cancelled_label')}</span>
           ) : (
@@ -684,14 +684,14 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
 
   function InfoCard({ icon, label, value, sub }: { icon: React.ReactNode; label: string; value: string; sub?: string }) {
     return (
-      <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+      <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-[#222222]">
         <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
           {icon}
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-medium text-gray-400 dark:text-gray-500">{label}</p>
+          <p className="text-xs font-medium text-gray-400 dark:text-[#929292]">{label}</p>
           <p className="mt-0.5 text-sm font-semibold text-gray-900 truncate dark:text-gray-100">{value}</p>
-          {sub && <p className="text-xs text-gray-400 dark:text-gray-500">{sub}</p>}
+          {sub && <p className="text-xs text-gray-400 dark:text-[#929292]">{sub}</p>}
         </div>
       </div>
     )

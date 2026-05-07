@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Building2 } from 'lucide-react'
 import { cn } from '@/shared/utils/utils'
 import { formatDate } from '@/shared/utils/format'
 import { useUsersStore } from '@/pages/Users/stores/useUsersStore'
@@ -24,12 +24,13 @@ export function UserList({ onEditUser }: Props) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#222222]">
-              <th className="w-10 px-4 py-3 text-center text-xs font-semibold text-gray-400">#</th>
-              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('users_col_name')}</th>
-              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('users_col_contact')}</th>
-              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('users_col_role')}</th>
-              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('users_col_status')}</th>
-              <th className="px-4 py-3 text-right  text-xs font-semibold text-gray-500 dark:text-gray-400">{t('users_col_created')}</th>
+              <th className="w-10 px-4 py-3 text-center text-xs font-semibold text-gray-400 dark:text-[#929292]">#</th>
+              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('users_col_name')}</th>
+              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('users_col_contact')}</th>
+              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('users_col_role')}</th>
+              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('users_col_pharmacies')}</th>
+              <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('users_col_status')}</th>
+              <th className="px-4 py-3 text-right  text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('users_col_created')}</th>
               <th className="w-20 px-4 py-3" />
             </tr>
           </thead>
@@ -37,7 +38,7 @@ export function UserList({ onEditUser }: Props) {
           <tbody className="divide-y divide-gray-100 dark:divide-[#333333]">
             {users.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-16 text-center text-sm text-gray-400">
+                <td colSpan={8} className="py-16 text-center text-sm text-gray-400">
                   {t('users_empty')}
                 </td>
               </tr>
@@ -73,8 +74,24 @@ export function UserList({ onEditUser }: Props) {
 
                     <td className="px-4 py-3">
                       {role ? (
-                        <span className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:text-gray-300">
+                        <span className="inline-flex items-center rounded-full bg-gray-100 dark:bg-[#222222] px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:text-gray-300">
                           {role.name}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      {user.pharmacyAccess.all ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 dark:bg-[#222222] px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:text-gray-300">
+                          <Building2 className="h-3 w-3" />
+                          {t('user_pharmacies_all')}
+                        </span>
+                      ) : user.pharmacyAccess.ids.length > 0 ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 dark:bg-[#222222] px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:text-gray-300">
+                          <Building2 className="h-3 w-3" />
+                          {t('user_pharmacies_count', { count: user.pharmacyAccess.ids.length })}
                         </span>
                       ) : (
                         <span className="text-xs text-gray-400">—</span>

@@ -78,17 +78,29 @@ export interface Role {
   portalSections: Record<string, SectionAccess>
 }
 
+export interface Pharmacy {
+  id:      string
+  name:    string
+  address: string
+}
+
+export interface PharmacyAccess {
+  all: boolean
+  ids: string[]
+}
+
 export interface User {
-  id:        string
-  name:      string
-  phone:     string
-  email?:    string
-  login:     string
-  password:  string
-  roleId:    string | null
-  isActive:  boolean
-  createdAt: string
-  avatar?:   string
+  id:             string
+  name:           string
+  phone:          string
+  email?:         string
+  login:          string
+  password:       string
+  roleId:         string | null
+  isActive:       boolean
+  createdAt:      string
+  avatar?:        string
+  pharmacyAccess: PharmacyAccess
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

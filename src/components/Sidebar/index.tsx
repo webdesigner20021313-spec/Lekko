@@ -159,7 +159,7 @@ function StandaloneSidebar({ productId }: { productId: ProductId }) {
                       'flex h-[40px] w-[108px] shrink-0 items-center justify-center rounded-[120px] transition-all duration-150',
                       isActive
                         ? 'bg-white text-gray-900'
-                        : 'text-[#6B7280] group-hover:text-stone-300'
+                        : 'text-[#6B7280] dark:text-[#929292] group-hover:text-stone-300'
                     )}
                   >
                     {renderIcon(item.iconName)}
@@ -169,7 +169,7 @@ function StandaloneSidebar({ productId }: { productId: ProductId }) {
                       'text-center text-[16px] leading-tight',
                       isActive
                         ? 'font-semibold text-white'
-                        : 'font-normal text-[#6B7280] group-hover:text-stone-300'
+                        : 'font-normal text-[#6B7280] dark:text-[#929292] group-hover:text-stone-300'
                     )}
                   >
                     {t(`nav_${item.slug}`, item.label)}
@@ -181,8 +181,8 @@ function StandaloneSidebar({ productId }: { productId: ProductId }) {
         </ul>
       </nav>
 
-      <div className="shrink-0 border-t border-[#6B7280] py-[16px]">
-        <p className="text-center text-[14px] text-[#6B7280]">v1.0.2</p>
+      <div className="shrink-0 border-t border-[#6B7280] dark:border-[#929292] py-[16px]">
+        <p className="text-center text-[14px] text-[#6B7280] dark:text-[#929292]">v1.0.2</p>
       </div>
     </aside>
   )
@@ -273,7 +273,7 @@ function PortalSidebar() {
                           ? 'bg-white text-gray-900'
                           : isExpanded
                           ? 'bg-white/10 text-white'
-                          : 'text-[#6B7280] group-hover:text-stone-300'
+                          : 'text-[#6B7280] dark:text-[#929292] group-hover:text-stone-300'
                       )}
                     >
                       {renderIcon(cat.iconName)}
@@ -285,7 +285,7 @@ function PortalSidebar() {
                           ? 'font-semibold text-white'
                           : isExpanded
                           ? 'font-medium text-white'
-                          : 'font-normal text-[#6B7280] group-hover:text-stone-300'
+                          : 'font-normal text-[#6B7280] dark:text-[#929292] group-hover:text-stone-300'
                       )}
                     >
                       {getCategoryLabel(cat)}
@@ -297,8 +297,8 @@ function PortalSidebar() {
           </ul>
         </nav>
 
-        <div className="shrink-0 border-t border-[#6B7280] py-[16px]">
-          <p className="text-center text-[12px] text-[#6B7280]">v1.0.2</p>
+        <div className="shrink-0 border-t border-[#6B7280] dark:border-[#929292] py-[16px]">
+          <p className="text-center text-[12px] text-[#6B7280] dark:text-[#929292]">v1.0.2</p>
         </div>
       </div>
 
@@ -320,13 +320,13 @@ function PortalSidebar() {
             )}
           </div>
 
-          <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+          <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-[#929292]">
             {t('sidebar_sections_label')}
           </div>
 
           <nav className="flex-1 overflow-y-auto px-2 pb-3">
             {expanded.subItems.length === 0 ? (
-              <p className="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">
+              <p className="px-3 py-2 text-sm text-gray-400 dark:text-[#929292]">
                 {t('sidebar_in_development')}
               </p>
             ) : (

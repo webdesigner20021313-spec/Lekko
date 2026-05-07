@@ -7,7 +7,8 @@ import {
 } from '@/shared/ui-kit/Modal'
 import { cn } from '@/shared/utils/utils'
 import { useUsersStore } from '@/pages/Users/stores/useUsersStore'
-import type { User } from './types/users.types'
+import type { User, PharmacyAccess } from './types/users.types'
+import { MOCK_PHARMACIES } from './mocks/users.mocks'
 
 interface Props {
   open:      boolean
@@ -16,19 +17,21 @@ interface Props {
 }
 
 interface FormState {
-  name:     string
-  phone:    string
-  email:    string
-  login:    string
-  password: string
-  roleId:   string
-  isActive: boolean
-  avatar:   string
+  name:           string
+  phone:          string
+  email:          string
+  login:          string
+  password:       string
+  roleId:         string
+  isActive:       boolean
+  avatar:         string
+  pharmacyAccess: PharmacyAccess
 }
 
 const EMPTY: FormState = {
   name: '', phone: '', email: '',
   login: '', password: '', roleId: '', isActive: true, avatar: '',
+  pharmacyAccess: { all: true, ids: [] },
 }
 
 type FieldError = Partial<Record<keyof FormState, string>>
@@ -49,14 +52,15 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
     setShowPass(false)
     if (editUser) {
       setForm({
-        name:     editUser.name,
-        phone:    editUser.phone,
-        email:    editUser.email ?? '',
-        login:    editUser.login,
-        password: editUser.password,
-        roleId:   editUser.roleId ?? '',
-        isActive: editUser.isActive,
-        avatar:   editUser.avatar ?? '',
+        name:           editUser.name,
+        phone:          editUser.phone,
+        email:          editUser.email ?? '',
+        login:          editUser.login,
+        password:       editUser.password,
+        roleId:         editUser.roleId ?? '',
+        isActive:       editUser.isActive,
+        avatar:         editUser.avatar ?? '',
+        pharmacyAccess: editUser.pharmacyAccess ?? { all: true, ids: [] },
       })
     } else {
       setForm(EMPTY)
@@ -90,14 +94,15 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
     if (Object.keys(e).length) { setErrors(e); return }
 
     const payload: Omit<User, 'id' | 'createdAt'> = {
-      name:     form.name.trim(),
-      phone:    form.phone.trim(),
-      email:    form.email.trim() || undefined,
-      login:    form.login.trim(),
-      password: form.password || editUser?.password || '',
-      roleId:   form.roleId || null,
-      isActive: form.isActive,
-      avatar:   form.avatar || undefined,
+      name:           form.name.trim(),
+      phone:          form.phone.trim(),
+      email:          form.email.trim() || undefined,
+      login:          form.login.trim(),
+      password:       form.password || editUser?.password || '',
+      roleId:         form.roleId || null,
+      isActive:       form.isActive,
+      avatar:         form.avatar || undefined,
+      pharmacyAccess: form.pharmacyAccess,
     }
 
     if (isEdit) {
@@ -114,7 +119,7 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
 
   return (
     <Modal open={open} onOpenChange={(v) => { if (!v) onClose() }}>
-      <ModalContent className="max-w-lg">
+      <ModalContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <ModalHeader>
           <ModalTitle>{isEdit ? t('user_edit_title') : t('user_create_title')}</ModalTitle>
           <ModalDescription>{t('user_modal_desc')}</ModalDescription>
@@ -132,7 +137,7 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
               {form.avatar ? (
                 <img src={form.avatar} alt="avatar" className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-gray-50 dark:bg-gray-800 text-lg font-semibold text-gray-400">
+                <div className="flex h-full w-full items-center justify-center bg-gray-50 dark:bg-[#222222] text-lg font-semibold text-gray-400">
                   {initials}
                 </div>
               )}
@@ -151,12 +156,12 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
                   onClick={() => set('isActive', !form.isActive)}
                   className={cn(
                     'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200',
-                    form.isActive ? 'bg-gray-900' : 'bg-gray-200 dark:bg-gray-600'
+                    form.isActive ? 'bg-gray-900 dark:bg-[#f1f1f1]' : 'bg-gray-200 dark:bg-gray-600'
                   )}
                 >
                   <span className={cn(
                     'inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200',
-                    form.isActive ? 'translate-x-5' : 'translate-x-0.5'
+                    form.isActive ? 'translate-x-5 dark:bg-gray-900' : 'translate-x-0.5'
                   )} />
                 </button>
               </div>
@@ -173,7 +178,7 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
                 value={form.name}
                 onChange={(e) => set('name', e.target.value)}
                 className={cn(
-                  'h-10 rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                  'h-10 rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-[#222222] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
                   errors.name ? 'border-red-300 focus:border-red-400' : 'border-gray-200 dark:border-gray-600 focus:border-gray-400'
                 )}
               />
@@ -186,7 +191,7 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
                   value={form.roleId}
                   onChange={(e) => set('roleId', e.target.value)}
                   className={cn(
-                    'h-10 w-full appearance-none rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 pl-3 pr-8 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                    'h-10 w-full appearance-none rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222] pl-3 pr-8 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
                     form.roleId === '' ? 'text-gray-400' : 'text-gray-900 dark:text-gray-100'
                   )}
                 >
@@ -212,7 +217,7 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
                 value={form.phone}
                 onChange={(e) => set('phone', e.target.value)}
                 className={cn(
-                  'h-10 rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                  'h-10 rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-[#222222] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
                   errors.phone ? 'border-red-300 focus:border-red-400' : 'border-gray-200 dark:border-gray-600 focus:border-gray-400'
                 )}
               />
@@ -225,7 +230,7 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
                 placeholder="email@example.com"
                 value={form.email}
                 onChange={(e) => set('email', e.target.value)}
-                className="h-10 rounded-lg border border-gray-200 dark:border-gray-600 px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20"
+                className="h-10 rounded-lg border border-gray-200 dark:border-gray-600 px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-[#222222] placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20"
               />
             </div>
           </div>
@@ -240,7 +245,7 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
                 value={form.login}
                 onChange={(e) => set('login', e.target.value)}
                 className={cn(
-                  'h-10 rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                  'h-10 rounded-lg border px-3 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-[#222222] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
                   errors.login ? 'border-red-300 focus:border-red-400' : 'border-gray-200 dark:border-gray-600 focus:border-gray-400'
                 )}
               />
@@ -257,7 +262,7 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
                   value={form.password}
                   onChange={(e) => set('password', e.target.value)}
                   className={cn(
-                    'h-10 w-full rounded-lg border px-3 pr-9 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                    'h-10 w-full rounded-lg border px-3 pr-9 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-[#222222] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
                     errors.password ? 'border-red-300 focus:border-red-400' : 'border-gray-200 dark:border-gray-600 focus:border-gray-400'
                   )}
                 />
@@ -275,10 +280,67 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
 
         </div>
 
-        <ModalFooter>
+        {/* Pharmacy access */}
+        <div className="flex flex-col gap-3 border-t border-gray-100 dark:border-[#333333] pt-4">
+          {/* Header: title + switch */}
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              {t('user_pharmacies_title')}
+            </p>
+            <button
+              type="button"
+              onClick={() => setForm((f) => ({
+                ...f,
+                pharmacyAccess: { ...f.pharmacyAccess, all: !f.pharmacyAccess.all },
+              }))}
+              className={cn(
+                'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border-2 transition-colors duration-200',
+                !form.pharmacyAccess.all
+                  ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1]'
+                  : 'border-gray-300 bg-gray-200 dark:border-gray-600 dark:bg-gray-600'
+              )}
+            >
+              <span className={cn(
+                'inline-block h-3 w-3 rounded-full bg-white shadow transition-transform duration-200',
+                !form.pharmacyAccess.all ? 'translate-x-4 dark:bg-gray-900' : 'translate-x-0.5'
+              )} />
+            </button>
+          </div>
+
+          {/* Pharmacy tags — visible when switch is OFF */}
+          {!form.pharmacyAccess.all && (
+            <div className="flex flex-wrap gap-2">
+              {MOCK_PHARMACIES.map((ph) => {
+                const selected = form.pharmacyAccess.ids.includes(ph.id)
+                return (
+                  <button
+                    key={ph.id}
+                    type="button"
+                    onClick={() => setForm((f) => {
+                      const ids = selected
+                        ? f.pharmacyAccess.ids.filter((id) => id !== ph.id)
+                        : [...f.pharmacyAccess.ids, ph.id]
+                      return { ...f, pharmacyAccess: { ...f.pharmacyAccess, ids } }
+                    })}
+                    className={cn(
+                      'rounded-full border px-3 py-1 text-sm font-medium transition-colors',
+                      selected
+                        ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
+                        : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
+                    )}
+                  >
+                    {ph.name}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        <ModalFooter className="border-t border-gray-100 dark:border-[#333333] pt-4">
           <button
             onClick={onClose}
-            className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222] px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#333333]"
           >
             {t('confirm_cancel')}
           </button>

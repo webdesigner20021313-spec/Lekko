@@ -1,8 +1,12 @@
 import type { ProductId } from './mode'
 import megapriceLogo from '@/assets/logos/megaprice-logo.svg'
+import megapriceLogoDark from '@/assets/logos/megaprice-logo-dark.svg'
 import aptekaLogo from '@/assets/logos/apteka-logo.svg'
+import aptekaLogoDark from '@/assets/logos/apteka-logo-dark.svg'
 import analyticLogo from '@/assets/logos/analytic-logo.svg'
+import analyticLogoDark from '@/assets/logos/analytic-logo-dark.svg'
 import lekkoLogo from '@/assets/logos/lekko-logo.svg'
+import lekkoLogoDark from '@/assets/logos/lekko-logo-dark.svg'
 
 export interface ProductSection {
   label: string
@@ -15,6 +19,7 @@ export interface Product {
   id: ProductId
   name: string
   logo: string
+  logoDark: string
   domain: string
   basePath: string
   sections: ProductSection[]
@@ -28,6 +33,7 @@ export const products: Record<ProductId, Product> = {
     id: 'megaprice',
     name: 'Mega price',
     logo: megapriceLogo,
+    logoDark: megapriceLogoDark,
     domain: 'megaprice.com',
     basePath: '/megaprice',
     sections: [
@@ -42,6 +48,7 @@ export const products: Record<ProductId, Product> = {
     id: 'apteka',
     name: 'Аптека',
     logo: aptekaLogo,
+    logoDark: aptekaLogoDark,
     domain: 'apteka.com',
     basePath: '/apteka',
     sections: [],
@@ -50,6 +57,7 @@ export const products: Record<ProductId, Product> = {
     id: 'analytic',
     name: 'Аналитика',
     logo: analyticLogo,
+    logoDark: analyticLogoDark,
     domain: 'analytic.com',
     basePath: '/analytic',
     sections: [],
@@ -66,4 +74,10 @@ export function getProduct(id: ProductId): Product {
 export function getLogoForMode(productId: ProductId | null): string {
   if (productId === null) return PORTAL_LOGO
   return products[productId].logo
+}
+
+/** Тёмное лого для текущего режима. */
+export function getLogoDarkForMode(productId: ProductId | null): string {
+  if (productId === null) return lekkoLogoDark
+  return products[productId].logoDark
 }

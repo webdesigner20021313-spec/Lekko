@@ -66,7 +66,7 @@ const inputCls = [
   'h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-800',
   'placeholder:text-gray-400 transition-colors duration-150',
   'hover:border-gray-300 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10',
-  'dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500 dark:hover:border-gray-600 dark:focus:border-gray-500',
+  'dark:border-gray-700 dark:bg-[#222222] dark:text-gray-200 dark:placeholder:text-gray-500 dark:hover:border-gray-600 dark:focus:border-gray-500',
 ].join(' ')
 
 function Label({
@@ -168,7 +168,7 @@ function TagInput({
                 >
                   <span className="min-w-0 flex-1 text-sm font-medium text-gray-800 dark:text-gray-200">{opt.label}</span>
                   {opt.sublabel && (
-                    <span className="shrink-0 text-xs text-gray-400 dark:text-gray-500">{opt.sublabel}</span>
+                    <span className="shrink-0 text-xs text-gray-400 dark:text-[#929292]">{opt.sublabel}</span>
                   )}
                   <Check className="h-4 w-4 shrink-0 text-gray-900 opacity-0 transition-opacity group-hover:opacity-100 dark:text-gray-300" />
                 </button>
@@ -184,7 +184,7 @@ function TagInput({
           {selectedOptions.map(opt => (
             <span
               key={opt.id}
-              className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[13px] font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+              className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[13px] font-medium text-gray-700 dark:border-gray-700 dark:bg-[#222222] dark:text-gray-200"
             >
               {opt.label}
               <button
@@ -379,7 +379,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                           'rounded-full border px-3 py-1 text-[13px] font-medium transition-colors duration-150',
                           active
                             ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
-                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-700',
+                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#222222] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-700',
                         )}
                       >
                         {city}
@@ -464,15 +464,15 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
 
               {/* Сводка */}
               <div className="mb-4 grid grid-cols-3 gap-3">
-                <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-center dark:border-gray-700 dark:bg-gray-800">
+                <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-center dark:border-gray-700 dark:bg-[#222222]">
                   <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{medicines.length}</p>
-                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{t('autoselect_stat_total')}</p>
+                  <p className="mt-0.5 text-xs text-gray-500 dark:text-[#929292]">{t('autoselect_stat_total')}</p>
                 </div>
                 <div className="rounded-xl border border-[#D1FAE5] bg-[#F0FDF4] px-4 py-3 text-center">
                   <p className="text-2xl font-bold text-[#065F46]">{matched.length}</p>
                   <p className="mt-0.5 text-xs text-[#065F46]/80">{t('autoselect_stat_matched')}</p>
                 </div>
-                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-center dark:border-gray-700 dark:bg-gray-800">
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-center dark:border-gray-700 dark:bg-[#222222]">
                   <p className={cn(
                     'text-2xl font-bold',
                     (noOffers.length + filtered.length) > 0 ? 'text-gray-700' : 'text-gray-300',
@@ -486,7 +486,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
               {/* Подобранные */}
               {matched.length > 0 && (
                 <div className="mb-3 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-gray-800">
+                  <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-[#222222]">
                     <CheckCircle2 className="h-4 w-4 text-[#22C55E]" />
                     <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{t('autoselect_section_matched', { count: matched.length })}</p>
                   </div>
@@ -495,7 +495,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                       <div key={r.medicine.id} className="flex h-[52px] items-center gap-3 px-4">
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{r.medicine.name}</p>
-                          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                          <p className="mt-0.5 text-xs text-gray-500 dark:text-[#929292]">
                             {r.offer!.distributor.name} · {r.offer!.distributor.city}
                           </p>
                         </div>
@@ -509,7 +509,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
               )}
 
               {matched.length === 0 && (
-                <div className="mb-3 rounded-xl border border-gray-200 bg-white px-6 py-10 text-center dark:border-gray-700 dark:bg-gray-800">
+                <div className="mb-3 rounded-xl border border-gray-200 bg-white px-6 py-10 text-center dark:border-gray-700 dark:bg-[#222222]">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('autoselect_no_results')}</p>
                   <p className="mt-1 text-xs text-gray-400">{t('autoselect_no_results_hint')}</p>
                 </div>
@@ -518,7 +518,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
               {/* Нет предложений */}
               {noOffers.length > 0 && (
                 <div className="mb-3 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-gray-800">
+                  <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-[#222222]">
                     <AlertTriangle className="h-4 w-4 text-gray-400" />
                     <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">{t('autoselect_section_no_offers', { count: noOffers.length })}</p>
                   </div>
@@ -535,7 +535,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
               {/* Исключено */}
               {filtered.length > 0 && (
                 <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-gray-800">
+                  <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-[#222222]">
                     <AlertTriangle className="h-4 w-4 text-gray-400" />
                     <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">{t('autoselect_section_excluded', { count: filtered.length })}</p>
                   </div>

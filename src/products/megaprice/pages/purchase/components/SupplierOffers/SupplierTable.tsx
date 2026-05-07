@@ -42,7 +42,7 @@ function ResizeHandle({ onMouseDown }: { onMouseDown: (e: React.MouseEvent) => v
 }
 
 function SortIcon({ field, sortField, sortDir }: { field: SortField; sortField: SortField | null; sortDir: SortDirection }) {
-  if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+  if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 text-gray-400 dark:text-[#929292]" />
   if (sortDir === 'asc') return <ArrowUp className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
   return <ArrowDown className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
 }
@@ -136,7 +136,7 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
           onClick={() => onSort(field)}
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, paddingRight: 8, cursor: 'pointer' }}>
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{colLabel(key)}</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">{colLabel(key)}</span>
             <SortIcon field={field} sortField={sortField} sortDir={sortDir} />
           </span>
           <ResizeHandle onMouseDown={(e) => { e.stopPropagation(); startResize(e, key) }} />
@@ -148,7 +148,7 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
       <th key={key} {...dragProps}
         style={{ ...thBase, ...borderStyle, cursor: 'grab' }}
       >
-        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500" style={{ paddingRight: 8 }}>
+        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]" style={{ paddingRight: 8 }}>
           {colLabel(key)}
         </span>
         <ResizeHandle onMouseDown={(e) => { e.stopPropagation(); startResize(e, key) }} />
@@ -167,7 +167,7 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
         <thead>
           <tr style={{ height: 48 }}>
             <th style={{ ...thBase, textAlign: 'center', borderRight: '1px solid var(--table-border)' }}>
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">№</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">№</span>
             </th>
 
             {visibleOrder.map((k) => renderTh(k))}
@@ -178,7 +178,7 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
                 background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)',
                 borderLeft: '1px solid var(--table-border)', padding: '10px 16px', whiteSpace: 'nowrap',
               }}>
-                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{t('col_quantity')}</span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">{t('col_quantity')}</span>
               </th>
             )}
           </tr>

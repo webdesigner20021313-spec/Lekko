@@ -50,11 +50,11 @@ function EmptyCart() {
   const { t } = useTranslation()
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-24">
-      <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 dark:bg-gray-800">
+      <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 dark:bg-[#222222]">
         <ShoppingCart className="h-9 w-9 text-gray-300 dark:text-gray-600" />
       </div>
       <p className="text-base font-semibold text-gray-800 dark:text-gray-200">{t('cart_empty_title')}</p>
-      <p className="mt-1.5 text-sm text-gray-400 dark:text-gray-500">{t('cart_empty_hint')}</p>
+      <p className="mt-1.5 text-sm text-gray-400 dark:text-[#929292]">{t('cart_empty_hint')}</p>
       <Link to={mp('/purchase')} className="mt-6">
         <Button size="sm" variant="outline">{t('cart_go_purchase')}</Button>
       </Link>
@@ -92,21 +92,21 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
             </div>
           </div>
           <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('cart_success_title')}</p>
-          <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">{payload.pharmacy.name}</p>
+          <p className="mt-1 text-sm text-gray-400 dark:text-[#929292]">{payload.pharmacy.name}</p>
         </div>
 
         <div className="px-6 pb-4">
-          <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:divide-[#333333] dark:border-gray-700 dark:bg-gray-800">
+          <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:divide-[#333333] dark:border-gray-700 dark:bg-[#222222]">
             <div className="flex items-center justify-between px-4 py-3">
-              <span className="text-sm text-gray-500 dark:text-gray-400">{t('cart_success_order_num')}</span>
+              <span className="text-sm text-gray-500 dark:text-[#929292]">{t('cart_success_order_num')}</span>
               <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{orderNum}</span>
             </div>
             <div className="flex items-center justify-between px-4 py-3">
-              <span className="text-sm text-gray-500 dark:text-gray-400">{t('cart_success_order_sum')}</span>
+              <span className="text-sm text-gray-500 dark:text-[#929292]">{t('cart_success_order_sum')}</span>
               <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(totalSum)}</span>
             </div>
             <div className="flex items-center justify-between px-4 py-3">
-              <span className="text-sm text-gray-500 dark:text-gray-400">{t('cart_success_positions')}</span>
+              <span className="text-sm text-gray-500 dark:text-[#929292]">{t('cart_success_positions')}</span>
               <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{totalItems}</span>
             </div>
           </div>
@@ -114,9 +114,9 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
 
         <div className="px-6 pb-6">
           <div className="overflow-hidden rounded-xl border border-gray-100 dark:border-gray-700">
-            <div className="grid grid-cols-[1fr_auto] border-b border-gray-100 bg-gray-50 px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
-              <span className="text-xs font-semibold text-gray-400 dark:text-gray-500">{t('cart_success_dist_col')}</span>
-              <span className="text-xs font-semibold text-gray-400 dark:text-gray-500">{t('cart_success_pos_col')}</span>
+            <div className="grid grid-cols-[1fr_auto] border-b border-gray-100 bg-gray-50 px-4 py-2 dark:border-gray-700 dark:bg-[#222222]">
+              <span className="text-xs font-semibold text-gray-400 dark:text-[#929292]">{t('cart_success_dist_col')}</span>
+              <span className="text-xs font-semibold text-gray-400 dark:text-[#929292]">{t('cart_success_pos_col')}</span>
             </div>
             {payload.groups.map((group, idx) => (
               <div
@@ -131,14 +131,14 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
                         <svg className="h-3 w-3 shrink-0 text-sky-400" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z" />
                         </svg>
-                        <span className="text-xs text-gray-400 dark:text-gray-500">{group.contact}</span>
+                        <span className="text-xs text-gray-400 dark:text-[#929292]">{group.contact}</span>
                       </>
                     ) : (
                       <>
                         <svg className="h-3 w-3 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m2 7 10 7 10-7" />
                         </svg>
-                        <span className="text-xs text-gray-400 dark:text-gray-500">{group.contact}</span>
+                        <span className="text-xs text-gray-400 dark:text-[#929292]">{group.contact}</span>
                       </>
                     )}
                   </div>
@@ -426,7 +426,7 @@ export function CartPage() {
                           <div className="flex items-center gap-2">
                             <Package className="h-4 w-4 shrink-0 text-gray-600 dark:text-gray-400" />
                             <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{group.name}</span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className="text-xs text-gray-500 dark:text-[#929292]">
                               {t('cart_group_info', { city: group.city, pos: group.items.length, qty: groupQtyTotal })}
                             </span>
                           </div>
@@ -447,12 +447,12 @@ export function CartPage() {
                       {!isCollapsed && (
                         <tr className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
                           <td className="px-4 py-2" />
-                          <td className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_name')}</td>
-                          <td className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_manufacturer')}</td>
-                          <td className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_country')}</td>
-                          <td className="px-3 py-2 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_price')}</td>
-                          <td className="px-3 py-2 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_qty')}</td>
-                          <td className="px-3 py-2 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">{t('cart_col_total')}</td>
+                          <td className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('cart_col_name')}</td>
+                          <td className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('cart_col_manufacturer')}</td>
+                          <td className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('cart_col_country')}</td>
+                          <td className="px-3 py-2 text-right text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('cart_col_price')}</td>
+                          <td className="px-3 py-2 text-center text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('cart_col_qty')}</td>
+                          <td className="px-3 py-2 text-right text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('cart_col_total')}</td>
                           <td className="px-4 py-2" />
                         </tr>
                       )}
@@ -465,7 +465,7 @@ export function CartPage() {
                             key={item.offerId}
                             className={cn(
                               'border-b border-gray-100 transition-colors duration-100 dark:border-[#333333]',
-                              isChecked ? 'bg-gray-50 dark:bg-gray-800' : 'bg-white hover:bg-gray-50 dark:bg-[#111111] dark:hover:bg-gray-800',
+                              isChecked ? 'bg-gray-50 dark:bg-[#222222]' : 'bg-white hover:bg-gray-50 dark:bg-[#111111] dark:hover:bg-gray-800',
                             )}
                           >
                             <td className="px-4 py-3">
@@ -541,7 +541,7 @@ export function CartPage() {
               className="flex h-12 w-full items-center justify-between border-b border-gray-200 px-4 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
             >
               <div className="flex items-center gap-2 min-w-0">
-                <MapPin className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-400" />
+                <MapPin className="h-4 w-4 shrink-0 text-gray-500 dark:text-[#929292]" />
                 <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{pharmacy.name}</span>
               </div>
               <ChevronDown className={cn('h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150', showPharmacyDrop && 'rotate-180')} />
@@ -572,7 +572,7 @@ export function CartPage() {
                 <Receipt className="h-7 w-7 text-gray-300 dark:text-gray-600" />
               </div>
               <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('cart_select_title')}</p>
-              <p className="text-xs leading-relaxed text-gray-400 dark:text-gray-500">{t('cart_select_hint')}</p>
+              <p className="text-xs leading-relaxed text-gray-400 dark:text-[#929292]">{t('cart_select_hint')}</p>
             </div>
           ) : (
             <>
@@ -607,11 +607,11 @@ export function CartPage() {
                         <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-[#222222]">
                           <div className="min-w-0">
                             <p className="truncate text-xs font-semibold text-gray-900 dark:text-gray-100">{g.name}</p>
-                            <p className="text-[11px] text-gray-400 dark:text-gray-500">{g.city}</p>
+                            <p className="text-[11px] text-gray-400 dark:text-[#929292]">{g.city}</p>
                           </div>
                           <div className="ml-2 shrink-0 text-right">
                             <p className="text-xs font-bold text-gray-900 dark:text-gray-100">{formatCurrency(g.subtotal)}</p>
-                            <p className="text-[11px] text-gray-400 dark:text-gray-500">{t('cart_group_pos_qty', { pos: g.items.length, qty: g.qty })}</p>
+                            <p className="text-[11px] text-gray-400 dark:text-[#929292]">{t('cart_group_pos_qty', { pos: g.items.length, qty: g.qty })}</p>
                           </div>
                         </div>
                         <div className="divide-y divide-gray-100 bg-white dark:divide-[#333333] dark:bg-[#111111]">
@@ -620,7 +620,7 @@ export function CartPage() {
                               <p className="min-w-0 flex-1 truncate text-xs text-gray-600 dark:text-gray-400">
                                 {item.medicine.name}
                               </p>
-                              <span className="shrink-0 text-[11px] text-gray-400 dark:text-gray-500">×{item.quantity}</span>
+                              <span className="shrink-0 text-[11px] text-gray-400 dark:text-[#929292]">×{item.quantity}</span>
                               <span className="w-16 shrink-0 text-right text-xs font-medium text-gray-800 dark:text-gray-200">
                                 {formatCurrency(effPrice(item) * item.quantity)}
                               </span>

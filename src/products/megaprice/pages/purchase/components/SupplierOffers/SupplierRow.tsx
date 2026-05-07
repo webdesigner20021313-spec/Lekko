@@ -80,7 +80,7 @@ export function SupplierRow({ offer, index, avgPrice, quantity, onQuantityChange
           <td key="distributor" style={tdBase}>
             <div style={cellDiv()}>
               <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{offer.distributor.name}</p>
-              <p className="truncate text-xs text-gray-500 dark:text-gray-400">{offer.distributor.city}</p>
+              <p className="truncate text-xs text-gray-500 dark:text-[#929292]">{offer.distributor.city}</p>
             </div>
           </td>
         )

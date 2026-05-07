@@ -10,6 +10,12 @@
   --selection-indicator: #111827;
   --need-open-row-bg: #F3F4F6;
   --need-oos-row-bg: #FFF8F8;
+  --chart-bar: #E5E7EB;
+  --chart-bar-last: #111827;
+  --chart-bar-hover: #111111;
+  --chart-text: #9CA3AF;
+  --chart-tooltip-bg: #111111;
+  --chart-tooltip-color: #ffffff;
 }
 
 .dark {
@@ -18,9 +24,15 @@
   --table-border: #333333;
   --table-row-bg: #111111;
   --table-cell-border: #333333;
-  --selection-indicator: #93C5FD;
-  --need-open-row-bg: #1f2937;
-  --need-oos-row-bg: transparent;
+  --selection-indicator: #f1f1f1;
+  --need-open-row-bg: #222222;
+  --need-oos-row-bg: #111111;
+  --chart-bar: #222222;
+  --chart-bar-last: #444444;
+  --chart-bar-hover: #444444;
+  --chart-text: #929292;
+  --chart-tooltip-bg: #f1f1f1;
+  --chart-tooltip-color: #111111;
   background-color: #111111;
 }
 
