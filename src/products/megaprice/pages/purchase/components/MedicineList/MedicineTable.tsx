@@ -1,5 +1,7 @@
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Heart, ChevronRight } from 'lucide-react'
+import { cn } from '@/shared/utils/utils'
 import { MedicineRow } from './MedicineRow'
 import type { Medicine } from '@/products/megaprice/pages/purchase/types/purchase.types'
 
@@ -52,7 +54,66 @@ export function MedicineTable({
   }
 
   return (
-    <table style={{ tableLayout: 'fixed', width: tableW, borderCollapse: 'collapse' }}>
+    <>
+    {/* Mobile cards */}
+    <div className="md:hidden divide-y divide-gray-100 dark:divide-[#333333]">
+      {medicines.map((medicine) => {
+        const isSelected = medicine.id === selectedId
+        const isChecked  = checkedIds.includes(medicine.id)
+        const isFavorite = favoriteIds.includes(medicine.id)
+        const cartQty    = cartQtyByMedicine[medicine.id] ?? 0
+        return (
+          <div
+            key={medicine.id}
+            onClick={() => onSelect(medicine)}
+            className={cn(
+              'relative flex cursor-pointer items-center gap-3 px-3 py-3 active:bg-gray-100 dark:active:bg-gray-800',
+              isSelected ? 'bg-gray-50 dark:bg-[#222222]' : 'bg-white dark:bg-[#111111]',
+            )}
+          >
+            {isSelected && <span className="absolute left-0 top-0 bottom-0 w-1 bg-gray-900 dark:bg-[#f1f1f1]" />}
+            <input
+              type="checkbox"
+              checked={isChecked}
+              onChange={() => {}}
+              onClick={(e) => { e.stopPropagation(); onToggleCheck(medicine.id) }}
+              className="h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 accent-gray-900"
+            />
+            <div className="min-w-0 flex-1">
+              <p className={cn('truncate text-sm', isSelected ? 'font-semibold' : 'font-medium', 'text-gray-900 dark:text-gray-100')}>
+                {medicine.name}
+              </p>
+              <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">
+                {medicine.manufacturer} · {medicine.country}
+              </p>
+              {showMnn && medicine.mnn && (
+                <p className="mt-0.5 truncate text-[11px] text-gray-400 dark:text-gray-500">{medicine.mnn}</p>
+              )}
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleFavorite(medicine.id) }}
+              className={cn(
+                'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border',
+                isFavorite
+                  ? 'border-amber-400 bg-amber-50 text-amber-400 dark:bg-amber-900/30'
+                  : 'border-gray-200 text-gray-400 dark:border-gray-700',
+              )}
+            >
+              <Heart className={cn('h-4 w-4', isFavorite && 'fill-amber-400')} />
+              {cartQty > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-gray-900 px-0.5 text-[10px] font-bold leading-none text-white">
+                  {cartQty > 99 ? '99+' : cartQty}
+                </span>
+              )}
+            </button>
+            <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 dark:text-gray-600" />
+          </div>
+        )
+      })}
+    </div>
+
+    {/* Desktop table */}
+    <table className="hidden md:table" style={{ tableLayout: 'fixed', width: tableW, borderCollapse: 'collapse' }}>
       <colgroup>
         <col style={{ width: COL_CB }} />
         <col style={{ width: nameW }} />
@@ -134,5 +195,6 @@ export function MedicineTable({
         ))}
       </tbody>
     </table>
+    </>
   )
 }

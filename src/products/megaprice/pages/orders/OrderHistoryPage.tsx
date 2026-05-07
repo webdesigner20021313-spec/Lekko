@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Package, Download, Calendar, AlertCircle, ChevronDown, X } from 'lucide-react'
+import { Search, Package, Download, Calendar, AlertCircle, ChevronDown, ChevronRight, X, SlidersHorizontal } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
@@ -212,6 +212,7 @@ export function OrderHistoryPage() {
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [calFrom,      setCalFrom]      = useState('')
   const [calTo,        setCalTo]        = useState('')
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const calendarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -281,7 +282,44 @@ export function OrderHistoryPage() {
 
       {/* ── Шапка ── */}
       <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
-        <div className="flex flex-wrap items-center gap-3">
+        {/* Mobile header — search full width + filter button + Excel */}
+        <div className="flex items-center gap-2 md:hidden">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder={t('orders_search_ph')}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 text-base placeholder-gray-400 focus:border-gray-400 focus:outline-none dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500"
+            />
+          </div>
+          <button
+            onClick={() => setMobileFiltersOpen(true)}
+            className={cn(
+              'relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border',
+              hasFilters
+                ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
+                : 'border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400',
+            )}
+            aria-label={t('orders_filters') ?? 'Фильтры'}
+          >
+            <SlidersHorizontal className="h-5 w-5" />
+            {hasFilters && (
+              <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-amber-400 ring-2 ring-white dark:ring-[#111111]" />
+            )}
+          </button>
+          <button
+            onClick={() => exportToExcel(filteredOrders, t)}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-green-600 bg-green-600 text-white"
+            aria-label="Excel"
+          >
+            <Download className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Desktop header */}
+        <div className="hidden md:flex md:flex-wrap md:items-center md:gap-3">
           <div className="flex w-full items-center gap-3 md:w-auto">
             <div className="relative flex-1 md:w-60 md:flex-none">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -364,9 +402,9 @@ export function OrderHistoryPage() {
         </div>
       </div>
 
-      {/* ── KPI Cards ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      {/* ── KPI Cards (desktop only — горизонтальный grid) ── */}
+      <div className="hidden md:block shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
+        <div className="grid grid-cols-4 gap-3">
           {KPI_CARDS.map(({ status, labelKey }) => {
             const { count, total } = stats[status]
             const isActive = statusFilter === status
@@ -392,12 +430,98 @@ export function OrderHistoryPage() {
         </div>
       </div>
 
+      {/* ── KPI Status pills (mobile only — компактные таблетки-фильтры) ── */}
+      <div className="md:hidden shrink-0 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
+        <div className="flex gap-2 overflow-x-auto px-4 py-3" style={{ scrollbarWidth: 'none' }}>
+          <button
+            onClick={() => setStatusFilter('all')}
+            className={cn(
+              'flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all',
+              statusFilter === 'all'
+                ? 'bg-gray-900 text-white dark:bg-[#f1f1f1] dark:text-gray-900'
+                : 'border border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400',
+            )}
+          >
+            {t('orders_filter_all') ?? 'Все'}
+            <span className="tabular-nums opacity-70">{orders.length}</span>
+          </button>
+          {KPI_CARDS.map(({ status, labelKey }) => {
+            const { count } = stats[status]
+            const isActive = statusFilter === status
+            return (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(isActive ? 'all' : status)}
+                className={cn(
+                  'flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all',
+                  isActive
+                    ? 'bg-gray-900 text-white dark:bg-[#f1f1f1] dark:text-gray-900'
+                    : 'border border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400',
+                )}
+              >
+                {t(labelKey)}
+                <span className="tabular-nums opacity-70">{count}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       {/* ── Список ── */}
       <div className="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111111]">
         {filteredOrders.length === 0 ? (
           <EmptyState hasFilters={hasFilters} />
         ) : (
-          <div className="overflow-x-auto border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
+          <>
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-gray-100 dark:divide-[#333333]">
+            {filteredOrders.map((order) => {
+              const totalItems  = order.groups.reduce((s, g) => s + g.items.length, 0)
+              const hasProposal = order.groups.some(g => g.distributorStatus === 'offer')
+              return (
+                <button
+                  key={order.id}
+                  onClick={() => navigate(mp(`/orders/${order.id}`))}
+                  className="flex w-full items-start gap-3 px-4 py-3.5 text-left active:bg-gray-50 dark:active:bg-gray-800"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{order.number}</span>
+                      <StatusBadge status={order.status} />
+                      {hasProposal && (
+                        <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                      )}
+                    </div>
+                    <p className="mt-1 truncate text-sm font-medium text-gray-900 dark:text-gray-100">{order.pharmacyName}</p>
+                    <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">
+                      {order.groups.length === 1
+                        ? `${order.groups[0].distributorName} · ${order.pharmacyCity}`
+                        : `${t('orders_n_distributors', { n: order.groups.length })} · ${order.pharmacyCity}`}
+                    </p>
+                    <div className="mt-2 flex items-center gap-3 text-[11px] text-gray-400 dark:text-[#929292]">
+                      <span>{formatDate(order.createdAt)}</span>
+                      <span>·</span>
+                      <span>{totalItems} {t('orders_kpi_pcs')}</span>
+                      <span>·</span>
+                      <span>{t('orders_qty_n', { n: order.totalQty })}</span>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end justify-between self-stretch">
+                    <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(order.totalSum)}</span>
+                    <ChevronRight className="h-4 w-4 text-gray-300 dark:text-gray-600" />
+                  </div>
+                </button>
+              )
+            })}
+            <div className="bg-gray-50 px-4 py-2.5 dark:bg-[#222222]">
+              <p className="text-xs text-gray-400 dark:text-[#929292]">
+                {t('orders_shown_n_of_m', { n: filteredOrders.length, m: orders.length })}
+              </p>
+            </div>
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
             <table className="w-full" style={{ minWidth: 700 }}>
               <thead>
                 <tr className="h-14 border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]">
@@ -503,8 +627,95 @@ export function OrderHistoryPage() {
               </p>
             </div>
           </div>
+          </>
         )}
       </div>
+
+      {/* ── Mobile filter sheet ── */}
+      {mobileFiltersOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"
+            onClick={() => setMobileFiltersOpen(false)}
+          />
+          <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl dark:bg-[#111111]">
+            <div className="sticky top-0 flex items-center justify-between border-b border-gray-100 bg-white px-5 py-4 dark:border-gray-700 dark:bg-[#111111]">
+              <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">{t('orders_filters') ?? 'Фильтры'}</h2>
+              <button
+                onClick={() => setMobileFiltersOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="px-5 py-4 space-y-5 pb-8">
+              <div>
+                <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('orders_col_date')}</p>
+                <RangeCalendar
+                  from={calFrom}
+                  to={calTo}
+                  onChange={(f, to) => {
+                    setCalFrom(f)
+                    setCalTo(to)
+                    if (f && to) {
+                      setDateRange(`${ISOtoDMY(f)} - ${ISOtoDMY(to)}`)
+                    } else {
+                      setDateRange(f ? ISOtoDMY(f) : '')
+                    }
+                  }}
+                />
+              </div>
+
+              <div>
+                <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('orders_col_status')}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {KPI_CARDS.map(({ status, labelKey }) => {
+                    const { count } = stats[status]
+                    const isActive = statusFilter === status
+                    return (
+                      <button
+                        key={status}
+                        onClick={() => setStatusFilter(isActive ? 'all' : status)}
+                        className={cn(
+                          'flex h-11 items-center justify-between rounded-xl border px-4 text-sm font-medium',
+                          isActive
+                            ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
+                            : 'border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300',
+                        )}
+                      >
+                        <span>{t(labelKey)}</span>
+                        <span className="tabular-nums opacity-70">{count}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="sticky bottom-0 flex gap-3 border-t border-gray-100 bg-white px-5 py-3 dark:border-gray-700 dark:bg-[#111111]">
+              <button
+                onClick={() => {
+                  setStatusFilter('all')
+                  setCalFrom('')
+                  setCalTo('')
+                  setDateRange('')
+                  setSearch('')
+                }}
+                className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300"
+              >
+                {t('orders_date_clear') ?? 'Сбросить'}
+              </button>
+              <button
+                onClick={() => setMobileFiltersOpen(false)}
+                className="flex h-12 flex-1 items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900"
+              >
+                {t('orders_apply') ?? 'Применить'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

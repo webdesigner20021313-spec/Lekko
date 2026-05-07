@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import {
   Search, X, Package, Building2,
-  ChevronDown, Check, Zap, TrendingDown, Plus, Download, Star, Calendar,
-  Sparkles, ArrowRightLeft, AlertTriangle, ShoppingCart as CartIcon,
+  ChevronDown, ChevronRight, Check, Zap, TrendingDown, Plus, Download, Star, Calendar,
+  Sparkles, ArrowRightLeft, AlertTriangle, ShoppingCart as CartIcon, SlidersHorizontal,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { useTranslation } from 'react-i18next'
@@ -1080,6 +1080,7 @@ export function NeedPage() {
   const [groupFilter,  setGroupFilter] = useState<string | null>(null)
   const [groupOpen,    setGroupOpen]   = useState(false)
   const [statusFilter, setStatusFilter] = useState<NeedStatus[]>([])
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
 
   const [checkedIds,      setCheckedIds]      = useState<string[]>([])
   const [drawerItem,      setDrawerItem]      = useState<NeedItem | null>(null)
@@ -1346,8 +1347,44 @@ export function NeedPage() {
     <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]"
       onClick={() => { setGroupOpen(false); setPharmacyOpen(false) }}>
 
-      {/* Top controls */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-6 dark:border-gray-700 dark:bg-[#111111]">
+      {/* Mobile top controls */}
+      <div className="md:hidden shrink-0 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
+        <div className="flex items-center gap-2">
+          <div className="relative h-11 flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder={t('need_search_ph')}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="h-full w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 text-base outline-none focus:border-gray-400 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500"
+            />
+          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); setMobileFiltersOpen(true) }}
+            className={cn(
+              'relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border',
+              (selectedPharmacyIds.length > 0 || groupFilter || period !== '30d')
+                ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
+                : 'border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400',
+            )}
+          >
+            <SlidersHorizontal className="h-5 w-5" />
+            {(selectedPharmacyIds.length > 0 || groupFilter || period !== '30d') && (
+              <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-amber-400 ring-2 ring-white dark:ring-[#111111]" />
+            )}
+          </button>
+          <button
+            onClick={handleExport}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-green-600 bg-green-600 text-white"
+          >
+            <Download className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Top controls (desktop) */}
+      <div className="hidden md:block shrink-0 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-[#111111]">
         <div className="flex items-center gap-2 overflow-x-auto pb-0.5"
              style={{ scrollbarWidth: 'none' }}>
 
@@ -1565,7 +1602,89 @@ export function NeedPage() {
       <div className="flex min-h-0 flex-1 overflow-hidden">
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div ref={tableContainerRef} className="flex-1 overflow-x-auto overflow-y-auto">
+          {/* Mobile cards */}
+          <div className="md:hidden flex-1 overflow-y-auto bg-gray-50 dark:bg-[#0a0a0a]">
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="mb-3 rounded-2xl bg-gray-100 p-5 dark:bg-[#222222]">
+                  <Package className="h-8 w-8 text-gray-300 dark:text-gray-600" />
+                </div>
+                <p className="text-sm text-gray-400 dark:text-[#929292]">{t('need_empty_filtered')}</p>
+              </div>
+            ) : (
+              <div className="space-y-2 px-3 py-3">
+                {filtered.map(item => {
+                  const cfg       = STATUS_STYLE[item.status]
+                  const isChecked = checkedIds.includes(item.id)
+                  const recQty    = calcRecommendedQty(item, periodDays)
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => setDrawerItem(item)}
+                      className="relative flex cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-white active:bg-gray-50 dark:border-gray-700 dark:bg-[#111111]"
+                    >
+                      <span className="absolute left-0 top-0 bottom-0 w-1" style={{ background: cfg.borderColor }} />
+                      <div className="flex flex-1 items-start gap-2.5 px-3.5 py-3 pl-4">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onClick={e => e.stopPropagation()}
+                          onChange={(e) => toggleCheck(item.id, e as unknown as React.MouseEvent)}
+                          className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 accent-gray-900"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className={cn('flex-1 truncate text-sm font-semibold', item.status === 'dead' ? 'text-gray-400 dark:text-gray-600' : 'text-gray-900 dark:text-gray-100')}>
+                              {item.name}
+                            </p>
+                            <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap', cfg.badgeCls)}>
+                              {t(`need_status_${item.status}`)}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">{item.manufacturer} · {item.country}</p>
+
+                          <div className="mt-2.5 grid grid-cols-4 gap-1.5">
+                            <div className="rounded-lg bg-gray-50 px-2 py-1.5 dark:bg-[#222222]">
+                              <p className="text-[9px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_th_stock') ?? 'Остаток'}</p>
+                              <p className={cn('mt-0.5 text-sm font-bold tabular-nums', item.stock === 0 ? 'text-red-500' : 'text-gray-900 dark:text-gray-100')}>
+                                {item.stock === 0 ? '—' : item.stock}
+                              </p>
+                            </div>
+                            <div className="rounded-lg bg-gray-50 px-2 py-1.5 dark:bg-[#222222]">
+                              <p className="text-[9px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_th_doc') ?? 'Дни'}</p>
+                              <p className="mt-0.5 text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">
+                                {item.daysOfCover > 0 ? Math.round(item.daysOfCover) : '—'}
+                              </p>
+                            </div>
+                            <div className="rounded-lg bg-gray-50 px-2 py-1.5 dark:bg-[#222222]">
+                              <p className="text-[9px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_th_sales') ?? 'Прод/д'}</p>
+                              <p className="mt-0.5 text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{item.avgDailySales.toFixed(1)}</p>
+                            </div>
+                            <div className={cn('rounded-lg px-2 py-1.5', recQty > 0 ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-gray-50 dark:bg-[#222222]')}>
+                              <p className="text-[9px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_th_need') ?? 'Нужно'}</p>
+                              <p className={cn('mt-0.5 text-sm font-bold tabular-nums', recQty > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-gray-300 dark:text-gray-600')}>
+                                {recQty > 0 ? recQty : '—'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setAiItem(item) }}
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-400 dark:border-gray-700"
+                          aria-label="AI"
+                        >
+                          <Sparkles className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop table */}
+          <div ref={tableContainerRef} className="hidden md:block flex-1 overflow-x-auto overflow-y-auto">
             <table style={{ tableLayout: 'fixed', width: tableW, minWidth: tableW, borderCollapse: 'collapse' }}>
               <colgroup>
                 <col style={{ width: COL_CB }} />
@@ -1710,6 +1829,107 @@ export function NeedPage() {
 
       {aiItem && (
         <AIAdviceModal item={aiItem} onClose={() => setAiItem(null)} />
+      )}
+
+      {/* Mobile filter sheet */}
+      {mobileFiltersOpen && (
+        <div className="fixed inset-0 z-50 md:hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => setMobileFiltersOpen(false)} />
+          <div className="absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col rounded-t-2xl bg-white shadow-2xl dark:bg-[#111111]">
+            <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-700">
+              <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">{t('need_filters_title') ?? 'Фильтры'}</h2>
+              <button
+                onClick={() => setMobileFiltersOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+              <div>
+                <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('filter_pharmacy') ?? 'Аптеки'}</p>
+                <div className="space-y-1.5">
+                  {PHARMACIES.map(ph => {
+                    const checked = selectedPharmacyIds.includes(ph.id)
+                    return (
+                      <label
+                        key={ph.id}
+                        onClick={() => setSelectedPharmacyIds(prev => checked ? prev.filter(id => id !== ph.id) : [...prev, ph.id])}
+                        className={cn('flex h-12 items-center gap-3 rounded-xl border px-3.5',
+                          checked ? 'border-gray-900 bg-gray-50 dark:border-[#f1f1f1] dark:bg-[#222222]' : 'border-gray-200 dark:border-gray-700')}
+                      >
+                        <div className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded border-2', checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1]' : 'border-gray-300 dark:border-gray-600')}>
+                          {checked && <Check className="h-3.5 w-3.5 text-white dark:text-gray-900" strokeWidth={3} />}
+                        </div>
+                        <span className={cn('truncate text-sm', checked ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300')}>{ph.name}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_th_group') ?? 'Группа'}</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setGroupFilter(null)}
+                    className={cn('h-10 rounded-full px-3.5 text-xs font-semibold',
+                      !groupFilter ? 'bg-gray-900 text-white dark:bg-[#f1f1f1] dark:text-gray-900' : 'border border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300')}
+                  >
+                    {t('need_group_all')}
+                  </button>
+                  {GROUPS.map(g => (
+                    <button
+                      key={g}
+                      onClick={() => setGroupFilter(g)}
+                      className={cn('h-10 rounded-full px-3.5 text-xs font-semibold',
+                        groupFilter === g ? 'bg-gray-900 text-white dark:bg-[#f1f1f1] dark:text-gray-900' : 'border border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300')}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_period_for')}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {PERIODS.filter(p => p.key !== 'custom').map(p => (
+                    <button
+                      key={p.key}
+                      onClick={() => setPeriod(p.key)}
+                      className={cn('h-11 rounded-xl border text-sm font-medium',
+                        period === p.key ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300')}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="shrink-0 flex gap-3 border-t border-gray-100 px-5 py-3 dark:border-gray-700">
+              <button
+                onClick={() => {
+                  setSelectedPharmacyIds([])
+                  setGroupFilter(null)
+                  setPeriod('30d')
+                  setSearch('')
+                }}
+                className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300"
+              >
+                {t('filter_reset_all')}
+              </button>
+              <button
+                onClick={() => setMobileFiltersOpen(false)}
+                className="flex h-12 flex-1 items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900"
+              >
+                {t('need_period_apply')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect, Fragment } from 'react'
 import {
   ShoppingCart, Trash2, Minus, Plus,
-  ChevronDown, MapPin,
+  ChevronDown, ChevronUp, MapPin,
   Receipt, ArrowRight, Package, Check, X,
 } from 'lucide-react'
 
@@ -190,6 +190,7 @@ export function CartPage() {
   const [distFilter,     setDistFilter]     = useState<string | null>(null)
   const [collapsed,      setCollapsed]      = useState<Set<string>>(new Set())
   const [showPharmacyDrop, setShowPharmacyDrop] = useState(false)
+  const [mobileSheetOpen,  setMobileSheetOpen]  = useState(false)
   const pharmacyDropRef = useRef<HTMLDivElement>(null)
 
   const pharmacy = mockPharmacies.find(p => p.id === pharmacyId) ?? mockPharmacies[0]
@@ -380,10 +381,98 @@ export function CartPage() {
       {/* ── Тело ── */}
       <div className="flex min-h-0 flex-1 overflow-hidden">
 
-        {/* ── Левая панель ── */}
+        {/* ── Левая панель — таблица (desktop) / карточки (mobile) ── */}
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
 
-          <div className="flex-1 overflow-auto">
+          {/* Mobile cards */}
+          <div className="md:hidden flex-1 overflow-y-auto bg-gray-50 dark:bg-[#0a0a0a]" style={{ paddingBottom: hasSelection ? 144 : 80 }}>
+            <div className="space-y-3 px-4 py-4">
+              {filteredGroups.map(group => {
+                const isCollapsed     = collapsed.has(group.id)
+                const groupAllChecked = group.items.every(i => checkedIds.has(i.offerId))
+                const groupSomeChecked = group.items.some(i => checkedIds.has(i.offerId))
+                const groupTotal      = group.items.reduce((s, i) => s + effPrice(i) * i.quantity, 0)
+
+                return (
+                  <div key={group.id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
+                    <div className="flex items-center gap-2.5 border-b border-gray-100 px-4 py-3 dark:border-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={groupAllChecked}
+                        ref={el => { if (el) el.indeterminate = groupSomeChecked && !groupAllChecked }}
+                        onChange={() => toggleGroup(group)}
+                        className="h-5 w-5 cursor-pointer rounded border-gray-300 accent-gray-900"
+                      />
+                      <button
+                        onClick={() => toggleCollapse(group.id)}
+                        className="flex flex-1 items-center justify-between text-left"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <Package className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                            <p className="truncate text-sm font-bold text-gray-900 dark:text-gray-100">{group.name}</p>
+                          </div>
+                          <p className="mt-0.5 text-[11px] text-gray-400 dark:text-[#929292]">
+                            {group.city} · {group.items.length} поз.
+                          </p>
+                        </div>
+                        <div className="ml-2 shrink-0 text-right">
+                          <p className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(groupTotal)}</p>
+                        </div>
+                        <ChevronDown className={cn('ml-2 h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200', isCollapsed && '-rotate-90')} />
+                      </button>
+                    </div>
+
+                    {!isCollapsed && (
+                      <div className="divide-y divide-gray-100 dark:divide-[#333333]">
+                        {group.items.map(item => {
+                          const isChecked = checkedIds.has(item.offerId)
+                          const lineTotal = effPrice(item) * item.quantity
+
+                          return (
+                            <div key={item.offerId} className={cn('flex gap-3 px-4 py-3', isChecked && 'bg-gray-50 dark:bg-[#222222]')}>
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => toggleItem(item.offerId)}
+                                className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 accent-gray-900"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{item.medicine.name}</p>
+                                <p className="mt-0.5 text-xs text-gray-500 dark:text-[#929292]">{item.medicine.manufacturer}</p>
+                                <div className="mt-1 flex items-center gap-2">
+                                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                                    {item.medicine.country}
+                                  </span>
+                                  <span className="text-xs text-gray-400 dark:text-[#929292]">{formatCurrency(effPrice(item))}</span>
+                                </div>
+                                <div className="mt-2.5 flex items-center justify-between gap-3">
+                                  <QtyControl
+                                    value={item.quantity}
+                                    onChange={v => v === 0 ? removeItem(item.offerId) : updateQty(item.offerId, v)}
+                                  />
+                                  <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(lineTotal)}</span>
+                                  <button
+                                    onClick={() => removeItem(item.offerId)}
+                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 active:bg-red-50 active:text-red-500 dark:active:bg-red-900/20"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block flex-1 overflow-auto">
             <table className="w-full border-collapse">
               <thead className="sticky top-0 z-10 bg-white dark:bg-[#111111]">
                 <tr className="h-12 border-b-2 border-gray-200 dark:border-gray-700">
@@ -532,8 +621,8 @@ export function CartPage() {
           </div>
         </div>
 
-        {/* ── Правая панель: инвойс ── */}
-        <div className="flex w-[360px] shrink-0 flex-col overflow-hidden border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
+        {/* ── Правая панель: инвойс (desktop) ── */}
+        <div className="hidden md:flex w-[360px] shrink-0 flex-col overflow-hidden border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
 
           <div ref={pharmacyDropRef} className="relative shrink-0">
             <button
@@ -646,6 +735,141 @@ export function CartPage() {
         </div>
 
       </div>
+
+      {/* ── Mobile sticky bottom bar — над таб-баром ── */}
+      <div className="md:hidden fixed inset-x-0 bottom-16 z-30 border-t border-gray-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:border-gray-700 dark:bg-[#111111]">
+        {hasSelection ? (
+          <button
+            onClick={() => setMobileSheetOpen(true)}
+            className="flex w-full items-center gap-3 px-4 py-3"
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-900 text-white dark:bg-[#f1f1f1] dark:text-gray-900">
+              <Receipt className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1 text-left">
+              <p className="text-[11px] font-medium text-gray-400 dark:text-[#929292]">{t('cart_total_label')}</p>
+              <p className="text-base font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(invoiceTotal)}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-gray-900 px-4 py-2 text-xs font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900">
+              <span>{invoiceItemCnt} {t('cart_positions')}</span>
+              <ChevronUp className="h-3.5 w-3.5" />
+            </div>
+          </button>
+        ) : (
+          <div className="flex items-center gap-3 px-4 py-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+              <Receipt className="h-5 w-5 text-gray-300 dark:text-gray-600" />
+            </div>
+            <p className="text-xs text-gray-400 dark:text-[#929292]">{t('cart_select_hint')}</p>
+          </div>
+        )}
+      </div>
+
+      {/* ── Mobile invoice bottom sheet ── */}
+      {mobileSheetOpen && hasSelection && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setMobileSheetOpen(false)} />
+          <div className="absolute inset-x-0 bottom-0 flex max-h-[92vh] flex-col rounded-t-2xl bg-white shadow-2xl dark:bg-[#111111]">
+            <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-700">
+              <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">{t('cart_order_content')}</h2>
+              <button
+                onClick={() => setMobileSheetOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="shrink-0 border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+              <button
+                onClick={() => setShowPharmacyDrop(v => !v)}
+                className="flex h-12 w-full items-center justify-between rounded-xl border border-gray-200 px-3 dark:border-gray-700"
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <MapPin className="h-4 w-4 shrink-0 text-gray-500 dark:text-[#929292]" />
+                  <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{pharmacy.name}</span>
+                </div>
+                <ChevronDown className={cn('h-4 w-4 shrink-0 text-gray-400 transition-transform', showPharmacyDrop && 'rotate-180')} />
+              </button>
+              {showPharmacyDrop && (
+                <div className="mt-2 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                  {mockPharmacies.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => { setPharmacyId(p.id); setShowPharmacyDrop(false) }}
+                      className={cn(
+                        'flex w-full items-center gap-2 px-3 py-3 text-left text-sm border-b last:border-0 border-gray-100 dark:border-[#333333]',
+                        p.id === pharmacyId ? 'bg-gray-50 font-semibold text-gray-900 dark:bg-[#222222] dark:text-gray-100' : 'text-gray-600 dark:text-gray-400',
+                      )}
+                    >
+                      <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                      {p.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 py-3">
+              <div className="space-y-3">
+                {invoiceGroups.map(g => (
+                  <div key={g.id} className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-3 py-2.5 dark:border-gray-700 dark:bg-[#222222]">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-gray-900 dark:text-gray-100">{g.name}</p>
+                        <p className="text-[11px] text-gray-400 dark:text-[#929292]">{g.city}</p>
+                      </div>
+                      <div className="ml-2 shrink-0 text-right">
+                        <p className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(g.subtotal)}</p>
+                        <p className="text-[11px] text-gray-400 dark:text-[#929292]">{t('cart_group_pos_qty', { pos: g.items.length, qty: g.qty })}</p>
+                      </div>
+                    </div>
+                    <div className="divide-y divide-gray-100 bg-white dark:divide-[#333333] dark:bg-[#111111]">
+                      {g.items.map(item => (
+                        <div key={item.offerId} className="flex items-center gap-2 px-3 py-2">
+                          <p className="min-w-0 flex-1 truncate text-xs text-gray-700 dark:text-gray-300">{item.medicine.name}</p>
+                          <span className="shrink-0 text-[11px] text-gray-400 dark:text-[#929292]">×{item.quantity}</span>
+                          <span className="w-20 shrink-0 text-right text-xs font-semibold text-gray-900 dark:text-gray-100">
+                            {formatCurrency(effPrice(item) * item.quantity)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 space-y-2 rounded-xl bg-gray-50 px-4 py-3 dark:bg-[#222222]">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{t('cart_positions')}</span>
+                  <span className="text-xs font-semibold tabular-nums text-gray-900 dark:text-gray-100">{invoiceItemCnt}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{t('cart_units')}</span>
+                  <span className="text-xs font-semibold tabular-nums text-gray-900 dark:text-gray-100">{invoiceQtyCnt}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{t('cart_distributors')}</span>
+                  <span className="text-xs font-semibold tabular-nums text-gray-900 dark:text-gray-100">{invoiceGroups.length}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="shrink-0 border-t border-gray-100 px-5 pt-3 pb-5 dark:border-gray-700">
+              <div className="mb-3 flex items-end justify-between">
+                <span className="text-xs text-gray-400 dark:text-[#929292]">{t('cart_total_label')}</span>
+                <span className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(invoiceTotal)}</span>
+              </div>
+              <button
+                onClick={() => { setMobileSheetOpen(false); createOrder() }}
+                className="flex h-12 w-full items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900"
+              >
+                {t('cart_create_order')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {successPayload && (
         <SuccessModal payload={successPayload} onClose={handleSuccessClose} />

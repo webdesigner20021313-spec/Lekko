@@ -199,7 +199,7 @@ export function SupplierFilters({
   }
 
   return (
-    <div className="flex items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
+    <div className="flex items-center gap-2 overflow-x-auto border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]" style={{ scrollbarWidth: 'none' }}>
 
       {/* Distributor — с поиском */}
       <div ref={distRef} className="relative">

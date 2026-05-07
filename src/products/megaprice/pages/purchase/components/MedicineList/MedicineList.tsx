@@ -149,11 +149,10 @@ export function MedicineList({
         />
       </div>
 
-      {/* Таблица — скролл по X и Y всегда виден */}
+      {/* Таблица — скролл по X и Y только на десктопе; на мобиле — карточки без X-скролла */}
       <div
         ref={panel1Ref}
-        className="min-h-0 flex-1"
-        style={{ overflowX: 'scroll', overflowY: 'scroll' }}
+        className="min-h-0 flex-1 overflow-y-scroll md:overflow-x-scroll"
       >
         <MedicineTable
           medicines={filteredList}

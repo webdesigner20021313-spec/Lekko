@@ -1,8 +1,94 @@
 import { useState, useRef } from 'react'
 import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { cn } from '@/shared/utils/utils'
+import { formatCurrency, formatDate } from '@/shared/utils/format'
 import { SupplierRow } from './SupplierRow'
-import type { SupplierOffer, SortField, SortDirection, ColumnKey } from '@/products/megaprice/pages/purchase/types/purchase.types'
+import { QuantityControl } from './QuantityControl'
+import { useWholesalersStore } from '@/products/megaprice/stores/useWholesalersStore'
+import type { SupplierOffer, SortField, SortDirection, ColumnKey, BonusType } from '@/products/megaprice/pages/purchase/types/purchase.types'
+
+const bonusStylesMobile: Record<BonusType, string> = {
+  cashback:      'bg-[#D1FAE5] text-[#065F46] dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]',
+  gift:          'bg-[#FEF3C7] text-[#92400E] dark:bg-[#78350F]/40 dark:text-[#FCD34D]',
+  free_delivery: 'bg-[#DBEAFE] text-[#1E40AF] dark:bg-[#1E3A8A]/40 dark:text-[#93C5FD]',
+  discount:      'bg-[#FEE2E2] text-[#991B1B] dark:bg-[#7F1D1D]/40 dark:text-[#FCA5A5]',
+}
+
+function MobileOfferCard({ offer, avgPrice, quantity, onQuantityChange }: {
+  offer: SupplierOffer
+  avgPrice: number
+  quantity: number
+  onQuantityChange: (id: string, q: number) => void
+}) {
+  const { t } = useTranslation()
+  const myDiscount = useWholesalersStore(s => s.getDiscount(offer.distributor.name))
+  const effectivePrice = myDiscount ? Math.round(offer.priceWithVat * (1 - myDiscount / 100)) : offer.priceWithVat
+  const discountPct = myDiscount ? myDiscount : (offer.originalPrice ? Math.round((1 - offer.priceWithVat / offer.originalPrice) * 100) : null)
+
+  const expiry = new Date(offer.expiryDate)
+  const diffDays = Math.floor((expiry.getTime() - Date.now()) / 86400000)
+  const expiryUrgent = diffDays < 180
+
+  const priceVsAvg = avgPrice && avgPrice !== effectivePrice
+    ? Math.round(((effectivePrice - avgPrice) / avgPrice) * 100)
+    : null
+  const isCheaper = priceVsAvg !== null && priceVsAvg < -2
+  const isPricier = priceVsAvg !== null && priceVsAvg > 2
+
+  return (
+    <div className={cn(
+      'overflow-hidden rounded-2xl border bg-white dark:bg-[#111111]',
+      quantity > 0 ? 'border-gray-900 dark:border-[#f1f1f1]' : 'border-gray-200 dark:border-gray-700',
+    )}>
+      <div className="flex items-start justify-between gap-3 px-4 pt-3.5 pb-2">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-bold text-gray-900 dark:text-gray-100">{offer.distributor.name}</p>
+          <p className="mt-0.5 truncate text-[11px] text-gray-500 dark:text-[#929292]">{offer.distributor.city}</p>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className={cn('text-base font-bold tabular-nums',
+            isCheaper ? 'text-green-600 dark:text-green-400' : isPricier ? 'text-red-500' : 'text-gray-900 dark:text-gray-100',
+          )}>{formatCurrency(effectivePrice)}</p>
+          {discountPct && (
+            <div className="flex items-center justify-end gap-1">
+              <span className="text-[10px] text-gray-400 line-through">{formatCurrency(myDiscount ? offer.priceWithVat : offer.originalPrice!)}</span>
+              <span className="text-[10px] font-bold text-red-500">-{discountPct}%</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5 px-4 pb-2">
+        <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
+          expiryUrgent
+            ? 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-300'
+            : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+        )}>
+          {t('col_expiry')}: {formatDate(offer.expiryDate)}
+        </span>
+        <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+          {t('col_payment')}: {offer.paymentTypes.map(p => p.percentage === null ? t('payment_negotiable') : `${p.percentage}%`).join(' / ')}
+        </span>
+        {myDiscount && (
+          <span className="inline-flex items-center rounded-full bg-[#EDE9FE] px-2 py-0.5 text-[10px] font-medium text-[#5B21B6]">
+            {t('special_offer')}
+          </span>
+        )}
+        {offer.bonus && (
+          <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium', bonusStylesMobile[offer.bonus.type])}>
+            {offer.bonus.label}
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-[#222222]">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">{t('col_quantity')}</span>
+        <QuantityControl value={quantity} onChange={(v) => onQuantityChange(offer.id, v)} />
+      </div>
+    </div>
+  )
+}
 
 interface SupplierTableProps {
   offers: SupplierOffer[]
@@ -157,7 +243,27 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
   }
 
   return (
-    <div className="dark:bg-[#111111]" style={{ height: '100%', overflowX: 'auto', overflowY: 'auto' }}>
+    <>
+    {/* Mobile cards */}
+    <div className="md:hidden h-full overflow-y-auto bg-gray-50 px-3 py-3 dark:bg-[#0a0a0a]">
+      <div className="space-y-2.5">
+        {offers.map(offer => (
+          <MobileOfferCard
+            key={offer.id}
+            offer={offer}
+            avgPrice={avgPrice}
+            quantity={quantities[offer.id] ?? 0}
+            onQuantityChange={onQuantityChange}
+          />
+        ))}
+        {offers.length === 0 && (
+          <div className="py-12 text-center text-sm text-gray-400 dark:text-[#929292]">{t('medicines_not_found')}</div>
+        )}
+      </div>
+    </div>
+
+    {/* Desktop table */}
+    <div className="hidden md:block dark:bg-[#111111]" style={{ height: '100%', overflowX: 'auto', overflowY: 'auto' }}>
       <table style={{ tableLayout: 'fixed', width: tableWidth, borderCollapse: 'collapse' }}>
         <colgroup>
           <col style={{ width: cols.num }} />
@@ -200,5 +306,6 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
         </tbody>
       </table>
     </div>
+    </>
   )
 }
