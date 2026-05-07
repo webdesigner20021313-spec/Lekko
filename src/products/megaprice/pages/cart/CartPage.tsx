@@ -158,7 +158,7 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
           </button>
           <button
             onClick={onClose}
-            className="flex h-11 flex-1 items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black"
+            className="flex h-11 flex-1 items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
           >
             {t('cart_done')}
           </button>
@@ -636,7 +636,7 @@ export function CartPage() {
               <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-[#111111]">
                 <button
                   onClick={createOrder}
-                  className="flex h-11 w-full items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black"
+                  className="flex h-11 w-full items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
                 >
                   {t('cart_create_order')}
                 </button>

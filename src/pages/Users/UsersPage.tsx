@@ -26,7 +26,7 @@ export function UsersPage() {
         <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('nav_users')}</h1>
         <button
           onClick={() => { setEditingUser(null); setUserModal(true) }}
-          className="flex h-9 items-center gap-2 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white hover:bg-black"
+          className="flex h-9 items-center gap-2 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
         >
           <Plus className="h-4 w-4" />
           {t('users_add')}

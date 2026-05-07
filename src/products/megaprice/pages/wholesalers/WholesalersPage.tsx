@@ -94,7 +94,7 @@ function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountMo
             className={cn(
               'rounded-lg px-4 py-2 text-sm font-medium transition-colors',
               valid
-                ? 'bg-gray-900 text-white hover:bg-black'
+                ? 'bg-gray-900 text-white hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]'
                 : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600',
             )}>
             {t('ws_modal_save')}

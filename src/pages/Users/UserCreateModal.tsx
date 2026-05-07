@@ -284,7 +284,7 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
           </button>
           <button
             onClick={handleSubmit}
-            className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-black"
+            className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
           >
             {isEdit ? t('confirm_save') : t('confirm_create')}
           </button>

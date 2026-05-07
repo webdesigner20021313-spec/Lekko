@@ -656,7 +656,7 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
               className={cn(
                 'flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-colors',
                 bestOffer
-                  ? 'bg-gray-900 text-white hover:bg-black'
+                  ? 'bg-gray-900 text-white hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]'
                   : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600',
               )}>
               <Plus className="h-4 w-4" />
@@ -1676,7 +1676,7 @@ export function NeedPage() {
                   {t('need_bulk_cancel')}
                 </button>
                 <button onClick={handleBulkAddToCart}
-                  className="flex h-9 items-center gap-2 rounded-lg bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-black">
+                  className="flex h-9 items-center gap-2 rounded-lg bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]">
                   <Zap className="h-4 w-4" />
                   {t('need_bulk_add_order')}
                 </button>

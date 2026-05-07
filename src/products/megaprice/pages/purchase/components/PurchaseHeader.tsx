@@ -67,11 +67,11 @@ showFavorites,
         </button>
 
         {/* Cart */}
-        <button onClick={() => navigate(mp('/cart'))} className="flex h-10 items-center gap-1.5 rounded-lg bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-black">
+        <button onClick={() => navigate(mp('/cart'))} className="flex h-10 items-center gap-1.5 rounded-lg bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]">
           <ShoppingCart className="h-4 w-4" />
           {t('cart_label')}
           {totalItems() > 0 && (
-            <span className="inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-white px-1 text-xs font-semibold text-gray-900">
+            <span className="inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-white px-1 text-xs font-semibold text-gray-900 dark:bg-gray-900 dark:text-white">
               {totalItems()}
             </span>
           )}

@@ -438,7 +438,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
 
             <button
               onClick={() => setShowModal(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-black"
+              className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
             >
               <Zap className="h-4 w-4" />
               Авто-подбор

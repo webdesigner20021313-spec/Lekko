@@ -335,7 +335,7 @@ export function RoleEditPage() {
           </button>
           <button
             onClick={handleSave}
-            className="h-9 rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white hover:bg-black"
+            className="h-9 rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
           >
             Сохранить изменения
           </button>

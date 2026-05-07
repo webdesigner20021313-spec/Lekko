@@ -283,7 +283,7 @@ function ConfirmModal({
             onClick={() => { onConfirm(); onClose() }}
             className={cn(
               'flex-1 rounded-xl py-2.5 text-sm font-medium text-white transition-colors',
-              isDanger ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-900 hover:bg-black',
+              isDanger ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-900 hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]',
             )}
           >
             {confirmLabel}
@@ -367,7 +367,7 @@ function ProposalBlock({
             </button>
             <button
               onClick={onAccept}
-              className="flex h-8 items-center gap-1.5 rounded-lg bg-gray-900 px-3 text-sm font-medium text-white transition-colors hover:bg-black"
+              className="flex h-8 items-center gap-1.5 rounded-lg bg-gray-900 px-3 text-sm font-medium text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
             >
               <Check className="h-3.5 w-3.5" />
               {t('orders_proposal_accept')}
@@ -824,7 +824,7 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
           </button>
           <button
             onClick={() => setModal({ kind: 'complete' })}
-            className="flex h-9 items-center gap-2 rounded-xl bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-black"
+            className="flex h-9 items-center gap-2 rounded-xl bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
           >
             <Check className="h-4 w-4" />
             {t('orders_complete_btn')}

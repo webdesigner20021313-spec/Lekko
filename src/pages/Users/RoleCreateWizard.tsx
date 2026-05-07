@@ -192,7 +192,7 @@ export function RoleCreateWizard({ open, onClose }: Props) {
             </div>
             <ModalFooter>
               <button onClick={onClose} className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Отмена</button>
-              <button onClick={goToStep2} className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white hover:bg-black">Далее →</button>
+              <button onClick={goToStep2} className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]">Далее →</button>
             </ModalFooter>
           </>
         )}
@@ -273,7 +273,7 @@ export function RoleCreateWizard({ open, onClose }: Props) {
             </div>
             <ModalFooter>
               <button onClick={() => setStep(1)} className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">← Назад</button>
-              <button onClick={goToStep3} className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white hover:bg-black">Далее →</button>
+              <button onClick={goToStep3} className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]">Далее →</button>
             </ModalFooter>
           </>
         )}
@@ -405,7 +405,7 @@ export function RoleCreateWizard({ open, onClose }: Props) {
             </div>
             <ModalFooter>
               <button onClick={() => setStep(2)} className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">← Назад</button>
-              <button onClick={handleSave} className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white hover:bg-black">Сохранить роль</button>
+              <button onClick={handleSave} className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]">Сохранить роль</button>
             </ModalFooter>
           </>
         )}

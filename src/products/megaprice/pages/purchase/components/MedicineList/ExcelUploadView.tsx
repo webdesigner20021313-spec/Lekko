@@ -374,7 +374,7 @@ export function ExcelUploadView({
             <button
               onClick={applyAndLoad}
               disabled={colMap.name === -1 && colMap.mnn === -1}
-              className="h-9 w-full rounded-lg bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-40"
+              className="h-9 w-full rounded-lg bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0] disabled:cursor-not-allowed disabled:opacity-40"
             >
               {t('excel_apply')}
             </button>

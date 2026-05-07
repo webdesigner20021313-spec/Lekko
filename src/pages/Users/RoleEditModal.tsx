@@ -293,7 +293,7 @@ export function RoleEditModal({ open, roleId, onClose }: Props) {
             <button onClick={onClose} className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600">
               {t('confirm_cancel')}
             </button>
-            <button onClick={handleSave} className="h-9 rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white hover:bg-black">
+            <button onClick={handleSave} className="h-9 rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]">
               {t('role_save_btn')}
             </button>
           </div>
