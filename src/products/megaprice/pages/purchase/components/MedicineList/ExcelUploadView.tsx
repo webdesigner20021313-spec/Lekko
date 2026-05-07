@@ -341,7 +341,7 @@ export function ExcelUploadView({
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                        <tr className="border-b border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]">
                           {activeCols.map(i => (
                             <th key={i} className="whitespace-nowrap px-3 py-2 text-left text-xs font-bold text-gray-400 dark:text-gray-500">
                               {colLabel(i)}

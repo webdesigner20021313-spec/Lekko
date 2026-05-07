@@ -496,7 +496,7 @@ function DistributorCard({
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/60 dark:border-gray-700 dark:bg-gray-800">
+              <tr className="border-b border-gray-100 bg-gray-50/60 dark:border-gray-700 dark:bg-[#222222]">
                 <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">{t('orders_col_medicine')}</th>
                 <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">{t('orders_col_manufacturer')}</th>
                 <th className="px-5 py-2.5 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">{t('orders_col_qty')}</th>

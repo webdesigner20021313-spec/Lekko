@@ -23,7 +23,7 @@ export function UserList({ onEditUser }: Props) {
       <div className="overflow-hidden border-b border-gray-200 dark:border-gray-700">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#222222]">
               <th className="w-10 px-4 py-3 text-center text-xs font-semibold text-gray-400">#</th>
               <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('users_col_name')}</th>
               <th className="px-4 py-3 text-left   text-xs font-semibold text-gray-500 dark:text-gray-400">{t('users_col_contact')}</th>
@@ -45,7 +45,7 @@ export function UserList({ onEditUser }: Props) {
               users.map((user, idx) => {
                 const role = getRole(user.roleId)
                 return (
-                  <tr key={user.id} className="bg-white dark:bg-gray-800 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr key={user.id} className="bg-white dark:bg-[#222222] transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
 
                     <td className="px-4 py-3 text-center text-xs text-gray-400">{idx + 1}</td>
 

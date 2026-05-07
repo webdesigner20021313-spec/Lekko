@@ -362,7 +362,7 @@ function OffersModal({ item, currentOfferId, onSelectOffer, onClose }: {
           ) : (
             <table className="w-full" style={{ borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800" style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+                <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]" style={{ position: 'sticky', top: 0, zIndex: 1 }}>
                   <th className="w-8 px-3 py-2.5" />
                   {colHeaders.map(h => (
                     <th key={h} className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 whitespace-nowrap">
@@ -577,7 +577,7 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
           <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
             <table className="w-full" style={{ borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]">
                   <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{t('need_ph_col_pharmacy')}</th>
                   <th className="px-3 py-2 text-right text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{t('need_col_stock')}</th>
                   <th className="px-3 py-2 text-right text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{t('need_ph_col_sales_month')}</th>

@@ -219,7 +219,7 @@ export function WholesalersPage() {
           <div className="overflow-hidden border-b border-gray-200 dark:border-gray-700">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]">
                   <th className="w-10 px-4 py-3.5 text-center text-xs font-semibold uppercase text-gray-400">#</th>
                   <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400" style={{ minWidth: 160 }}>{t('ws_col_name')}</th>
                   <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{t('ws_col_city')}</th>

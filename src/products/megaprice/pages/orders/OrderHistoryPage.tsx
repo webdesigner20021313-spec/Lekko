@@ -204,7 +204,7 @@ export function OrderHistoryPage() {
           <div className="overflow-hidden border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
             <table className="w-full">
               <thead>
-                <tr className="h-14 border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                <tr className="h-14 border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]">
                   <th className="w-14 px-3 py-2.5 text-center align-middle">
                     <input
                       type="checkbox"
