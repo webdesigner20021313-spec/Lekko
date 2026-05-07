@@ -173,8 +173,8 @@ function FiltersBar({
                   <label key={item} onClick={() => onToggleItem(item)}
                     className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
                     <div className={cn('flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                      checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600')}>
-                      {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                      checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-300 dark:border-gray-600')}>
+                      {checked && <Check className="h-3 w-3 text-white dark:text-gray-900" strokeWidth={3} />}
                     </div>
                     <span className="truncate text-sm text-gray-700 dark:text-gray-300">{item}</span>
                   </label>
@@ -244,8 +244,8 @@ function FiltersBar({
                     <label key={m} onClick={() => toggle(mnnFilter, m, onMnn)}
                       className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
                       <div className={cn('flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                        checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600')}>
-                        {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                        checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-300 dark:border-gray-600')}>
+                        {checked && <Check className="h-3 w-3 text-white dark:text-gray-900" strokeWidth={3} />}
                       </div>
                       <span className="truncate text-sm text-gray-700 dark:text-gray-300">{m}</span>
                     </label>
@@ -281,8 +281,8 @@ function FiltersBar({
                 <label key={b.value} onClick={() => toggle(bonusFilter, b.value, onBonus)}
                   className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
                   <div className={cn('flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                    checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600')}>
-                    {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                    checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-300 dark:border-gray-600')}>
+                    {checked && <Check className="h-3 w-3 text-white dark:text-gray-900" strokeWidth={3} />}
                   </div>
                   <span className="text-sm text-gray-700 dark:text-gray-300">{b.label}</span>
                 </label>
@@ -322,8 +322,8 @@ function FiltersBar({
                 <label key={col.key} onClick={() => onToggleColumn(col.key)}
                   className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
                   <div className={cn('flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                    checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600')}>
-                    {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                    checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-300 dark:border-gray-600')}>
+                    {checked && <Check className="h-3 w-3 text-white dark:text-gray-900" strokeWidth={3} />}
                   </div>
                   <span className="text-sm text-gray-700 dark:text-gray-300">{col.label}</span>
                 </label>

@@ -352,7 +352,7 @@ export function CartPage() {
               className={cn(
                 'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-all duration-150',
                 distFilter === null
-                  ? 'bg-gray-900 text-white shadow-sm dark:bg-blue-600'
+                  ? 'bg-gray-900 text-white shadow-sm dark:bg-[#f1f1f1] dark:text-gray-900'
                   : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800',
               )}
             >
@@ -365,7 +365,7 @@ export function CartPage() {
                 className={cn(
                   'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-all duration-150',
                   distFilter === g.id
-                    ? 'bg-gray-900 text-white shadow-sm dark:bg-blue-600'
+                    ? 'bg-gray-900 text-white shadow-sm dark:bg-[#f1f1f1] dark:text-gray-900'
                     : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800',
                 )}
               >

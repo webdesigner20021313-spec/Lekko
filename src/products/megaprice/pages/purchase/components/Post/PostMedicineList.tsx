@@ -186,7 +186,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                     >
                       <div className={cn(
                         'flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors',
-                        isActive ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600',
+                        isActive ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-300 dark:border-gray-600',
                       )}>
                         {isActive && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
                       </div>
@@ -224,8 +224,8 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                     <label key={col.key} onClick={() => setVisibleCols(prev => ({ ...prev, [col.key]: !prev[col.key] }))}
                       className="flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
                       <div className={cn('flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors',
-                        checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600')}>
-                        {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                        checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-300 dark:border-gray-600')}>
+                        {checked && <Check className="h-3 w-3 text-white dark:text-gray-900" strokeWidth={3} />}
                       </div>
                       <span className="text-sm text-gray-700 dark:text-gray-300">{col.label}</span>
                     </label>
@@ -426,7 +426,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
                 onClick={() => setByDemand((v) => !v)}
                 className={cn(
                   'relative inline-flex h-5 w-9 items-center rounded-full border-2 transition-colors duration-200',
-                  byDemand ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 bg-gray-200 dark:border-gray-600 dark:bg-gray-700',
+                  byDemand ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-300 bg-gray-200 dark:border-gray-600 dark:bg-gray-700',
                 )}
               >
                 <span className={cn(

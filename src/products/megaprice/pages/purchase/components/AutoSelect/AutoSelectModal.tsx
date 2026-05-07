@@ -378,7 +378,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                         className={cn(
                           'rounded-full border px-3 py-1 text-[13px] font-medium transition-colors duration-150',
                           active
-                            ? 'border-gray-900 bg-gray-900 text-white dark:border-blue-500 dark:bg-blue-600'
+                            ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
                             : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-700',
                         )}
                       >

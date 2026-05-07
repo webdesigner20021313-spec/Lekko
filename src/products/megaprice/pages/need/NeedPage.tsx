@@ -1043,7 +1043,7 @@ function RangeCalendar({ from, to, onChange }: {
               onMouseLeave={() => setHover('')}
               className={cn(
                 'h-7 w-full text-xs transition-colors',
-                (isF || isT) ? 'rounded-full bg-gray-900 font-semibold text-white dark:bg-blue-600'
+                (isF || isT) ? 'rounded-full bg-gray-900 font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900'
                   : inR ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                   : cn('rounded-full text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700', isTod && 'font-bold'),
               )}
@@ -1373,8 +1373,8 @@ export function NeedPage() {
                         checked ? prev.filter(id => id !== ph.id) : [...prev, ph.id]
                       )}
                       className="flex cursor-pointer w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <div className={cn('flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors', checked ? 'border-blue-600 bg-blue-600 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600')}>
-                        {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                      <div className={cn('flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors', checked ? 'border-blue-600 bg-blue-600 dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-300 dark:border-gray-600')}>
+                        {checked && <Check className="h-3 w-3 text-white dark:text-gray-900" strokeWidth={3} />}
                       </div>
                       <span className={cn('truncate', checked ? 'font-medium text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300')}>{ph.name}</span>
                     </label>
@@ -1458,8 +1458,8 @@ export function NeedPage() {
                       <button key={p.key}
                         onClick={() => { setPeriod(p.key); if (p.key !== 'custom') setPeriodOpen(false) }}
                         className={cn('flex w-full items-center gap-2.5 px-3 py-2.5 text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-800', period === p.key ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400')}>
-                        <div className={cn('flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors', period === p.key ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600')}>
-                          {period === p.key && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                        <div className={cn('flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors', period === p.key ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-300 dark:border-gray-600')}>
+                          {period === p.key && <div className="h-1.5 w-1.5 rounded-full bg-white dark:bg-gray-900" />}
                         </div>
                         <span className={period === p.key ? 'font-medium' : ''}>{p.label}</span>
                       </button>

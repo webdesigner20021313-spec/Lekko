@@ -152,9 +152,9 @@ export function MedicineFilters({
                     >
                       <div className={cn(
                         'flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors',
-                        checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600'
+                        checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-300 dark:border-gray-600'
                       )}>
-                        {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                        {checked && <Check className="h-3 w-3 text-white dark:text-gray-900" strokeWidth={3} />}
                       </div>
                       <span className="truncate text-sm text-gray-700 dark:text-gray-300">{m}</span>
                     </label>
@@ -203,9 +203,9 @@ export function MedicineFilters({
                 >
                   <div className={cn(
                     'flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors',
-                    checked ? 'border-gray-900 bg-gray-900 dark:border-blue-500 dark:bg-blue-600' : 'border-gray-300 dark:border-gray-600',
+                    checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-300 dark:border-gray-600',
                   )}>
-                    {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                    {checked && <Check className="h-3 w-3 text-white dark:text-gray-900" strokeWidth={3} />}
                   </div>
                   <span className="text-sm text-gray-700 dark:text-gray-300">{col.label}</span>
                 </label>
