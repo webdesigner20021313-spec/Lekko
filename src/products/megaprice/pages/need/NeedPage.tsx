@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import {
   Search, X, Package, Building2,
-  ChevronDown, ChevronRight, Check, Zap, TrendingDown, Plus, Download, Star, Calendar,
+  ChevronDown, Check, Zap, TrendingDown, Plus, Download, Star, Calendar,
   Sparkles, ArrowRightLeft, AlertTriangle, ShoppingCart as CartIcon, SlidersHorizontal,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
