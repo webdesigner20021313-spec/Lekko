@@ -412,7 +412,7 @@ export function CartPage() {
 
                   return (
                     <Fragment key={group.id}>
-                      <tr className="border-t border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
+                      <tr className="border-t border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-[#111111]">
                         <td className="px-4 py-2.5">
                           <input
                             type="checkbox"

@@ -74,7 +74,7 @@ export function RoleList() {
               roles.map((role, idx) => {
                 const { sections, perms } = getActiveLabels(role, t)
                 return (
-                  <tr key={role.id} className="bg-white dark:bg-[#111111] transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr key={role.id} className="bg-white dark:bg-gray-800 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
                     <td className="px-4 py-3 text-center text-xs text-gray-400">{idx + 1}</td>
                     <td className="px-4 py-3">
                       <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{role.name}</span>
