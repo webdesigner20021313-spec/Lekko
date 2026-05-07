@@ -400,6 +400,11 @@
   "orders_no_results_hint": "Filtrlar yoki qidiruv so'rovini o'zgartiring",
   "orders_search_ph": "Raqam, dorixona, distribyutor...",
   "orders_date_ph": "kk.oo.yyyy - kk.oo.yyyy",
+  "orders_date_from": "Dan",
+  "orders_date_to": "Gacha",
+  "orders_date_clear": "Tozalash",
+  "orders_cal_pick_start": "Boshlanish sanasini tanlang",
+  "orders_cal_pick_end": "Tugash sanasini tanlang",
   "orders_kpi_new": "Yangi",
   "orders_kpi_modified": "O'zgartirilgan",
   "orders_kpi_completed": "Yakunlangan",
@@ -538,5 +543,7 @@
   "ws_modal_placeholder": "masalan, 7",
   "ws_modal_invalid": "0.1 dan 99 gacha qiymat kiriting",
   "ws_modal_cancel": "Bekor qilish",
-  "ws_modal_save": "Saqlash"
+  "ws_modal_save": "Saqlash",
+  "theme_dark": "Qorong'i mavzu",
+  "theme_light": "Yorug' mavzu"
 }

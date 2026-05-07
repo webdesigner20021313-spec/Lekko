@@ -16,6 +16,8 @@ export function StandaloneLayout({ productId }: StandaloneLayoutProps) {
         <main className="flex-1 overflow-hidden">
           <Outlet />
         </main>
+        {/* Spacer so fixed mobile tab bar doesn't cover content */}
+        <div className="h-16 shrink-0 md:hidden" />
       </div>
     </div>
   )

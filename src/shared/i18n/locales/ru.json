@@ -400,6 +400,11 @@
   "orders_no_results_hint": "Попробуйте изменить фильтры или поисковый запрос",
   "orders_search_ph": "Номер, аптека, дистрибутор...",
   "orders_date_ph": "дд.мм.гггг - дд.мм.гггг",
+  "orders_date_from": "От",
+  "orders_date_to": "До",
+  "orders_date_clear": "Очистить",
+  "orders_cal_pick_start": "Выберите начальную дату",
+  "orders_cal_pick_end": "Выберите конечную дату",
   "orders_kpi_new": "Новые",
   "orders_kpi_modified": "Изменено",
   "orders_kpi_completed": "Завершённые",
@@ -538,5 +543,7 @@
   "ws_modal_placeholder": "например, 7",
   "ws_modal_invalid": "Введите значение от 0.1 до 99",
   "ws_modal_cancel": "Отмена",
-  "ws_modal_save": "Сохранить"
+  "ws_modal_save": "Сохранить",
+  "theme_dark": "Тёмная тема",
+  "theme_light": "Светлая тема"
 }
