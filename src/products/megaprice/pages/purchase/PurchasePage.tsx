@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { ChevronLeft } from 'lucide-react'
 import { PurchaseHeader } from './components/PurchaseHeader'
 import { MedicineList } from './components/MedicineList/MedicineList'
 import { SupplierOffers } from './components/SupplierOffers/SupplierOffers'
@@ -20,8 +21,25 @@ export function PurchasePage() {
   const [showFavorites, setShowFavorites] = useState(false)
   const [splitPct,    setSplitPct]    = useState(36)
   const [wSplitPct,   setWSplitPct]   = useState(25)
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
+
+  const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 768
+
+  function handleSelectMedicine(medicine: Medicine | null) {
+    setSelectedMedicine(medicine)
+    if (medicine && isMobile()) setMobileDetailOpen(true)
+  }
+
+  function handleSelectDistributor(distributor: Distributor | null) {
+    setSelectedDistributor(distributor)
+    if (distributor && isMobile()) setMobileDetailOpen(true)
+  }
+
+  function handleMobileBack() {
+    setMobileDetailOpen(false)
+  }
 
   const { addItem } = usePurchaseCart()
 
@@ -72,20 +90,20 @@ export function PurchasePage() {
       />
 
       <div ref={containerRef} className="flex flex-1 overflow-hidden">
-        {/* Left panel — меняется в зависимости от вкладки */}
+        {/* Left panel — list view. Full-width on mobile, split % on desktop */}
         <div
-          className="flex flex-col overflow-hidden border-r border-gray-200 dark:border-gray-700"
-          style={{ width: `${currentSplit}%`, minWidth: 200 }}
+          className={`flex flex-col overflow-hidden border-r border-gray-200 dark:border-gray-700 ${mobileDetailOpen ? 'hidden md:flex' : 'flex'}`}
+          style={{ width: window.innerWidth >= 768 ? `${currentSplit}%` : '100%', minWidth: window.innerWidth >= 768 ? 200 : undefined }}
         >
           {activeTab === 'wholesalers'
             ? <WholesalersView
                 selectedId={selectedDistributor?.id ?? null}
-                onSelect={setSelectedDistributor}
+                onSelect={handleSelectDistributor}
               />
             : <MedicineList
                 activeTab={activeTab}
                 selectedMedicine={selectedMedicine}
-                onSelect={setSelectedMedicine}
+                onSelect={handleSelectMedicine}
                 checkedIds={checkedIds}
                 onToggleCheck={handleToggleCheck}
                 showFavorites={showFavorites}
@@ -94,14 +112,22 @@ export function PurchasePage() {
           }
         </div>
 
-        {/* Resize handle */}
+        {/* Resize handle — desktop only */}
         <div
           onMouseDown={startSplitResize}
-          className="flex w-2 cursor-col-resize items-center justify-center bg-gray-200 transition-colors hover:bg-blue-400 active:bg-blue-500 dark:bg-gray-700"
+          className="hidden w-2 cursor-col-resize items-center justify-center bg-gray-200 transition-colors hover:bg-blue-400 active:bg-blue-500 dark:bg-gray-700 md:flex"
         />
 
-        {/* Right panel — меняется только в режиме оптовиков */}
-        <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Right panel — detail view. Hidden on mobile until item selected */}
+        <div className={`flex flex-1 flex-col overflow-hidden ${!mobileDetailOpen ? 'hidden md:flex' : 'flex'}`}>
+          {/* Mobile back button */}
+          <button
+            onClick={handleMobileBack}
+            className="flex items-center gap-1.5 border-b border-gray-200 px-4 py-3 text-sm font-medium text-[#3872FA] dark:border-gray-700 md:hidden"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Назад
+          </button>
           {activeTab === 'wholesalers'
             ? <DistributorProducts distributor={selectedDistributor} />
             : <SupplierOffers medicine={selectedMedicine} />

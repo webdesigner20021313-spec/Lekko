@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Package, Download, Calendar, AlertCircle } from 'lucide-react'
+import { Search, Package, Download, Calendar, AlertCircle, ChevronDown, X } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
@@ -65,6 +65,140 @@ function exportToExcel(orders: Order[], t: (key: string, opts?: Record<string, u
   XLSX.writeFile(wb, t('orders_excel_file'))
 }
 
+// ─── Date helpers ─────────────────────────────────────────────────────────────
+
+function toISO(d: Date) {
+  const y  = d.getFullYear()
+  const m  = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${dd}`
+}
+
+function applyDateMask(digits: string): string {
+  const d = digits.slice(0, 16)
+  let result = ''
+  result += d.slice(0, 2)
+  if (d.length > 2) result += '.' + d.slice(2, 4)
+  if (d.length > 4) result += '.' + d.slice(4, 8)
+  if (d.length > 8) result += ' - ' + d.slice(8, 10)
+  if (d.length > 10) result += '.' + d.slice(10, 12)
+  if (d.length > 12) result += '.' + d.slice(12, 16)
+  return result
+}
+
+function parseDMYtoISO(dmy: string): string {
+  const m = dmy.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})$/)
+  if (!m) return ''
+  return `${m[3]}-${m[2]}-${m[1]}`
+}
+
+function ISOtoDMY(iso: string): string {
+  if (!iso) return ''
+  const [yyyy, mm, dd] = iso.split('-')
+  return `${dd}.${mm}.${yyyy}`
+}
+
+// ─── RangeCalendar ────────────────────────────────────────────────────────────
+
+function RangeCalendar({ from, to, onChange }: {
+  from: string
+  to: string
+  onChange: (from: string, to: string) => void
+}) {
+  const { t, i18n } = useTranslation()
+  const today = new Date()
+  const [vy, setVy] = useState(today.getFullYear())
+  const [vm, setVm] = useState(today.getMonth())
+  const [hover, setHover] = useState('')
+
+  const locale = i18n.language === 'uz' ? 'uz-Latn-UZ' : 'ru-RU'
+
+  const MONTHS = useMemo(() =>
+    Array.from({ length: 12 }, (_, i) => {
+      const s = new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(2025, i, 1))
+      return s.charAt(0).toUpperCase() + s.slice(1)
+    }), [locale])
+
+  const DAYS = useMemo(() =>
+    Array.from({ length: 7 }, (_, i) => {
+      const s = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(new Date(2025, 0, 6 + i))
+      return s.charAt(0).toUpperCase() + s.slice(1)
+    }), [locale])
+
+  const prevM = () => { if (vm === 0) { setVy(y => y - 1); setVm(11) } else setVm(m => m - 1) }
+  const nextM = () => { if (vm === 11) { setVy(y => y + 1); setVm(0) } else setVm(m => m + 1) }
+
+  const cells = useMemo(() => {
+    const first = new Date(vy, vm, 1)
+    const last  = new Date(vy, vm + 1, 0)
+    const pad   = (first.getDay() + 6) % 7
+    const arr: (Date | null)[] = Array(pad).fill(null)
+    for (let d = 1; d <= last.getDate(); d++) arr.push(new Date(vy, vm, d))
+    return arr
+  }, [vy, vm])
+
+  function handleClick(date: Date) {
+    const iso = toISO(date)
+    if (!from || (from && to)) onChange(iso, '')
+    else if (iso >= from) onChange(from, iso)
+    else onChange(iso, from)
+  }
+
+  const todayISO = toISO(today)
+
+  return (
+    <div className="select-none">
+      <div className="mb-2 flex items-center justify-between">
+        <button onClick={prevM} className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+          <ChevronDown className="h-3.5 w-3.5 rotate-90" />
+        </button>
+        <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">{MONTHS[vm]} {vy}</span>
+        <button onClick={nextM} className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+          <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
+        </button>
+      </div>
+      <div className="mb-1 grid grid-cols-7">
+        {DAYS.map(d => (
+          <div key={d} className="text-center text-[10px] font-semibold text-gray-400 dark:text-[#929292]">{d}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-y-0.5">
+        {cells.map((date, i) => {
+          if (!date) return <div key={`e${i}`} />
+          const iso = toISO(date)
+          const end = to || hover
+          const lo  = from && end ? (from <= end ? from : end) : from
+          const hi  = from && end ? (from <= end ? end  : from) : ''
+          const isF = iso === from
+          const isT = iso === (to || (from && hover ? hover : ''))
+          const inR = !!lo && !!hi && iso > lo && iso < hi
+          const isTod = iso === todayISO
+          return (
+            <button key={iso}
+              onClick={() => handleClick(date)}
+              onMouseEnter={() => { if (from && !to) setHover(iso) }}
+              onMouseLeave={() => setHover('')}
+              className={cn(
+                'h-7 w-full text-xs transition-colors',
+                (isF || isT)
+                  ? 'rounded-full bg-gray-900 font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900'
+                  : inR
+                  ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                  : cn('rounded-full text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700', isTod && 'font-bold'),
+              )}
+            >
+              {date.getDate()}
+            </button>
+          )
+        })}
+      </div>
+      <p className="mt-2 text-center text-[10px] text-gray-400 dark:text-[#929292]">
+        {!from ? t('orders_cal_pick_start') : !to ? t('orders_cal_pick_end') : `${ISOtoDMY(from)} — ${ISOtoDMY(to)}`}
+      </p>
+    </div>
+  )
+}
+
 // ─── OrderHistoryPage ─────────────────────────────────────────────────────────
 
 export function OrderHistoryPage() {
@@ -75,9 +209,26 @@ export function OrderHistoryPage() {
   const [dateRange,    setDateRange]    = useState('')
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
   const [checked,      setChecked]      = useState<string[]>([])
+  const [calendarOpen, setCalendarOpen] = useState(false)
+  const [calFrom,      setCalFrom]      = useState('')
+  const [calTo,        setCalTo]        = useState('')
+  const calendarRef = useRef<HTMLDivElement>(null)
 
-  const dateFrom = dateRange.split(' - ')[0]?.trim() ?? ''
-  const dateTo   = dateRange.split(' - ')[1]?.trim() ?? ''
+  useEffect(() => {
+    if (!calendarOpen) return
+    function handleClick(e: MouseEvent) {
+      if (calendarRef.current && !calendarRef.current.contains(e.target as Node)) {
+        setCalendarOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [calendarOpen])
+
+
+  const parts      = dateRange.split(' - ')
+  const dateFromISO = parseDMYtoISO(parts[0]?.trim() ?? '')
+  const dateToISO   = parseDMYtoISO(parts[1]?.trim() ?? '')
 
   const filteredOrders = useMemo(() => {
     return orders
@@ -92,12 +243,12 @@ export function OrderHistoryPage() {
           if (!match) return false
         }
         if (statusFilter !== 'all' && o.status !== statusFilter) return false
-        if (dateFrom && o.createdAt.slice(0, 10) < dateFrom) return false
-        if (dateTo   && o.createdAt.slice(0, 10) > dateTo)   return false
+        if (dateFromISO && o.createdAt.slice(0, 10) < dateFromISO) return false
+        if (dateToISO   && o.createdAt.slice(0, 10) > dateToISO)   return false
         return true
       })
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  }, [search, statusFilter, dateFrom, dateTo])
+  }, [search, statusFilter, dateFromISO, dateToISO])
 
   const hasFilters = search.trim().length > 0 || statusFilter !== 'all' || !!dateRange.trim()
 
@@ -129,10 +280,10 @@ export function OrderHistoryPage() {
     <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
 
       {/* ── Шапка ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="relative w-60">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex w-full items-center gap-3 md:w-auto">
+            <div className="relative flex-1 md:w-60 md:flex-none">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
@@ -145,16 +296,61 @@ export function OrderHistoryPage() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 dark:border-gray-700 dark:bg-[#111111]">
-              <input
-                type="text"
-                placeholder={t('orders_date_ph')}
-                value={dateRange}
-                onChange={e => setDateRange(e.target.value)}
-                className="border-0 bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none dark:text-gray-300 dark:placeholder-gray-500"
-                style={{ width: '21ch' }}
-              />
-              <Calendar className="h-4 w-4 shrink-0 text-gray-400" />
+            <div className="relative" ref={calendarRef}>
+              <div className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 dark:border-gray-700 dark:bg-[#111111]">
+                <input
+                  type="text"
+                  placeholder={t('orders_date_ph')}
+                  value={dateRange}
+                  onChange={e => setDateRange(applyDateMask(e.target.value.replace(/\D/g, '')))}
+                  className="border-0 bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none dark:text-gray-300 dark:placeholder-gray-500"
+                  style={{ width: '21ch' }}
+                />
+                {dateRange && (
+                  <button
+                    type="button"
+                    onClick={() => { setDateRange(''); setCalFrom(''); setCalTo('') }}
+                    className="flex shrink-0 items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setCalendarOpen(v => !v)}
+                  className="flex shrink-0 items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <Calendar className="h-4 w-4" />
+                </button>
+              </div>
+
+              {calendarOpen && (
+                <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-xl border border-gray-200 bg-white p-4 shadow-lg dark:border-gray-700 dark:bg-[#222222]">
+                  <RangeCalendar
+                    from={calFrom}
+                    to={calTo}
+                    onChange={(f, to) => {
+                      setCalFrom(f)
+                      setCalTo(to)
+                      if (f && to) {
+                        setDateRange(`${ISOtoDMY(f)} - ${ISOtoDMY(to)}`)
+                        setCalendarOpen(false)
+                      } else {
+                        setDateRange(f ? ISOtoDMY(f) : '')
+                      }
+                    }}
+                  />
+                  {(calFrom || calTo) && (
+                    <button
+                      type="button"
+                      onClick={() => { setCalFrom(''); setCalTo(''); setDateRange(''); setCalendarOpen(false) }}
+                      className="mt-2 w-full text-center text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      {t('orders_date_clear')}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             <button
@@ -169,8 +365,8 @@ export function OrderHistoryPage() {
       </div>
 
       {/* ── KPI Cards ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
-        <div className="grid grid-cols-4 gap-3">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {KPI_CARDS.map(({ status, labelKey }) => {
             const { count, total } = stats[status]
             const isActive = statusFilter === status
@@ -201,8 +397,8 @@ export function OrderHistoryPage() {
         {filteredOrders.length === 0 ? (
           <EmptyState hasFilters={hasFilters} />
         ) : (
-          <div className="overflow-hidden border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
-            <table className="w-full">
+          <div className="overflow-x-auto border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
+            <table className="w-full" style={{ minWidth: 700 }}>
               <thead>
                 <tr className="h-14 border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]">
                   <th className="w-14 px-3 py-2.5 text-center align-middle">

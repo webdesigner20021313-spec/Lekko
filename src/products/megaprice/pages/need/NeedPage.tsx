@@ -1347,8 +1347,9 @@ export function NeedPage() {
       onClick={() => { setGroupOpen(false); setPharmacyOpen(false) }}>
 
       {/* Top controls */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-[#111111]">
-        <div className="flex items-center gap-3">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-6 dark:border-gray-700 dark:bg-[#111111]">
+        <div className="flex items-center gap-2 overflow-x-auto pb-0.5"
+             style={{ scrollbarWidth: 'none' }}>
 
           {/* Pharmacy multi-select */}
           <div className="relative shrink-0" onClick={e => e.stopPropagation()}>
@@ -1392,7 +1393,7 @@ export function NeedPage() {
           </div>
 
           {/* Search */}
-          <div className="relative h-9 w-52">
+          <div className="relative h-9 w-36 shrink-0 md:w-52">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input type="text" placeholder={t('need_search_ph')} value={search}
               onChange={e => setSearch(e.target.value)}
@@ -1400,7 +1401,7 @@ export function NeedPage() {
           </div>
 
           {/* Group filter */}
-          <div className="ml-auto relative shrink-0" onClick={e => e.stopPropagation()}>
+          <div className="relative shrink-0" onClick={e => e.stopPropagation()}>
             <button onClick={() => setGroupOpen(v => !v)}
               className={cn(
                 'flex h-9 w-[180px] items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors',
@@ -1492,8 +1493,8 @@ export function NeedPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="shrink-0 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-        <div className="grid grid-cols-4 gap-3">
+      <div className="shrink-0 border-b border-gray-200 px-4 py-3 md:px-6 md:py-4 dark:border-gray-700">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
 
           <div onClick={() => handleKpiClick(['oos'])}
             className={cn('flex flex-col rounded-xl border bg-white p-4 cursor-pointer transition-all dark:bg-[#222222]',

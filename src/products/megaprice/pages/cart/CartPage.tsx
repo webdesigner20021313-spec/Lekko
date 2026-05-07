@@ -326,7 +326,7 @@ export function CartPage() {
   if (items.length === 0 && !successPayload) {
     return (
       <div className="flex h-full flex-col bg-gray-50 dark:bg-[#111111]">
-        <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
+        <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-4 md:px-6 dark:border-gray-700 dark:bg-[#111111]">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('cart_title')}</h1>
         </div>
         <EmptyCart />
@@ -338,7 +338,7 @@ export function CartPage() {
     <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
 
       {/* ── Шапка ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-[#111111]">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-6 dark:border-gray-700 dark:bg-[#111111]">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 shrink-0">
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('cart_title')}</h1>

@@ -6,6 +6,9 @@ interface UIState {
   setLanguage: (lang: 'uz' | 'ru') => void
   theme: 'light' | 'dark'
   setTheme: (theme: 'light' | 'dark') => void
+  mobileMenuOpen: boolean
+  toggleMobileMenu: () => void
+  closeMobileMenu: () => void
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -19,4 +22,7 @@ export const useUIStore = create<UIState>((set) => ({
     document.documentElement.classList.toggle('dark', theme === 'dark')
     set({ theme })
   },
+  mobileMenuOpen: false,
+  toggleMobileMenu: () => set((s) => ({ mobileMenuOpen: !s.mobileMenuOpen })),
+  closeMobileMenu: () => set({ mobileMenuOpen: false }),
 }))
