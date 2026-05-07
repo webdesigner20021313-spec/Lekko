@@ -45,7 +45,7 @@ export function UserList({ onEditUser }: Props) {
               users.map((user, idx) => {
                 const role = getRole(user.roleId)
                 return (
-                  <tr key={user.id} className="bg-white dark:bg-[#222222] transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr key={user.id} className="bg-white dark:bg-[#111111] transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
 
                     <td className="px-4 py-3 text-center text-xs text-gray-400">{idx + 1}</td>
 
