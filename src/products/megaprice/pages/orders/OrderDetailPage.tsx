@@ -489,46 +489,70 @@ function DistributorCard({
         />
       )}
 
-      {/* ── Items table ── */}
-      <div className="overflow-x-auto">
+      {/* ── Items list ── */}
+      <div>
         {group.items.length === 0 ? (
           <div className="py-10 text-center text-sm text-gray-400">{t('orders_no_items')}</div>
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/60 dark:border-gray-700 dark:bg-[#222222]">
-                <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_medicine')}</th>
-                <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_manufacturer')}</th>
-                <th className="px-5 py-2.5 text-center text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_qty')}</th>
-                <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_price_per')}</th>
-                <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_total')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {group.items.map(item => (
-                <tr key={item.id} className="border-b border-gray-100 transition-colors hover:bg-gray-50/50 dark:border-[#333333] dark:hover:bg-gray-800">
-                  <td className="px-5 py-3.5">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.medicineName}</p>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{item.manufacturer}</p>
-                    <p className="text-xs text-gray-400 dark:text-[#929292]">{item.country}</p>
-                  </td>
-                  <td className="px-5 py-3.5 text-center">
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.quantity}</span>
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{formatCurrency(item.priceWithVat)}</span>
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                      {formatCurrency(item.quantity * item.priceWithVat)}
-                    </span>
-                  </td>
+          <>
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-gray-100 dark:divide-[#333333]">
+            {group.items.map(item => (
+              <div key={item.id} className="px-4 py-3">
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{item.medicineName}</p>
+                <p className="mt-0.5 text-xs text-gray-500 dark:text-[#929292]">{item.manufacturer} · {item.country}</p>
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="text-gray-500 dark:text-[#929292]">{item.quantity} ×</span>
+                    <span className="text-gray-500 dark:text-[#929292]">{formatCurrency(item.priceWithVat)}</span>
+                  </div>
+                  <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">
+                    {formatCurrency(item.quantity * item.priceWithVat)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/60 dark:border-gray-700 dark:bg-[#222222]">
+                  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_medicine')}</th>
+                  <th className="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_manufacturer')}</th>
+                  <th className="px-5 py-2.5 text-center text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_qty')}</th>
+                  <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_price_per')}</th>
+                  <th className="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 dark:text-[#929292]">{t('orders_col_total')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {group.items.map(item => (
+                  <tr key={item.id} className="border-b border-gray-100 transition-colors hover:bg-gray-50/50 dark:border-[#333333] dark:hover:bg-gray-800">
+                    <td className="px-5 py-3.5">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.medicineName}</p>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{item.manufacturer}</p>
+                      <p className="text-xs text-gray-400 dark:text-[#929292]">{item.country}</p>
+                    </td>
+                    <td className="px-5 py-3.5 text-center">
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.quantity}</span>
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">{formatCurrency(item.priceWithVat)}</span>
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        {formatCurrency(item.quantity * item.priceWithVat)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          </>
         )}
       </div>
 
@@ -709,8 +733,8 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
     <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
 
       {/* ── Header ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
-        <div className="flex items-center gap-4">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-3 py-3 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
+        <div className="flex items-center gap-2 md:gap-4">
           <button
             onClick={() => navigate(mp('/orders'))}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
@@ -718,32 +742,34 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
             <ArrowLeft className="h-4 w-4" />
           </button>
 
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            <h1 className="font-mono text-xl font-bold text-gray-900 dark:text-gray-100">{order.number}</h1>
+          <div className="flex min-w-0 flex-1 items-center gap-2 md:gap-3">
+            <h1 className="font-mono text-base font-bold text-gray-900 md:text-xl dark:text-gray-100">{order.number}</h1>
             <GlobalStatusBadge status={order.status} />
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={() => printFullInvoice(order)}
-              className="flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300 dark:hover:bg-gray-800"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 md:w-auto md:gap-1.5 md:px-3 md:text-sm md:font-medium dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300 dark:hover:bg-gray-800"
+              aria-label={t('orders_invoice_btn')}
             >
               <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('orders_invoice_btn')}</span>
+              <span className="hidden md:inline">{t('orders_invoice_btn')}</span>
             </button>
             <button
               onClick={() => downloadFullExcel(order, t)}
-              className="flex h-9 items-center gap-1.5 rounded-lg border border-green-600 bg-green-600 px-3 text-sm font-medium text-white transition-colors hover:border-green-700 hover:bg-green-700"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-green-600 bg-green-600 text-white transition-colors hover:border-green-700 hover:bg-green-700 md:w-auto md:gap-1.5 md:px-3 md:text-sm md:font-medium"
+              aria-label="Excel"
             >
               <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Excel</span>
+              <span className="hidden md:inline">Excel</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* ── Content ── */}
-      <div className={cn('min-h-0 flex-1 overflow-y-auto bg-gray-50/40 px-6 py-5 dark:bg-[#111111]', isOrderActive && 'pb-24')}>
+      <div className={cn('min-h-0 flex-1 overflow-y-auto bg-gray-50/40 px-3 py-4 md:px-6 md:py-5 dark:bg-[#111111]', isOrderActive && 'pb-32 md:pb-24')}>
         <div className="mx-auto max-w-4xl space-y-4">
 
           {/* Info cards */}
@@ -812,19 +838,19 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
         </div>
       </div>
 
-      {/* ── Fixed bottom-right action bar ── */}
+      {/* ── Fixed bottom action bar — выше таб-бара на мобиле ── */}
       {isOrderActive && (
-        <div className="fixed bottom-0 left-[140px] right-0 z-40 flex items-center justify-end gap-4 border-t border-gray-200 bg-white px-6 py-4 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] dark:border-gray-700 dark:bg-[#111111]">
+        <div className="fixed bottom-16 left-0 right-0 z-40 flex items-center gap-2 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:bottom-0 md:left-[140px] md:justify-end md:gap-4 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
           <button
             onClick={() => setModal({ kind: 'cancel_order' })}
-            className="flex h-9 items-center gap-2 rounded-xl bg-red-500 px-4 text-sm font-medium text-white transition-colors hover:bg-red-600"
+            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-red-500 px-3 text-sm font-semibold text-white transition-colors hover:bg-red-600 md:h-9 md:flex-none md:px-4"
           >
             <X className="h-4 w-4" />
             {t('orders_cancel_btn')}
           </button>
           <button
             onClick={() => setModal({ kind: 'complete' })}
-            className="flex h-9 items-center gap-2 rounded-xl bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
+            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-gray-900 px-3 text-sm font-semibold text-white transition-colors hover:bg-black md:h-9 md:flex-none md:px-4 dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
           >
             <Check className="h-4 w-4" />
             {t('orders_complete_btn')}

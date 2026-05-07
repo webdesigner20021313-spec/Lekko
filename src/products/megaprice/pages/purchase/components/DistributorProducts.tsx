@@ -193,7 +193,7 @@ function FiltersBar({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
+    <div className="hidden md:flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
       <SimpleDropdown ref={mfgRef} open={openMfg} onToggle={() => setOpenMfg(v => !v)}
         label={t('filter_manufacturer')} count={manufacturerFilter.length}
         items={manufacturers} selected={manufacturerFilter}
@@ -615,7 +615,67 @@ export function DistributorProducts({ distributor }: DistributorProductsProps) {
         onToggleColumn={(k) => setVisibleColumns((prev) => ({ ...prev, [k]: !prev[k] }))}
       />
 
-      <div style={{ flex: 1, minHeight: 0, overflowX: 'scroll', overflowY: 'scroll' }}>
+      {/* Mobile cards */}
+      <div className="md:hidden flex-1 overflow-y-auto bg-gray-50 px-3 py-3 dark:bg-[#0a0a0a]">
+        {filtered.length === 0 ? (
+          <div className="py-16 text-center text-sm text-gray-400">{t('products_empty')}</div>
+        ) : (
+          <div className="space-y-2.5">
+            {filtered.map(({ offer, medicine }) => {
+              const qty = quantities[offer.id] ?? 0
+              const days = Math.floor((new Date(offer.expiryDate).getTime() - Date.now()) / 86400000)
+              const expiryUrgent = days < 180
+              const discountPct = offer.originalPrice ? Math.round((1 - offer.priceWithVat / offer.originalPrice) * 100) : null
+              const avgDiff = avgPrice && avgPrice !== offer.priceWithVat ? Math.round(((offer.priceWithVat - avgPrice) / avgPrice) * 100) : null
+              const isCheaper = avgDiff !== null && avgDiff < -2
+              const isPricier = avgDiff !== null && avgDiff > 2
+              return (
+                <div key={offer.id} className={cn('overflow-hidden rounded-2xl border bg-white dark:bg-[#111111]', qty > 0 ? 'border-gray-900 dark:border-[#f1f1f1]' : 'border-gray-200 dark:border-gray-700')}>
+                  <div className="flex items-start justify-between gap-3 px-4 pt-3 pb-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-gray-900 dark:text-gray-100">{medicine.name}</p>
+                      <p className="mt-0.5 truncate text-[11px] text-gray-500 dark:text-[#929292]">{medicine.manufacturer} · {medicine.country}</p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className={cn('text-base font-bold tabular-nums', isCheaper ? 'text-green-600 dark:text-green-400' : isPricier ? 'text-red-500' : 'text-gray-900 dark:text-gray-100')}>
+                        {formatCurrency(offer.priceWithVat)}
+                      </p>
+                      {discountPct && offer.originalPrice && (
+                        <div className="flex items-center justify-end gap-1">
+                          <span className="text-[10px] text-gray-400 line-through">{formatCurrency(offer.originalPrice)}</span>
+                          <span className="text-[10px] font-bold text-red-500">-{discountPct}%</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-1.5 px-4 pb-2">
+                    <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
+                      expiryUrgent ? 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+                    )}>
+                      {t('col_expiry')}: {formatDate(offer.expiryDate)}
+                    </span>
+                    {medicine.mnn && (
+                      <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                        {medicine.mnn}
+                      </span>
+                    )}
+                  </div>
+
+                  {col.quantity && (
+                    <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-[#222222]">
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">{t('col_quantity')}</span>
+                      <QuantityControl value={qty} onChange={(v) => handleQtyChange(offer.id, v)} />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      <div className="hidden md:block" style={{ flex: 1, minHeight: 0, overflowX: 'scroll', overflowY: 'scroll' }}>
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
             <p className="text-sm text-gray-400">{t('products_empty')}</p>

@@ -328,12 +328,11 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
   // ── Рендер ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center md:p-4">
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} />
 
       <div
-        className="relative z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-[#111111]"
-        style={{ maxHeight: '90vh' }}
+        className="relative z-10 flex h-full max-h-[100vh] w-full flex-col overflow-hidden bg-white shadow-xl md:h-auto md:max-h-[90vh] md:max-w-lg md:rounded-xl md:border md:border-gray-200 dark:bg-[#111111] dark:md:border-gray-700"
       >
 
         {/* ── Шапка ──────────────────────────────────────────────────────────── */}

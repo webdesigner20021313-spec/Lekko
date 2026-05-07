@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { Search, ChevronDown, X, Check, AlignJustify } from 'lucide-react'
+import { Search, ChevronDown, X, Check, AlignJustify, SlidersHorizontal } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 
@@ -28,6 +28,7 @@ export function MedicineFilters({
 
   const [open, setOpen] = useState(false)
   const [openCols, setOpenCols] = useState(false)
+  const [mobileSheet, setMobileSheet] = useState(false)
   const colsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -73,7 +74,97 @@ export function MedicineFilters({
   )
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto px-4 py-3" style={{ scrollbarWidth: 'none' }}>
+    <>
+    {/* Mobile: search + filter button */}
+    <div className="md:hidden flex items-center gap-2 px-4 py-3">
+      <div className="relative min-w-0 flex-1">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => onSearch(e.target.value)}
+          placeholder={t('filter_search')}
+          className="h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-9 text-base text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder:text-gray-500"
+        />
+        {search && (
+          <button onClick={() => onSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-400">
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+      <button
+        onClick={() => setMobileSheet(true)}
+        className={cn(
+          'relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border',
+          hasSelected
+            ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
+            : 'border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400',
+        )}
+      >
+        <SlidersHorizontal className="h-5 w-5" />
+        {hasSelected && (
+          <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-amber-400 ring-2 ring-white dark:ring-[#111111]" />
+        )}
+      </button>
+    </div>
+
+    {mobileSheet && (
+      <div className="fixed inset-0 z-50 md:hidden">
+        <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => setMobileSheet(false)} />
+        <div className="absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col rounded-t-2xl bg-white shadow-2xl dark:bg-[#111111]">
+          <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-700">
+            <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">{t('filter_manufacturer')}</h2>
+            <button onClick={() => setMobileSheet(false)} className="flex h-9 w-9 items-center justify-center rounded-full text-gray-400">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="shrink-0 border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={innerSearch}
+                onChange={(e) => setInnerSearch(e.target.value)}
+                placeholder={t('filter_search_inner')}
+                className="h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 text-base outline-none focus:border-gray-400 dark:border-gray-700 dark:bg-[#222222] dark:text-gray-200"
+              />
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto px-5 py-3">
+            {filtered.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-400">{t('filter_nothing_found')}</p>
+            ) : (
+              <div className="space-y-1.5">
+                {filtered.map(m => {
+                  const checked = selectedManufacturers.includes(m)
+                  return (
+                    <label key={m} onClick={() => toggleManufacturer(m)}
+                      className={cn('flex h-12 items-center gap-3 rounded-xl border px-3.5',
+                        checked ? 'border-gray-900 bg-gray-50 dark:border-[#f1f1f1] dark:bg-[#222222]' : 'border-gray-200 dark:border-gray-700')}>
+                      <div className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded border-2', checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1]' : 'border-gray-300 dark:border-gray-600')}>
+                        {checked && <Check className="h-3.5 w-3.5 text-white dark:text-gray-900" strokeWidth={3} />}
+                      </div>
+                      <span className={cn('truncate text-sm', checked ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300')}>{m}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+          <div className="shrink-0 flex gap-3 border-t border-gray-100 px-5 py-3 dark:border-gray-700">
+            <button onClick={() => onManufacturers([])} className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300">
+              {t('filter_reset_all')}
+            </button>
+            <button onClick={() => setMobileSheet(false)} className="flex h-12 flex-1 items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900">
+              {t('orders_apply') ?? 'Применить'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Desktop: full inline filters */}
+    <div className="hidden md:flex items-center gap-2 overflow-x-auto px-4 py-3" style={{ scrollbarWidth: 'none' }}>
       {/* Search */}
       <div className="relative min-w-0 flex-1">
         <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
@@ -215,5 +306,6 @@ export function MedicineFilters({
         )}
       </div>
     </div>
+    </>
   )
 }

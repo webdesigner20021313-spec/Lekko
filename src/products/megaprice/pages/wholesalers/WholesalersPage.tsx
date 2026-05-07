@@ -38,9 +38,9 @@ function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountMo
   const valid = value.trim() !== '' && !isNaN(parsed) && parsed > 0 && parsed <= 99
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 md:items-center"
       onClick={onClose}>
-      <div className="w-[360px] rounded-2xl bg-white shadow-2xl dark:bg-[#111111] dark:border dark:border-gray-700"
+      <div className="w-full max-w-[360px] rounded-t-2xl bg-white shadow-2xl md:rounded-2xl dark:bg-[#111111] dark:border dark:border-gray-700"
         onClick={e => e.stopPropagation()}>
 
         <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-gray-700">
@@ -180,9 +180,9 @@ export function WholesalersPage() {
     <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
 
       {/* ── Шапка ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
-        <div className="flex items-center justify-between">
-          <div>
+      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
+        <div className="md:flex md:items-center md:justify-between">
+          <div className="hidden md:block">
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('ws_title')}</h1>
               <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-[#222222] dark:text-gray-400">
@@ -192,14 +192,22 @@ export function WholesalersPage() {
             <p className="mt-0.5 text-sm text-gray-400 dark:text-[#929292]">{t('ws_subtitle')}</p>
           </div>
 
-          <div className="relative w-60">
+          {/* Mobile title row */}
+          <div className="mb-3 flex items-center gap-2 md:hidden">
+            <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">{t('ws_title')}</h1>
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-[#222222] dark:text-gray-400">
+              {wholesalers.length}
+            </span>
+          </div>
+
+          <div className="relative md:w-60">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder={t('ws_search_ph')}
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500"
+              className="h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 text-base placeholder-gray-400 focus:border-gray-400 focus:outline-none md:h-9 md:rounded-lg md:pl-9 md:text-sm dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500"
             />
           </div>
         </div>
@@ -216,7 +224,63 @@ export function WholesalersPage() {
             <p className="mt-1 text-sm text-gray-500 dark:text-[#929292]">{t('ws_no_results_hint')}</p>
           </div>
         ) : (
-          <div className="overflow-hidden border-b border-gray-200 dark:border-gray-700">
+          <>
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-gray-100 dark:divide-[#333333]">
+            {filtered.map((w) => (
+              <div key={w.id} className="px-4 py-3.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-gray-900 dark:text-gray-100">{w.name}</p>
+                    <p className="mt-0.5 text-xs text-gray-500 dark:text-[#929292]">{w.city}</p>
+                  </div>
+                  <div className="shrink-0">
+                    {w.discountPercent !== null ? (
+                      <button
+                        onClick={() => setModalWholesaler(w)}
+                        className="flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700 dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]"
+                      >
+                        −{w.discountPercent}%
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setModalWholesaler(w)}
+                        className="flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 dark:border-gray-700 dark:text-gray-400"
+                      >
+                        <Plus className="h-3 w-3" />
+                        {t('ws_modal_add_title') ?? 'Скидка'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1.5">
+                  <a href={`tel:${w.phone}`} className="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300">
+                    <Phone className="h-3 w-3 shrink-0 text-gray-400" />
+                    <span className="truncate">{w.phone}</span>
+                  </a>
+                  {w.telegram ? (
+                    <a href={`https://t.me/${w.telegram.replace(/^@/, '')}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300">
+                      <Send className="h-3 w-3 shrink-0 text-sky-500" />
+                      <span className="truncate">{w.telegram}</span>
+                    </a>
+                  ) : <div />}
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-[#929292]">
+                    <span className="text-gray-400">{t('ws_col_min_order')}:</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">{formatCurrency(w.minOrderSum)}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-[#929292]">
+                    <span className="text-gray-400">{t('ws_col_delivery')}:</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">{t('ws_delivery_days', { n: w.deliveryDays })}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-hidden border-b border-gray-200 dark:border-gray-700">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]">
@@ -285,6 +349,7 @@ export function WholesalersPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 

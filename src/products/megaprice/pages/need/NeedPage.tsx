@@ -334,10 +334,9 @@ function OffersModal({ item, currentOfferId, onSelectOffer, onClose }: {
   ]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 md:items-center"
       onClick={onClose}>
-      <div className="flex w-[760px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-[#111111] dark:border dark:border-gray-700"
-        style={{ maxHeight: '80vh' }}
+      <div className="flex h-full max-h-[100vh] w-full flex-col overflow-hidden bg-white shadow-2xl md:h-auto md:max-h-[80vh] md:w-[760px] md:rounded-xl dark:bg-[#111111] dark:md:border dark:md:border-gray-700"
         onClick={e => e.stopPropagation()}>
 
         <div className="shrink-0 border-b border-gray-200 p-4 dark:border-gray-700">
@@ -849,11 +848,10 @@ function AIAdviceModal({ item, onClose }: { item: NeedItem; onClose: () => void 
   const recs = useMemo(() => getAIRecommendations(item), [item])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center md:p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
       <div
-        className="relative flex w-full max-w-[460px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-[#111111] dark:border dark:border-gray-700"
-        style={{ maxHeight: '88vh' }}
+        className="relative flex h-full max-h-[100vh] w-full flex-col overflow-hidden bg-white shadow-2xl md:h-auto md:max-h-[88vh] md:max-w-[460px] md:rounded-2xl dark:bg-[#111111] dark:md:border dark:md:border-gray-700"
         onClick={e => e.stopPropagation()}
       >
         <div className="shrink-0 flex items-center justify-between gap-3 px-5 py-4 border-b border-gray-100 dark:border-[#333333]">

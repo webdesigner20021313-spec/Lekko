@@ -127,9 +127,38 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
         )}
       </div>
 
-      {/* Таблица */}
+      {/* Таблица — desktop / cards — mobile */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <table style={{ tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse' }}>
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-gray-100 dark:divide-[#333333]">
+          {filtered.length === 0 ? (
+            <div className="py-16 text-center text-sm text-gray-400">{t('filter_nothing_found')}</div>
+          ) : filtered.map((dist) => {
+            const isSelected = dist.id === selectedId
+            return (
+              <div
+                key={dist.id}
+                onClick={() => onSelect(dist)}
+                className={cn(
+                  'relative flex cursor-pointer items-center gap-3 px-4 py-3.5 active:bg-gray-100 dark:active:bg-gray-800',
+                  isSelected ? 'bg-gray-50 dark:bg-[#222222]' : 'bg-white dark:bg-[#111111]',
+                )}
+              >
+                {isSelected && <span className="absolute left-0 top-0 bottom-0 w-1 bg-gray-900 dark:bg-[#f1f1f1]" />}
+                <div className="min-w-0 flex-1">
+                  <p className={cn('truncate text-sm', isSelected ? 'font-semibold' : 'font-medium', 'text-gray-900 dark:text-gray-100')}>
+                    {dist.name}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">{dist.city}</p>
+                </div>
+                <span className="shrink-0 text-xs text-gray-400 dark:text-[#929292]">{formatDate(dist.lastPriceDate)}</span>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Desktop table */}
+        <table className="hidden md:table" style={{ tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse' }}>
           <colgroup>
             <col style={{ width: 48 }} />
             <col />
