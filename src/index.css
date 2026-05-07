@@ -54,3 +54,17 @@ body {
   color-scheme: dark;
   accent-color: #e5e7eb;
 }
+
+/* iOS safe-area helpers — applied to mobile sticky bars */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.bottom-safe { bottom: env(safe-area-inset-bottom); }
+.bottom-tabbar { bottom: calc(64px + env(safe-area-inset-bottom)); }
+
+/* Disable text selection / callouts on tap for cards-as-buttons (mobile) */
+@media (hover: none) {
+  /* Suppress hover backgrounds on touch — they get stuck after tap */
+  .group:hover { background-color: revert; }
+}
+
+/* Prevent body scroll-bounce on iOS when modal/sheet is open */
+html, body { overscroll-behavior-y: none; }

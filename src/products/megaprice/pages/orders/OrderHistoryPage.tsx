@@ -693,7 +693,7 @@ export function OrderHistoryPage() {
               </div>
             </div>
 
-            <div className="sticky bottom-0 flex gap-3 border-t border-gray-100 bg-white px-5 py-3 dark:border-gray-700 dark:bg-[#111111]">
+            <div className="sticky bottom-0 flex gap-3 border-t border-gray-100 bg-white px-5 py-3 pb-safe dark:border-gray-700 dark:bg-[#111111]">
               <button
                 onClick={() => {
                   setStatusFilter('all')

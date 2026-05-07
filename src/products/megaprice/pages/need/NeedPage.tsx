@@ -483,8 +483,8 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
   ]
 
   return (
-    <div className="flex h-full shrink-0 flex-col overflow-hidden border-l border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]"
-      style={{ width: DRAWER_W, minWidth: DRAWER_W }}>
+    <div className="fixed inset-0 z-50 flex h-full flex-col overflow-hidden border-l border-gray-200 bg-white shadow-2xl md:relative md:inset-auto md:shrink-0 dark:border-gray-700 dark:bg-[#111111]"
+      style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? DRAWER_W : '100%', minWidth: typeof window !== 'undefined' && window.innerWidth >= 768 ? DRAWER_W : undefined }}>
 
       <div className="shrink-0 border-b border-gray-200 p-4 dark:border-gray-700">
         <div className="flex items-start justify-between gap-2">
@@ -1907,7 +1907,7 @@ export function NeedPage() {
               </div>
             </div>
 
-            <div className="shrink-0 flex gap-3 border-t border-gray-100 px-5 py-3 dark:border-gray-700">
+            <div className="shrink-0 flex gap-3 border-t border-gray-100 px-5 py-3 pb-safe dark:border-gray-700">
               <button
                 onClick={() => {
                   setSelectedPharmacyIds([])

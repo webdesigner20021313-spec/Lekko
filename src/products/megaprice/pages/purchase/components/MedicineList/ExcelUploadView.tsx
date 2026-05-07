@@ -288,8 +288,8 @@ export function ExcelUploadView({
       </div>
 
       {/* Modal overlay */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-[1px]">
-        <div className="flex w-full max-w-2xl max-h-[85vh] flex-col rounded-2xl bg-white shadow-2xl overflow-hidden dark:bg-[#111111] dark:border dark:border-gray-700">
+      <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-[1px] md:items-center md:p-4">
+        <div className="flex h-full max-h-[100vh] w-full flex-col overflow-hidden bg-white shadow-2xl md:h-auto md:max-h-[85vh] md:max-w-2xl md:rounded-2xl dark:bg-[#111111] dark:md:border dark:md:border-gray-700">
 
           {/* Modal header */}
           <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">

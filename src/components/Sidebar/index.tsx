@@ -134,7 +134,7 @@ function MobileTabBar({ items }: { items: StandaloneNavItem[] }) {
   const location = useLocation()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-white/10 bg-[#1C1917] dark:bg-black md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-white/10 bg-[#1C1917] pb-safe dark:bg-black md:hidden">
       {items.map((item) => {
         const isActive = item.end
           ? location.pathname === item.path

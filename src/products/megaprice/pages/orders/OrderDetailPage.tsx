@@ -840,7 +840,7 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
 
       {/* ── Fixed bottom action bar — выше таб-бара на мобиле ── */}
       {isOrderActive && (
-        <div className="fixed bottom-16 left-0 right-0 z-40 flex items-center gap-2 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:bottom-0 md:left-[140px] md:justify-end md:gap-4 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
+        <div className="fixed bottom-tabbar left-0 right-0 z-40 flex items-center gap-2 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:bottom-0 md:left-[140px] md:justify-end md:gap-4 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
           <button
             onClick={() => setModal({ kind: 'cancel_order' })}
             className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-red-500 px-3 text-sm font-semibold text-white transition-colors hover:bg-red-600 md:h-9 md:flex-none md:px-4"

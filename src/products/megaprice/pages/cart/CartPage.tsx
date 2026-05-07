@@ -737,7 +737,7 @@ export function CartPage() {
       </div>
 
       {/* ── Mobile sticky bottom bar — над таб-баром ── */}
-      <div className="md:hidden fixed inset-x-0 bottom-16 z-30 border-t border-gray-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:border-gray-700 dark:bg-[#111111]">
+      <div className="md:hidden fixed inset-x-0 bottom-tabbar z-30 border-t border-gray-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:border-gray-700 dark:bg-[#111111]">
         {hasSelection ? (
           <button
             onClick={() => setMobileSheetOpen(true)}
@@ -855,7 +855,7 @@ export function CartPage() {
               </div>
             </div>
 
-            <div className="shrink-0 border-t border-gray-100 px-5 pt-3 pb-5 dark:border-gray-700">
+            <div className="shrink-0 border-t border-gray-100 px-5 pt-3 pb-5 pb-safe dark:border-gray-700">
               <div className="mb-3 flex items-end justify-between">
                 <span className="text-xs text-gray-400 dark:text-[#929292]">{t('cart_total_label')}</span>
                 <span className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(invoiceTotal)}</span>

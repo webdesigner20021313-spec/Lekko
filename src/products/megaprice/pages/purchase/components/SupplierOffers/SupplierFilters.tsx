@@ -294,7 +294,7 @@ export function SupplierFilters({
             </div>
           </div>
 
-          <div className="shrink-0 flex gap-3 border-t border-gray-100 px-5 py-3 dark:border-gray-700">
+          <div className="shrink-0 flex gap-3 border-t border-gray-100 px-5 py-3 pb-safe dark:border-gray-700">
             <button onClick={clearAllFilters} className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300">
               {t('filter_reset_all')}
             </button>
