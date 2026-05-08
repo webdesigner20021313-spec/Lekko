@@ -65,7 +65,18 @@ export const useAuthStore = create<AuthState>()(
         return false
       },
 
-      logout: () => set({ isAuthenticated: false, user: null }),
+      logout: () => {
+        // Reset Zustand state
+        set({ isAuthenticated: false, user: null })
+        // Belt-and-suspenders: explicitly drop the persisted key so a stale
+        // copy from a previous session can never resurrect the auth state
+        // (e.g. on a tab that didn't see the rehydrate event).
+        try {
+          localStorage.removeItem('megaprice-auth')
+        } catch {
+          // ignore — private mode or storage disabled
+        }
+      },
     }),
     {
       name: 'megaprice-auth',
