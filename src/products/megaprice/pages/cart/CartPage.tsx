@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency } from '@/shared/utils/format'
 import { Button } from '@/shared/ui-kit/Button'
+import { BottomSheet } from '@/shared/ui-kit/BottomSheet'
 import { usePurchaseCart } from '@/products/megaprice/pages/purchase/hooks/usePurchaseCart'
 import { useOrdersStore } from '@/products/megaprice/stores/useOrdersStore'
 import { useWholesalersStore } from '@/products/megaprice/stores/useWholesalersStore'
@@ -765,111 +766,101 @@ export function CartPage() {
         )}
       </div>
 
-      {/* ── Mobile invoice bottom sheet ── */}
-      {mobileSheetOpen && hasSelection && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setMobileSheetOpen(false)} />
-          <div className="absolute inset-x-0 bottom-0 flex max-h-[92vh] flex-col rounded-t-2xl bg-white shadow-2xl dark:bg-[#111111]">
-            <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-700">
-              <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">{t('cart_order_content')}</h2>
-              <button
-                onClick={() => setMobileSheetOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                <X className="h-5 w-5" />
-              </button>
+      <BottomSheet
+        open={mobileSheetOpen && hasSelection}
+        onClose={() => setMobileSheetOpen(false)}
+        title={t('cart_order_content')}
+        maxHeight="92vh"
+        footer={
+          <div>
+            <div className="mb-3 flex items-end justify-between">
+              <span className="text-xs text-gray-400 dark:text-[#929292]">{t('cart_total_label')}</span>
+              <span className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(invoiceTotal)}</span>
             </div>
+            <button
+              onClick={() => { setMobileSheetOpen(false); createOrder() }}
+              className="flex h-12 w-full items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900"
+            >
+              {t('cart_create_order')}
+            </button>
+          </div>
+        }
+      >
+        <div className="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+          <button
+            onClick={() => setShowPharmacyDrop(v => !v)}
+            className="flex h-12 w-full items-center justify-between rounded-xl border border-gray-200 px-3 dark:border-gray-700"
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              <MapPin className="h-4 w-4 shrink-0 text-gray-500 dark:text-[#929292]" />
+              <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{pharmacy.name}</span>
+            </div>
+            <ChevronDown className={cn('h-4 w-4 shrink-0 text-gray-400 transition-transform', showPharmacyDrop && 'rotate-180')} />
+          </button>
+          {showPharmacyDrop && (
+            <div className="mt-2 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+              {mockPharmacies.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => { setPharmacyId(p.id); setShowPharmacyDrop(false) }}
+                  className={cn(
+                    'flex w-full items-center gap-2 px-3 py-3 text-left text-sm border-b last:border-0 border-gray-100 dark:border-[#333333]',
+                    p.id === pharmacyId ? 'bg-gray-50 font-semibold text-gray-900 dark:bg-[#222222] dark:text-gray-100' : 'text-gray-600 dark:text-gray-400',
+                  )}
+                >
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
-            <div className="shrink-0 border-b border-gray-100 px-5 py-3 dark:border-gray-700">
-              <button
-                onClick={() => setShowPharmacyDrop(v => !v)}
-                className="flex h-12 w-full items-center justify-between rounded-xl border border-gray-200 px-3 dark:border-gray-700"
-              >
-                <div className="flex min-w-0 items-center gap-2">
-                  <MapPin className="h-4 w-4 shrink-0 text-gray-500 dark:text-[#929292]" />
-                  <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{pharmacy.name}</span>
+        <div className="px-5 py-3">
+          <div className="space-y-3">
+            {invoiceGroups.map(g => (
+              <div key={g.id} className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-3 py-2.5 dark:border-gray-700 dark:bg-[#222222]">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-gray-900 dark:text-gray-100">{g.name}</p>
+                    <p className="text-[11px] text-gray-400 dark:text-[#929292]">{g.city}</p>
+                  </div>
+                  <div className="ml-2 shrink-0 text-right">
+                    <p className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(g.subtotal)}</p>
+                    <p className="text-[11px] text-gray-400 dark:text-[#929292]">{t('cart_group_pos_qty', { pos: g.items.length, qty: g.qty })}</p>
+                  </div>
                 </div>
-                <ChevronDown className={cn('h-4 w-4 shrink-0 text-gray-400 transition-transform', showPharmacyDrop && 'rotate-180')} />
-              </button>
-              {showPharmacyDrop && (
-                <div className="mt-2 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                  {mockPharmacies.map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => { setPharmacyId(p.id); setShowPharmacyDrop(false) }}
-                      className={cn(
-                        'flex w-full items-center gap-2 px-3 py-3 text-left text-sm border-b last:border-0 border-gray-100 dark:border-[#333333]',
-                        p.id === pharmacyId ? 'bg-gray-50 font-semibold text-gray-900 dark:bg-[#222222] dark:text-gray-100' : 'text-gray-600 dark:text-gray-400',
-                      )}
-                    >
-                      <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-400" />
-                      {p.name}
-                    </button>
+                <div className="divide-y divide-gray-100 bg-white dark:divide-[#333333] dark:bg-[#111111]">
+                  {g.items.map(item => (
+                    <div key={item.offerId} className="flex items-center gap-2 px-3 py-2">
+                      <p className="min-w-0 flex-1 truncate text-xs text-gray-700 dark:text-gray-300">{item.medicine.name}</p>
+                      <span className="shrink-0 text-[11px] text-gray-400 dark:text-[#929292]">×{item.quantity}</span>
+                      <span className="w-20 shrink-0 text-right text-xs font-semibold text-gray-900 dark:text-gray-100">
+                        {formatCurrency(effPrice(item) * item.quantity)}
+                      </span>
+                    </div>
                   ))}
                 </div>
-              )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 space-y-2 rounded-xl bg-gray-50 px-4 py-3 dark:bg-[#222222]">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-600 dark:text-gray-400">{t('cart_positions')}</span>
+              <span className="text-xs font-semibold tabular-nums text-gray-900 dark:text-gray-100">{invoiceItemCnt}</span>
             </div>
-
-            <div className="flex-1 overflow-y-auto px-5 py-3">
-              <div className="space-y-3">
-                {invoiceGroups.map(g => (
-                  <div key={g.id} className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-3 py-2.5 dark:border-gray-700 dark:bg-[#222222]">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-bold text-gray-900 dark:text-gray-100">{g.name}</p>
-                        <p className="text-[11px] text-gray-400 dark:text-[#929292]">{g.city}</p>
-                      </div>
-                      <div className="ml-2 shrink-0 text-right">
-                        <p className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(g.subtotal)}</p>
-                        <p className="text-[11px] text-gray-400 dark:text-[#929292]">{t('cart_group_pos_qty', { pos: g.items.length, qty: g.qty })}</p>
-                      </div>
-                    </div>
-                    <div className="divide-y divide-gray-100 bg-white dark:divide-[#333333] dark:bg-[#111111]">
-                      {g.items.map(item => (
-                        <div key={item.offerId} className="flex items-center gap-2 px-3 py-2">
-                          <p className="min-w-0 flex-1 truncate text-xs text-gray-700 dark:text-gray-300">{item.medicine.name}</p>
-                          <span className="shrink-0 text-[11px] text-gray-400 dark:text-[#929292]">×{item.quantity}</span>
-                          <span className="w-20 shrink-0 text-right text-xs font-semibold text-gray-900 dark:text-gray-100">
-                            {formatCurrency(effPrice(item) * item.quantity)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 space-y-2 rounded-xl bg-gray-50 px-4 py-3 dark:bg-[#222222]">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">{t('cart_positions')}</span>
-                  <span className="text-xs font-semibold tabular-nums text-gray-900 dark:text-gray-100">{invoiceItemCnt}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">{t('cart_units')}</span>
-                  <span className="text-xs font-semibold tabular-nums text-gray-900 dark:text-gray-100">{invoiceQtyCnt}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">{t('cart_distributors')}</span>
-                  <span className="text-xs font-semibold tabular-nums text-gray-900 dark:text-gray-100">{invoiceGroups.length}</span>
-                </div>
-              </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-600 dark:text-gray-400">{t('cart_units')}</span>
+              <span className="text-xs font-semibold tabular-nums text-gray-900 dark:text-gray-100">{invoiceQtyCnt}</span>
             </div>
-
-            <div className="shrink-0 border-t border-gray-100 px-5 pt-3 pb-5 pb-safe dark:border-gray-700">
-              <div className="mb-3 flex items-end justify-between">
-                <span className="text-xs text-gray-400 dark:text-[#929292]">{t('cart_total_label')}</span>
-                <span className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(invoiceTotal)}</span>
-              </div>
-              <button
-                onClick={() => { setMobileSheetOpen(false); createOrder() }}
-                className="flex h-12 w-full items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900"
-              >
-                {t('cart_create_order')}
-              </button>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-600 dark:text-gray-400">{t('cart_distributors')}</span>
+              <span className="text-xs font-semibold tabular-nums text-gray-900 dark:text-gray-100">{invoiceGroups.length}</span>
             </div>
           </div>
         </div>
-      )}
+      </BottomSheet>
 
       {successPayload && (
         <SuccessModal payload={successPayload} onClose={handleSuccessClose} />

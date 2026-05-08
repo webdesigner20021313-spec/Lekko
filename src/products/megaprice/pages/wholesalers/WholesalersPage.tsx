@@ -249,7 +249,7 @@ export function WholesalersPage() {
                         className="flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 dark:border-gray-700 dark:text-gray-400"
                       >
                         <Plus className="h-3 w-3" />
-                        {t('ws_modal_add_title') ?? 'Скидка'}
+                        {t('ws_modal_add_title')}
                       </button>
                     )}
                   </div>

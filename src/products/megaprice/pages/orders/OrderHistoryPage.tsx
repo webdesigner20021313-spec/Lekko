@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency, formatDate } from '@/shared/utils/format'
+import { BottomSheet } from '@/shared/ui-kit/BottomSheet'
 import { useOrdersStore } from '@/products/megaprice/stores/useOrdersStore'
 import { mp } from '@/products/megaprice/utils/path'
 import {
@@ -302,7 +303,7 @@ export function OrderHistoryPage() {
                 ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
                 : 'border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400',
             )}
-            aria-label={t('orders_filters') ?? 'Фильтры'}
+            aria-label={t('orders_filters')}
           >
             <SlidersHorizontal className="h-5 w-5" />
             {hasFilters && (
@@ -442,7 +443,7 @@ export function OrderHistoryPage() {
                 : 'border border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400',
             )}
           >
-            {t('orders_filter_all') ?? 'Все'}
+            {t('orders_filter_all')}
             <span className="tabular-nums opacity-70">{orders.length}</span>
           </button>
           {KPI_CARDS.map(({ status, labelKey }) => {
@@ -631,91 +632,78 @@ export function OrderHistoryPage() {
         )}
       </div>
 
-      {/* ── Mobile filter sheet ── */}
-      {mobileFiltersOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <div
-            className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"
-            onClick={() => setMobileFiltersOpen(false)}
-          />
-          <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl dark:bg-[#111111]">
-            <div className="sticky top-0 flex items-center justify-between border-b border-gray-100 bg-white px-5 py-4 dark:border-gray-700 dark:bg-[#111111]">
-              <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">{t('orders_filters') ?? 'Фильтры'}</h2>
-              <button
-                onClick={() => setMobileFiltersOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+      <BottomSheet
+        open={mobileFiltersOpen}
+        onClose={() => setMobileFiltersOpen(false)}
+        title={t('orders_filters')}
+        maxHeight="85vh"
+        footer={
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setStatusFilter('all')
+                setCalFrom('')
+                setCalTo('')
+                setDateRange('')
+                setSearch('')
+              }}
+              className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300"
+            >
+              {t('orders_date_clear')}
+            </button>
+            <button
+              onClick={() => setMobileFiltersOpen(false)}
+              className="flex h-12 flex-1 items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900"
+            >
+              {t('orders_apply')}
+            </button>
+          </div>
+        }
+      >
+        <div className="px-5 py-4 space-y-5 pb-8">
+          <div>
+            <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('orders_col_date')}</p>
+            <RangeCalendar
+              from={calFrom}
+              to={calTo}
+              onChange={(f, to) => {
+                setCalFrom(f)
+                setCalTo(to)
+                if (f && to) {
+                  setDateRange(`${ISOtoDMY(f)} - ${ISOtoDMY(to)}`)
+                } else {
+                  setDateRange(f ? ISOtoDMY(f) : '')
+                }
+              }}
+            />
+          </div>
 
-            <div className="px-5 py-4 space-y-5 pb-8">
-              <div>
-                <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('orders_col_date')}</p>
-                <RangeCalendar
-                  from={calFrom}
-                  to={calTo}
-                  onChange={(f, to) => {
-                    setCalFrom(f)
-                    setCalTo(to)
-                    if (f && to) {
-                      setDateRange(`${ISOtoDMY(f)} - ${ISOtoDMY(to)}`)
-                    } else {
-                      setDateRange(f ? ISOtoDMY(f) : '')
-                    }
-                  }}
-                />
-              </div>
-
-              <div>
-                <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('orders_col_status')}</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {KPI_CARDS.map(({ status, labelKey }) => {
-                    const { count } = stats[status]
-                    const isActive = statusFilter === status
-                    return (
-                      <button
-                        key={status}
-                        onClick={() => setStatusFilter(isActive ? 'all' : status)}
-                        className={cn(
-                          'flex h-11 items-center justify-between rounded-xl border px-4 text-sm font-medium',
-                          isActive
-                            ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
-                            : 'border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300',
-                        )}
-                      >
-                        <span>{t(labelKey)}</span>
-                        <span className="tabular-nums opacity-70">{count}</span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-
-            <div className="sticky bottom-0 flex gap-3 border-t border-gray-100 bg-white px-5 py-3 pb-safe dark:border-gray-700 dark:bg-[#111111]">
-              <button
-                onClick={() => {
-                  setStatusFilter('all')
-                  setCalFrom('')
-                  setCalTo('')
-                  setDateRange('')
-                  setSearch('')
-                }}
-                className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300"
-              >
-                {t('orders_date_clear') ?? 'Сбросить'}
-              </button>
-              <button
-                onClick={() => setMobileFiltersOpen(false)}
-                className="flex h-12 flex-1 items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900"
-              >
-                {t('orders_apply') ?? 'Применить'}
-              </button>
+          <div>
+            <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('orders_col_status')}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {KPI_CARDS.map(({ status, labelKey }) => {
+                const { count } = stats[status]
+                const isActive = statusFilter === status
+                return (
+                  <button
+                    key={status}
+                    onClick={() => setStatusFilter(isActive ? 'all' : status)}
+                    className={cn(
+                      'flex h-11 items-center justify-between rounded-xl border px-4 text-sm font-medium',
+                      isActive
+                        ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
+                        : 'border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300',
+                    )}
+                  >
+                    <span>{t(labelKey)}</span>
+                    <span className="tabular-nums opacity-70">{count}</span>
+                  </button>
+                )
+              })}
             </div>
           </div>
         </div>
-      )}
+      </BottomSheet>
     </div>
   )
 }
