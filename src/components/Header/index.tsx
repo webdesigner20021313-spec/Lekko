@@ -15,7 +15,6 @@ import { cn } from '@/shared/utils/utils'
 import { detectMode } from '@/config/mode'
 import { getLogoForMode, getLogoDarkForMode } from '@/config/products'
 import { useUIStore } from '@/shared/stores/useUIStore'
-import { useUserStore } from '@/shared/stores/useUserStore'
 import { useNotificationStore } from '@/shared/stores/useNotificationStore'
 import { useAuthStore } from '@/shared/auth/useAuthStore'
 import { useToast } from '@/shared/ui-kit/Toaster'
@@ -28,7 +27,8 @@ export function Header() {
   const logoSvg = theme === 'dark'
     ? getLogoDarkForMode(appMode.productId)
     : getLogoForMode(appMode.productId)
-  const { user } = useUserStore()
+  const authUser = useAuthStore((s) => s.user)
+  const user = authUser ?? { name: '', email: '', role: '', avatar: '' }
   const { notifications, markAsRead, markAllRead, unreadCount } = useNotificationStore()
   const logout = useAuthStore((s) => s.logout)
   const { toast } = useToast()

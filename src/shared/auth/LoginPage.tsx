@@ -174,7 +174,8 @@ export function LoginPage() {
 
   const rawFrom =
     (location.state as { from?: { pathname: string } })?.from?.pathname
-  const from = !rawFrom || rawFrom === '/' ? '/purchase' : rawFrom
+  const defaultLanding = appMode.mode === 'portal' ? '/' : '/purchase'
+  const from = !rawFrom || rawFrom === '/login' ? defaultLanding : rawFrom
 
   function validate() {
     let ok = true
