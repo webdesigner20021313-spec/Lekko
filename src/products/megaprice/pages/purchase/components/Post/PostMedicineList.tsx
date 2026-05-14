@@ -63,14 +63,24 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const { favoriteIds, toggleFavorite } = useFavorites()
+  const { isFavorite, toggle: toggleFavoriteByDrugId } = useFavorites()
   const { addItem } = usePurchaseCart()
 
-  // Единая база избранного: из моков + из хука
+  // Конверсия composite-id → drugId для API. У POS-mock данных drugId нет,
+  // тогда вызов уходит в no-op (см. useFavorites — defensive check).
+  const toggleFavorite = (medicineId: string) => {
+    const med = mockMedicines.find((m) => m.id === medicineId)
+    if (med?.drugId) toggleFavoriteByDrugId(med.drugId)
+  }
+
+  // Единая база избранного: legacy mock-флаги (m.isFavorite) + API-избранное.
   const allFavoriteIds = useMemo(() => {
     const mockFavIds = mockMedicines.filter((m) => m.isFavorite).map((m) => m.id)
-    return Array.from(new Set([...mockFavIds, ...favoriteIds]))
-  }, [favoriteIds])
+    const apiFavIds = mockMedicines
+      .filter((m) => m.drugId !== undefined && isFavorite(m.drugId))
+      .map((m) => m.id)
+    return Array.from(new Set([...mockFavIds, ...apiFavIds]))
+  }, [isFavorite])
 
   // Объединяем POS-данные выбранной аптеки с полными данными о лекарствах
   const posRows = useMemo(() => {

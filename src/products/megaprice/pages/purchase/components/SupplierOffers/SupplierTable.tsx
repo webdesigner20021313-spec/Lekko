@@ -5,7 +5,7 @@ import { cn } from '@/shared/utils/utils'
 import { formatCurrency, formatDate } from '@/shared/utils/format'
 import { SupplierRow } from './SupplierRow'
 import { QuantityControl } from './QuantityControl'
-import { useWholesalersStore } from '@/products/megaprice/stores/useWholesalersStore'
+import { useDiscounts } from '@/products/megaprice/stores/useDiscountStore'
 import type { SupplierOffer, SortField, SortDirection, ColumnKey, BonusType } from '@/products/megaprice/pages/purchase/types/purchase.types'
 
 const bonusStylesMobile: Record<BonusType, string> = {
@@ -22,7 +22,8 @@ function MobileOfferCard({ offer, avgPrice, quantity, onQuantityChange }: {
   onQuantityChange: (id: string, q: number) => void
 }) {
   const { t } = useTranslation()
-  const myDiscount = useWholesalersStore(s => s.getDiscount(offer.distributor.name))
+  const { getDiscount } = useDiscounts()
+  const myDiscount = getDiscount(offer.distributor.id)
   const effectivePrice = myDiscount ? Math.round(offer.priceWithVat * (1 - myDiscount / 100)) : offer.priceWithVat
   const discountPct = myDiscount ? myDiscount : (offer.originalPrice ? Math.round((1 - offer.priceWithVat / offer.originalPrice) * 100) : null)
 
@@ -99,6 +100,8 @@ interface SupplierTableProps {
   sortDir: SortDirection
   onSort: (field: SortField) => void
   visibleColumns: Record<ColumnKey, boolean>
+  /** Смещение для нумерации строк — `(page-1)*pageSize`. Default 0 (без пагинации). */
+  startIndex?: number
 }
 
 export type Col2Widths = {
@@ -133,7 +136,7 @@ function SortIcon({ field, sortField, sortDir }: { field: SortField; sortField: 
   return <ArrowDown className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
 }
 
-export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, sortField, sortDir, onSort, visibleColumns }: SupplierTableProps) {
+export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, sortField, sortDir, onSort, visibleColumns, startIndex = 0 }: SupplierTableProps) {
   const { t } = useTranslation()
 
   function colLabel(key: ReorderColKey): string {
@@ -294,7 +297,7 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
             <SupplierRow
               key={offer.id}
               offer={offer}
-              index={index + 1}
+              index={startIndex + index + 1}
               cols={cols}
               avgPrice={avgPrice}
               quantity={quantities[offer.id] ?? 0}

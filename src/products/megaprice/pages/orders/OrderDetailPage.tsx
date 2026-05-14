@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, MapPin, Calendar, Wallet,
@@ -11,7 +11,16 @@ import { useTranslation } from 'react-i18next'
 import logoSvgRaw from '@/assets/logos/megaprice-logo.svg?raw'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency, formatDate, formatDateTime } from '@/shared/utils/format'
-import { useOrdersStore } from '@/products/megaprice/stores/useOrdersStore'
+import { useAuthStore } from '@/shared/auth/useAuthStore'
+import {
+  usePurchaseDetail,
+  useDistributorsBatch,
+  useDrugsCartEnrichment,
+  usePurchaseDiff,
+  useAcceptDiff,
+  useRejectDiff,
+} from '@/products/megaprice/api/hooks'
+import { buildOrderFromPurchaseDetail } from '@/products/megaprice/pages/orders/adapters'
 import { mp } from '@/products/megaprice/utils/path'
 import {
   ORDER_STATUS_CONFIG,
@@ -575,13 +584,184 @@ function DistributorCard({
 
 // ─── Order Detail Page (entry) ────────────────────────────────────────────────
 
+// ─── Distributor diff banner (Phase 5) ────────────────────────────────
+// Показывает что изменил дистр в snapshot-копии заказа + кнопки Accept/Reject.
+// Видимость: status 10/11 (есть pending изменения), 12=approved, 13=rejected.
+
+function DistributorDiffBanner({
+  purchaseId,
+  onMutated,
+}: {
+  purchaseId: number
+  onMutated: () => void
+}) {
+  const { t } = useTranslation()
+  const diffQuery = usePurchaseDiff(Number.isFinite(purchaseId) && purchaseId > 0 ? purchaseId : null)
+  const acceptApi = useAcceptDiff(() => { diffQuery.refetch?.(); onMutated() })
+  const rejectApi = useRejectDiff(() => { diffQuery.refetch?.(); onMutated() })
+
+  if (!diffQuery.data) return null
+  const distrOrders = diffQuery.data.distributor?.orders ?? []
+  const distrItems  = diffQuery.data.distributor?.items  ?? []
+  if (distrOrders.length === 0) return null
+
+  // Агрегированный статус: если все 12 → approved; если есть 13 → rejected;
+  // иначе показываем pending/modified.
+  const statuses = new Set(distrOrders.map(o => o.statusId))
+  const allApproved = distrOrders.every(o => o.statusId === 12)
+  const allRejected = distrOrders.every(o => o.statusId === 13)
+  const anyModified = distrItems.some(i => i.isAdded || i.isRemoved || i.isModified)
+  const hasModifiedStatus = statuses.has(11)
+
+  if (allApproved) {
+    return (
+      <div className="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3 dark:border-emerald-900/40 dark:bg-emerald-900/20">
+        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+        <p className="text-sm text-emerald-800 dark:text-emerald-300">
+          {t('orders_diff_approved') ?? 'Изменения дистрибьютора приняты'}
+        </p>
+      </div>
+    )
+  }
+
+  if (allRejected) {
+    return (
+      <div className="flex items-center gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-5 py-3 dark:border-rose-900/40 dark:bg-rose-900/20">
+        <XCircle className="h-4 w-4 shrink-0 text-rose-600" />
+        <p className="text-sm text-rose-800 dark:text-rose-300">
+          {t('orders_diff_rejected') ?? 'Заказ отменён'}
+        </p>
+      </div>
+    )
+  }
+
+  if (!hasModifiedStatus && !anyModified) {
+    return (
+      <div className="flex items-center gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 dark:border-blue-900/40 dark:bg-blue-900/20">
+        <AlertCircle className="h-4 w-4 shrink-0 text-blue-600" />
+        <p className="text-sm text-blue-800 dark:text-blue-300">
+          {t('orders_diff_pending') ?? 'Ожидаем ответа дистрибьютора'}
+        </p>
+      </div>
+    )
+  }
+
+  const addedCount    = distrItems.filter(i => i.isAdded && !i.isRemoved).length
+  const removedCount  = distrItems.filter(i => i.isRemoved).length
+  const modifiedCount = distrItems.filter(i => i.isModified && !i.isRemoved && !i.isAdded).length
+
+  return (
+    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-900/20">
+      <div className="flex items-start gap-3">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+            {t('orders_diff_title') ?? 'Дистрибьютор предложил изменения'}
+          </p>
+          <ul className="mt-1 list-disc pl-5 text-sm text-amber-800 dark:text-amber-300">
+            {addedCount    > 0 && <li>{t('orders_diff_added',    { n: addedCount    }) ?? `Добавлено позиций: ${addedCount}`}</li>}
+            {removedCount  > 0 && <li>{t('orders_diff_removed',  { n: removedCount  }) ?? `Удалено позиций: ${removedCount}`}</li>}
+            {modifiedCount > 0 && <li>{t('orders_diff_modified', { n: modifiedCount }) ?? `Изменено позиций: ${modifiedCount}`}</li>}
+          </ul>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              onClick={() => acceptApi.appendData({}, { id: purchaseId })}
+              disabled={acceptApi.isLoading || rejectApi.isLoading}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              <Check className="h-3.5 w-3.5" />
+              {t('orders_diff_accept') ?? 'Принять'}
+            </button>
+            <button
+              onClick={() => rejectApi.appendData({}, { id: purchaseId })}
+              disabled={acceptApi.isLoading || rejectApi.isLoading}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-900/40 dark:bg-transparent dark:text-rose-300 dark:hover:bg-rose-900/20"
+            >
+              <X className="h-3.5 w-3.5" />
+              {t('orders_diff_reject') ?? 'Отменить'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function OrderDetailPage() {
   const { t } = useTranslation()
   const { id }   = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const orders   = useOrdersStore(s => s.orders)
 
-  const rawOrder = orders.find(o => o.id === id)
+  // id в URL = purchaseId. Backend возвращает {purchase, orders, items} одним вызовом.
+  const purchaseId = Number(id)
+  const detailQuery = usePurchaseDetail(Number.isFinite(purchaseId) && purchaseId > 0 ? purchaseId : null)
+  const drugStore = useAuthStore(s => s.drugStore)
+
+  const apiPurchase = detailQuery.data?.purchase ?? null
+  const apiOrders = detailQuery.data?.orders ?? []
+  const apiItems = detailQuery.data?.items ?? []
+
+  // Batch-обогащение: distributor names + drug names.
+  const distributorIds = useMemo(
+    () => Array.from(new Set(apiOrders.map(o => o.distributorId).filter(Boolean))),
+    [apiOrders],
+  )
+  const distrIdsKey = distributorIds.slice().sort((a, b) => a - b).join(',')
+  const distributors = useDistributorsBatch()
+  useEffect(() => {
+    if (distributorIds.length > 0) distributors.appendData({ ids: distributorIds })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [distrIdsKey])
+  const distrNameById = useMemo(() => {
+    const m = new Map<number, string>()
+    const list = Array.isArray(distributors.data) ? distributors.data : []
+    list.forEach(d => m.set(d.id, d.name))
+    return m
+  }, [distributors.data])
+
+  const drugIds = useMemo(
+    () => Array.from(new Set(apiItems.map(it => Number(it.drugId)).filter(Boolean))),
+    [apiItems],
+  )
+  const drugIdsKey = drugIds.slice().sort((a, b) => a - b).join(',')
+  // Cart-enrichment: drug + producer + country одним запросом для item-карточек.
+  const drugs = useDrugsCartEnrichment()
+  useEffect(() => {
+    if (drugIds.length > 0) drugs.appendData({ ids: drugIds })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drugIdsKey])
+  const drugInfoById = useMemo(() => {
+    const m = new Map<number, { name: string; producer: string; country: string }>()
+    const list = Array.isArray(drugs.data) ? drugs.data : []
+    list.forEach(d => m.set(d.id, {
+      name: d.fullName,
+      producer: d.producerName ?? '',
+      country: d.countryName ?? '',
+    }))
+    return m
+  }, [drugs.data])
+
+  const rawOrder = useMemo<Order | null>(() => {
+    if (!apiPurchase) return null
+    return buildOrderFromPurchaseDetail({
+      purchase: apiPurchase,
+      orders: apiOrders,
+      items: apiItems,
+      distributorNameById: distrNameById,
+      drugInfoById,
+      pharmacyName: drugStore?.drugStoreName ?? null,
+      pharmacyAddress: drugStore?.address ?? null,
+      pharmacyCity: null,
+    })
+  }, [apiPurchase, apiOrders, apiItems, distrNameById, drugInfoById, drugStore])
+
+  if (detailQuery.isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-sm text-gray-400">{t('orders_loading') ?? 'Загрузка…'}</p>
+      </div>
+    )
+  }
 
   if (!rawOrder) {
     return (
@@ -597,18 +777,43 @@ export function OrderDetailPage() {
     )
   }
 
-  return <OrderDetailContent key={rawOrder.id} order={rawOrder} />
+  return (
+    <OrderDetailContent
+      key={rawOrder.id}
+      order={rawOrder}
+      purchaseId={purchaseId}
+      onRefetchDetail={() => detailQuery.refetch?.()}
+    />
+  )
 }
 
 // ─── Order Detail Content ─────────────────────────────────────────────────────
 
-function OrderDetailContent({ order: initialOrder }: { order: Order }) {
+function OrderDetailContent({
+  order: initialOrder,
+  purchaseId,
+  onRefetchDetail,
+}: {
+  order: Order
+  purchaseId: number
+  onRefetchDetail: () => void
+}) {
   const { t } = useTranslation()
   const navigate      = useNavigate()
-  const updateOrder   = useOrdersStore(s => s.updateOrder)
+  // TODO: workflow на бэке (PUT /api/purchaseorders/:id/place|approve|reject|ship|deliver).
+  // Пока оставляем локальные мутации UI-only — accept/reject/complete/cancel
+  // не персистятся между перезагрузками.
+  const updateOrder   = (_: Order) => { void _ }
 
   const [order, setOrder] = useState<Order>(initialOrder)
   const [modal, setModal] = useState<ModalState | null>(null)
+
+  // Если родительский raw-order пришёл с обновлёнными items (после fetch'а
+  // useOrderItems) — переинициализируем local state. Без этого юзер видел бы
+  // старый snapshot без items.
+  useEffect(() => {
+    setOrder(initialOrder)
+  }, [initialOrder])
 
   const isOrderActive = order.status === 'new' || order.status === 'modified'
   const totalItems    = order.groups.reduce((s, g) => s + g.items.length, 0)
@@ -771,6 +976,9 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
       {/* ── Content ── */}
       <div className={cn('min-h-0 flex-1 overflow-y-auto bg-gray-50/40 px-3 py-4 md:px-6 md:py-5 dark:bg-[#111111]', isOrderActive && 'pb-32 md:pb-24')}>
         <div className="mx-auto max-w-4xl space-y-4">
+
+          {/* Distributor diff (Phase 5: дистр изменил → Accept/Reject) */}
+          <DistributorDiffBanner purchaseId={purchaseId} onMutated={onRefetchDetail} />
 
           {/* Info cards */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

@@ -5,6 +5,7 @@ import { OrderDetailPage } from '@/products/megaprice/pages/orders/OrderDetailPa
 import { CartPage } from '@/products/megaprice/pages/cart/CartPage'
 import { NeedPage } from '@/products/megaprice/pages/need/NeedPage'
 import { WholesalersPage } from '@/products/megaprice/pages/wholesalers/WholesalersPage'
+import { ApiTestPage } from '@/products/megaprice/pages/api-test/ApiTestPage'
 
 /**
  * Роуты разделов Megaprice. Используются в standalone (под `/`)
@@ -21,5 +22,6 @@ export const megapriceRoutes = (
       <Route path=":id" element={<OrderDetailPage />} />
     </Route>
     <Route path="wholesalers" element={<WholesalersPage />} />
+    <Route path="api-test" element={<ApiTestPage />} />
   </>
 )

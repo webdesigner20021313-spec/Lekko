@@ -3,8 +3,17 @@ import { Search, Package, Pencil, Send, Phone, X, Percent, Plus } from 'lucide-r
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency } from '@/shared/utils/format'
-import { mockWholesalers, type Wholesaler } from '@/products/megaprice/mocks/wholesalers.mocks'
-import { useWholesalersStore } from '@/products/megaprice/stores/useWholesalersStore'
+import { Pagination } from '@/shared/ui-kit/Pagination'
+import { LoadingOverlay } from '@/shared/ui-kit/LoadingOverlay'
+import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue'
+import { useAuthStore } from '@/shared/auth/useAuthStore'
+import { api } from '@/shared/api/client'
+import {
+  useDistributorsBatch,
+  useDistributorsPaged,
+} from '@/products/megaprice/api/hooks'
+import type { Wholesaler } from '@/products/megaprice/mocks/wholesalers.mocks'
+import { refetchDiscounts, useDiscounts } from '@/products/megaprice/stores/useDiscountStore'
 
 // ─── Discount Modal ───────────────────────────────────────────────────────────
 
@@ -35,7 +44,8 @@ function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountMo
   }, [value, onClose, onSave])
 
   const parsed = parseFloat(value)
-  const valid = value.trim() !== '' && !isNaN(parsed) && parsed > 0 && parsed <= 99
+  // 0 — допустимое значение, означает «нет скидки» (на бэке = DELETE).
+  const valid = value.trim() !== '' && !isNaN(parsed) && parsed >= 0 && parsed <= 99
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 md:items-center"
@@ -58,6 +68,9 @@ function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountMo
 
         <div className="px-5 py-5">
           <label className="mb-1.5 block text-xs font-medium text-gray-500 dark:text-[#929292]">{t('ws_modal_discount_label')}</label>
+          <p className="mb-1.5 text-[11px] text-gray-400 dark:text-[#929292]">
+            Введите 0 чтобы убрать скидку
+          </p>
           <div className={cn(
             'flex items-center rounded-xl border transition-colors',
             valid ? 'border-gray-300 focus-within:border-gray-900 focus-within:ring-2 focus-within:ring-gray-900/20 dark:border-gray-600 dark:focus-within:border-blue-400'
@@ -66,7 +79,7 @@ function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountMo
             <input
               ref={inputRef}
               type="number"
-              min="0.1"
+              min="0"
               max="99"
               step="0.5"
               placeholder={t('ws_modal_placeholder')}
@@ -144,37 +157,106 @@ function DiscountActionCell({ wholesaler, onOpen }: { wholesaler: Wholesaler; on
 
 // ─── WholesalersPage ──────────────────────────────────────────────────────────
 
+const PAGE_SIZE = 30
+
 export function WholesalersPage() {
   const { t } = useTranslation()
-  const storeDiscounts = useWholesalersStore(s => s.discounts)
-  const setDiscount    = useWholesalersStore(s => s.setDiscount)
+  const drugStoreId = useAuthStore(s => s.drugStore?.drugStoreId ?? null)
 
-  const wholesalers = useMemo<Wholesaler[]>(() =>
-    mockWholesalers.map(w => ({
-      ...w,
-      discountPercent: storeDiscounts[w.name] !== undefined ? storeDiscounts[w.name] : w.discountPercent,
-    })),
-    [storeDiscounts],
-  )
+  // Shared discount-store (по distributorId). Cart/Offers подписаны на тот же стор —
+  // mutation здесь автоматом обновляет цены везде.
+  useDiscounts() // триггерит fetch на mount
 
-  const [search,          setSearch]          = useState('')
+  const [search,    setSearch]    = useState('')
+  const [page,      setPage]      = useState(1)
+  const debouncedSearch = useDebouncedValue(search, 300)
+
+  // Сброс page при смене query.
+  useEffect(() => { setPage(1) }, [debouncedSearch])
+
+  const distributorsQuery = useDistributorsPaged({
+    query: debouncedSearch,
+    page,
+    pageSize: PAGE_SIZE,
+    drugStoreId,
+  })
+
+  // Batch-обогащение видимой страницы: phone/telegram/inn/minOrderAmount/...
+  const pagedItems = distributorsQuery.data?.items ?? []
+  const pageIds = useMemo(() => pagedItems.map(d => d.id), [pagedItems])
+  const pageIdsKey = pageIds.slice().sort((a, b) => a - b).join(',')
+  const distributorsFull = useDistributorsBatch()
+  useEffect(() => {
+    if (pageIds.length > 0) distributorsFull.appendData({ ids: pageIds })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageIdsKey])
+  const fullById = useMemo(() => {
+    const m = new Map<number, NonNullable<typeof distributorsFull.data>[number]>()
+    const list = Array.isArray(distributorsFull.data) ? distributorsFull.data : []
+    list.forEach(d => m.set(d.id, d))
+    return m
+  }, [distributorsFull.data])
+
+  // Скидки берём из shared store (useDiscounts triggers fetch выше).
+  const { getDiscount: getDiscountFor } = useDiscounts()
+
+  // Adapter DistributorRef + personal-discount + full → UI Wholesaler.
+  // Phone берём из contacts (в БД phone обычно null, телефон лежит в contacts).
+  // City — из note или regionName.
+  const wholesalers = useMemo<Wholesaler[]>(() => {
+    return pagedItems.map((d): Wholesaler => {
+      const full = fullById.get(d.id)
+      const phone = (full?.contacts ?? full?.phone ?? '').trim()
+      const tg = full?.telegramIdFirst
+      return {
+        id: String(d.id),
+        name: d.name,
+        city: full?.note?.trim() || d.regionName || '',
+        phone,
+        telegram: tg ? `@${tg}` : null,
+        inn: full?.inn ?? '',
+        minOrderSum: Number(full?.minOrderAmount ?? 0),
+        deliveryDays: Number(full?.deliveryDays ?? 0),
+        categories: [],
+        discountPercent: getDiscountFor(d.id),
+        isActive: d.statusId === 1,
+      }
+    })
+  }, [pagedItems, fullById, getDiscountFor])
+
+  const totalCount = distributorsQuery.data?.totalCount ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+
+  // Server-side фильтр уже сделан — отдаём напрямую.
+  const filtered = wholesalers
+
   const [modalWholesaler, setModalWholesaler] = useState<Wholesaler | null>(null)
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim()
-    if (!q) return wholesalers
-    return wholesalers.filter(w =>
-      w.name.toLowerCase().includes(q) || w.city.toLowerCase().includes(q)
-    )
-  }, [wholesalers, search])
-
-  const handleSave = useCallback((value: string) => {
-    if (!modalWholesaler) return
+  // Save/Delete вызываем напрямую через axios — у DELETE нужны query params,
+  // а универсальный useQueryApiClient тут не подходит. Refetch скидок после.
+  const handleSave = useCallback(async (value: string) => {
+    if (!modalWholesaler || !drugStoreId) return
+    const distributorId = Number(modalWholesaler.id)
     const parsed = parseFloat(value)
-    const newDiscount = !value.trim() || isNaN(parsed) || parsed <= 0 ? null : parsed
-    setDiscount(modalWholesaler.name, newDiscount)
-    setModalWholesaler(null)
-  }, [modalWholesaler, setDiscount])
+    const isClear = !value.trim() || isNaN(parsed) || parsed <= 0
+
+    try {
+      if (isClear) {
+        await api.delete('/api/drugsearch/personal-discounts', {
+          params: { drugStoreId, distributorId },
+        })
+      } else {
+        await api.post('/api/drugsearch/personal-discounts', {
+          drugStoreId,
+          distributorId,
+          discountPercent: parsed,
+        })
+      }
+      void refetchDiscounts()
+    } finally {
+      setModalWholesaler(null)
+    }
+  }, [modalWholesaler, drugStoreId])
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
@@ -186,7 +268,7 @@ export function WholesalersPage() {
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('ws_title')}</h1>
               <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-[#222222] dark:text-gray-400">
-                {wholesalers.length}
+                {totalCount}
               </span>
             </div>
             <p className="mt-0.5 text-sm text-gray-400 dark:text-[#929292]">{t('ws_subtitle')}</p>
@@ -214,7 +296,8 @@ export function WholesalersPage() {
       </div>
 
       {/* ── Таблица ── */}
-      <div className="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111111]">
+      <div className="relative min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111111]">
+        <LoadingOverlay show={distributorsQuery.isLoading} label="Загрузка списка…" />
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-[#222222]">
@@ -300,7 +383,7 @@ export function WholesalersPage() {
                   <tr key={w.id} className="h-14 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
 
                     <td className="px-4 py-3.5 text-center">
-                      <span className="text-xs text-gray-400">{idx + 1}</span>
+                      <span className="text-xs text-gray-400">{(page - 1) * PAGE_SIZE + idx + 1}</span>
                     </td>
 
                     <td className="px-4 py-3.5">
@@ -352,6 +435,21 @@ export function WholesalersPage() {
           </>
         )}
       </div>
+
+      {/* ── Pagination ── */}
+      {totalCount > 0 && totalPages > 1 && (
+        <div className="shrink-0 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            hasPrevious={page > 1}
+            hasNext={page < totalPages}
+            isLoading={distributorsQuery.isLoading}
+            onChange={setPage}
+          />
+        </div>
+      )}
 
       {/* ── Modal ── */}
       {modalWholesaler && (

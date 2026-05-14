@@ -11,9 +11,17 @@ import { cn } from '@/shared/utils/utils'
 import { formatCurrency } from '@/shared/utils/format'
 import { Button } from '@/shared/ui-kit/Button'
 import { BottomSheet } from '@/shared/ui-kit/BottomSheet'
-import { usePurchaseCart } from '@/products/megaprice/pages/purchase/hooks/usePurchaseCart'
-import { useOrdersStore } from '@/products/megaprice/stores/useOrdersStore'
-import { useWholesalersStore } from '@/products/megaprice/stores/useWholesalersStore'
+import { LoadingOverlay } from '@/shared/ui-kit/LoadingOverlay'
+import {
+  useCart,
+  useDistributorsBatch,
+  useDrugsCartEnrichment,
+  usePlaceOrders,
+  useRemoveFromCart,
+  useUpdateCartQty,
+} from '@/products/megaprice/api/hooks'
+import { useAuthStore } from '@/shared/auth/useAuthStore'
+import { useDiscounts } from '@/products/megaprice/stores/useDiscountStore'
 import { mockPharmacies } from '@/products/megaprice/mocks/purchase.mocks'
 import { mp } from '@/products/megaprice/utils/path'
 import type { CartItem, Pharmacy } from '@/products/megaprice/pages/purchase/types/purchase.types'
@@ -158,7 +166,7 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
             {t('cart_my_orders')} <ArrowRight className="h-3.5 w-3.5" />
           </button>
           <button
-            onClick={onClose}
+            onClick={() => { onClose(); navigate(mp('/orders')) }}
             className="flex h-11 flex-1 items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
           >
             {t('cart_done')}
@@ -174,16 +182,118 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
 
 export function CartPage() {
   const { t } = useTranslation()
-  const items       = usePurchaseCart(s => s.items)
-  const removeItem  = usePurchaseCart(s => s.removeItem)
-  const updateQty   = usePurchaseCart(s => s.updateQuantity)
-  const addOrder    = useOrdersStore(s => s.addOrder)
-  const getDiscount = useWholesalersStore(s => s.getDiscount)
+
+  // ── Real API: cart + batch-enrichment (drug fullName, distributor name) ──
+  const cart = useCart()
+  const apiItems = cart.data?.items ?? []
+
+  const drugIds = useMemo(
+    () => Array.from(new Set(apiItems.map(i => i.drugId).filter((id): id is number => !!id))),
+    [apiItems],
+  )
+  const distributorIds = useMemo(
+    () => Array.from(new Set(apiItems.map(i => i.distributorId).filter((id): id is number => !!id))),
+    [apiItems],
+  )
+  const drugIdsKey = drugIds.slice().sort((a, b) => a - b).join(',')
+  const distrIdsKey = distributorIds.slice().sort((a, b) => a - b).join(',')
+
+  // Cart-enrichment: drug + producer + country одним вызовом для карточек cart-row.
+  const drugs = useDrugsCartEnrichment()
+  const distributors = useDistributorsBatch()
+
+  useEffect(() => {
+    if (drugIds.length > 0) drugs.appendData({ ids: drugIds })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drugIdsKey])
+  useEffect(() => {
+    if (distributorIds.length > 0) distributors.appendData({ ids: distributorIds })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [distrIdsKey])
+
+  const drugInfoById = useMemo(() => {
+    const m = new Map<number, { name: string; producer: string; country: string }>()
+    const list = Array.isArray(drugs.data) ? drugs.data : []
+    list.forEach(d => m.set(d.id, {
+      name: d.fullName,
+      producer: d.producerName ?? '',
+      country: d.countryName ?? '',
+    }))
+    return m
+  }, [drugs.data])
+  const distrNameById = useMemo(() => {
+    const m = new Map<number, string>()
+    const list = Array.isArray(distributors.data) ? distributors.data : []
+    list.forEach(d => m.set(d.id, d.name))
+    return m
+  }, [distributors.data])
+
+  const updateApi = useUpdateCartQty()
+  const removeApi = useRemoveFromCart()
+  const placeOrdersApi = usePlaceOrders()
+  const drugStoreId = useAuthStore(s => s.drugStore?.drugStoreId ?? null)
+
+  // Адаптер API-cart → UI-CartItem (тот же shape что у usePurchaseCart-mock).
+  // offerId = String(cart_item.id) — PUT/DELETE используют именно это.
+  const items: CartItem[] = useMemo(() => apiItems.map(it => {
+    const info = drugInfoById.get(it.drugId)
+    const drugName = info?.name ?? it.drugName ?? `Drug ${it.drugId}`
+    // Производитель: первичный источник — /drugs/cart-enrichment (drug_primary_producer MV);
+    // fallback — producerName из самого cart-item (если бэк его передал).
+    const producer = info?.producer || it.producerName || ''
+    const country  = info?.country || ''
+    const distrName = distrNameById.get(it.distributorId) ?? it.distributorName ?? `Дистр ${it.distributorId}`
+    return {
+      offerId: String(it.id),
+      medicineId: String(it.drugId),
+      quantity: it.quantity,
+      offer: {
+        id: String(it.id),
+        medicineId: String(it.drugId),
+        distributor: {
+          id: String(it.distributorId),
+          name: distrName,
+          city: '',
+          lastPriceDate: '',
+          contactType: 'email' as const,
+          contact: '',
+        },
+        expiryDate: '',
+        paymentTypes: [],
+        priceWithVat: it.price,
+      },
+      medicine: {
+        id: String(it.drugId),
+        drugId: it.drugId,
+        name: drugName,
+        mnn: '',
+        manufacturer: producer,
+        country,
+        isFavorite: false,
+      },
+    }
+  }), [apiItems, drugInfoById, distrNameById])
+
+  const removeItem = useCallback((offerId: string) => {
+    const id = Number(offerId)
+    if (Number.isFinite(id)) removeApi.appendData({}, { id })
+  }, [removeApi])
+
+  const updateQty = useCallback((offerId: string, qty: number) => {
+    const id = Number(offerId)
+    if (!Number.isFinite(id)) return
+    if (qty <= 0) removeApi.appendData({}, { id })
+    else updateApi.appendData({ quantity: qty }, { id })
+  }, [updateApi, removeApi])
+
+  // Персональные скидки — shared store, авто-fetch при mount. Lookup по distributorId.
+  const { getDiscount } = useDiscounts()
 
   const effPrice = useCallback((item: CartItem) => {
-    const d = getDiscount(item.offer.distributor.name)
+    const d = getDiscount(item.offer.distributor.id)
     return d ? Math.round(item.offer.priceWithVat * (1 - d / 100)) : item.offer.priceWithVat
   }, [getDiscount])
+
 
   const [pharmacyId,     setPharmacyId]     = useState(mockPharmacies[0]?.id ?? '')
   const [checkedIds,     setCheckedIds]     = useState<Set<string>>(new Set())
@@ -283,45 +393,41 @@ export function CartPage() {
   const invoiceQtyCnt  = invoiceGroups.reduce((s, g) => s + g.qty, 0)
 
   function createOrder() {
-    if (!invoiceGroups.length) return
-    const orderNum = `ЗАК-${Math.floor(10000 + Math.random() * 90000)}`
-    const order = {
-      id: `ord-${Date.now()}`,
-      number: orderNum,
-      pharmacyName: pharmacy.name,
-      pharmacyAddress: pharmacy.address,
-      pharmacyCity: pharmacy.city,
-      status: 'new' as const,
-      createdAt: new Date().toISOString(),
-      totalSum: invoiceTotal,
-      totalQty: invoiceQtyCnt,
-      groups: invoiceGroups.map(g => ({
-        distributorId:    g.id,
-        distributorName:  g.name,
-        distributorCity:  g.city,
-        contactType:      g.contactType,
-        contact:          g.contact,
-        distributorStatus: 'new' as const,
-        subtotal:         g.subtotal,
-        items: g.items.map((item, idx) => ({
-          id:           `${g.id}-${idx}-${Date.now()}`,
-          medicineName: item.medicine.name,
-          manufacturer: item.medicine.manufacturer,
-          country:      item.medicine.country,
-          quantity:     item.quantity,
-          priceWithVat: effPrice(item),
-        })),
-      })),
-    }
-    addOrder(order)
-    setSuccessPayload({ groups: invoiceGroups, pharmacy, orderNum })
+    if (!invoiceGroups.length || !drugStoreId) return
+
+    // Собираем cart-item ids (purchase_items.id) из ВЫБРАННЫХ позиций (checkboxes).
+    // api.id ↔ строка purchase_items (новый flow корзины).
+    const selectedOfferIds = new Set<string>()
+    invoiceGroups.forEach(g => g.items.forEach(i => selectedOfferIds.add(i.offerId)))
+
+    const cartItemIds: number[] = []
+    apiItems.forEach(api => {
+      if (selectedOfferIds.has(String(api.id))) cartItemIds.push(api.id)
+    })
+
+    if (cartItemIds.length === 0) return
+
+    // ОДИН POST → бэк создаёт НОВУЮ snapshot-закупку: группирует cart-items по
+    // дистру → purchase_orders/items (клиент-копия) + distributor_orders/items
+    // (зеркало). Placed cart-items удаляются из активной корзины.
+    placeOrdersApi.appendData({
+      drugStoreId,
+      cartItemIds,
+    })
+
+    // Optimistic success-модалка с временным номером. Реальный number (Cart-{ts})
+    // подтянется на /orders когда пользователь туда перейдёт.
+    setSuccessPayload({
+      groups: invoiceGroups,
+      pharmacy,
+      orderNum: 'Оформляется…',
+    })
   }
 
   function handleSuccessClose() {
-    if (successPayload) {
-      successPayload.groups.forEach(g => g.items.forEach(i => removeItem(i.offerId)))
-      setCheckedIds(new Set())
-    }
+    // После place бэк-заказы уже placed (statusId=10) — refetchCart в onSuccess
+    // выкинет их из активной корзины. Локально только сбрасываем чекбоксы и закрываем модалку.
+    setCheckedIds(new Set())
     setSuccessPayload(null)
   }
 
@@ -337,7 +443,8 @@ export function CartPage() {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
+    <div className="relative flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
+      <LoadingOverlay show={cart.isLoading} label="Обновляем корзину…" />
 
       {/* ── Шапка ── */}
       <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-6 dark:border-gray-700 dark:bg-[#111111]">
@@ -413,6 +520,14 @@ export function CartPage() {
                             <Package className="h-3.5 w-3.5 shrink-0 text-gray-400" />
                             <p className="truncate text-sm font-bold text-gray-900 dark:text-gray-100">{group.name}</p>
                           </div>
+                          {(() => {
+                            const d = getDiscount(Number(group.id))
+                            return d ? (
+                              <p className="mt-0.5 text-[10px] font-semibold text-green-700 dark:text-[#6EE7B7]">
+                                персональная скидка −{d}%
+                              </p>
+                            ) : null
+                          })()}
                           <p className="mt-0.5 text-[11px] text-gray-400 dark:text-[#929292]">
                             {group.city} · {group.items.length} поз.
                           </p>
@@ -516,6 +631,14 @@ export function CartPage() {
                           <div className="flex items-center gap-2">
                             <Package className="h-4 w-4 shrink-0 text-gray-600 dark:text-gray-400" />
                             <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{group.name}</span>
+                            {(() => {
+                              const d = getDiscount(Number(group.id))
+                              return d ? (
+                                <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700 dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]">
+                                  персональная скидка −{d}%
+                                </span>
+                              ) : null
+                            })()}
                             <span className="text-xs text-gray-500 dark:text-[#929292]">
                               {t('cart_group_info', { city: group.city, pos: group.items.length, qty: groupQtyTotal })}
                             </span>

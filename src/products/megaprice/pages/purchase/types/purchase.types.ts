@@ -7,6 +7,8 @@ export interface Pharmacy {
 
 export interface Medicine {
   id: string
+  /** Backend drug_id для последующих API-вызовов (offers/analogs). */
+  drugId?: number
   name: string
   mnn: string
   mnnLatin?: string

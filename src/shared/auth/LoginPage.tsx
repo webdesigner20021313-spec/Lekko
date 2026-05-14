@@ -189,14 +189,25 @@ export function LoginPage() {
     setAuthError('')
     if (!validate()) return
     setIsLoading(true)
-    await new Promise((r) => setTimeout(r, 500))
-    const ok = login(loginValue, password)
+    const result = await login(loginValue, password)
     setIsLoading(false)
-    if (ok) {
+    if (result.ok) {
       navigate(from, { replace: true })
-    } else {
-      setAuthError(t('auth_error'))
+      return
     }
+    if (result.reason === 'license_expired') {
+      const days = result.details.daysRemains
+      const reason = result.details.blockReason
+      setAuthError(
+        `Лицензия истекла${days ? ` (осталось дней: ${days})` : ''}${reason ? `: ${reason}` : ''}`,
+      )
+      return
+    }
+    if (result.reason === 'invalid_credentials') {
+      setAuthError(t('auth_error'))
+      return
+    }
+    setAuthError(result.message || t('auth_error'))
   }
 
   return (

@@ -81,7 +81,11 @@ export interface Order {
   pharmacyCity: string
   groups: OrderDistributorGroup[]
   totalSum: number
+  /** Сумма quantity по всем позициям (sum). На list-view равна lineCount,
+   *  пока бекенд не отдаёт отдельный агрегат. */
   totalQty: number
+  /** Число строк в заказе (COUNT(poi.id) от бекенда). */
+  lineCount: number
   status: OrderStatus
   createdAt: string
 }

@@ -28,7 +28,23 @@ export function Header() {
     ? getLogoDarkForMode(appMode.productId)
     : getLogoForMode(appMode.productId)
   const authUser = useAuthStore((s) => s.user)
-  const user = authUser ?? { name: '', email: '', role: '', avatar: '' }
+  const drugStore = useAuthStore((s) => s.drugStore)
+  const user = (() => {
+    if (!authUser) return { name: '', email: '', role: '', avatar: '' }
+    const name = authUser.fullName?.trim() || authUser.login
+    const initials = name
+      .split(/[\s.@]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase() ?? '')
+      .join('') || (authUser.login[0] ?? '?').toUpperCase()
+    return {
+      name,
+      email: authUser.email ?? authUser.login,
+      role: drugStore?.drugStoreName ?? authUser.roles[0] ?? '',
+      avatar: initials,
+    }
+  })()
   const { notifications, markAsRead, markAllRead, unreadCount } = useNotificationStore()
   const logout = useAuthStore((s) => s.logout)
   const { toast } = useToast()

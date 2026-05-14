@@ -8,6 +8,13 @@ import { PostMedicineList } from '../Post/PostMedicineList'
 import { mockMedicines, mockPosItems } from '@/products/megaprice/mocks/purchase.mocks'
 import { useFavorites } from '@/products/megaprice/pages/purchase/hooks/useFavorites'
 import { usePurchaseCart } from '@/products/megaprice/pages/purchase/hooks/usePurchaseCart'
+import { useDrugSearch } from '@/products/megaprice/api/hooks'
+import { mapDrugRowToMedicine } from '@/products/megaprice/api/adapters'
+import { useAuthStore } from '@/shared/auth/useAuthStore'
+import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue'
+import { Pagination } from '@/shared/ui-kit/Pagination'
+import { LoadingOverlay } from '@/shared/ui-kit/LoadingOverlay'
+import type { ManufacturerOption } from './MedicineFilters'
 import type { Medicine } from '@/products/megaprice/pages/purchase/types/purchase.types'
 import type { PurchaseTab } from '@/products/megaprice/pages/purchase/PurchasePage'
 
@@ -32,7 +39,9 @@ export function MedicineList({
 }: MedicineListProps) {
   const { t } = useTranslation()
   const [search, setSearch] = useState('')
-  const [manufacturerFilter, setManufacturerFilter] = useState<string[]>([])
+  // Multi-select производителей: храним producer-IDs (стабильно, без зависимости
+  // от регистра/локали имён). Бэк применяет WHERE producer_id IN (...).
+  const [manufacturerIds, setManufacturerIds] = useState<number[]>([])
   const [excelMedicines, setExcelMedicines] = useState<Medicine[]>([])
   const [visibleColumns, setVisibleColumns] = useState<Record<MedicineColumnKey, boolean>>({ mnn: true, stock: false, needed: false })
 
@@ -52,7 +61,7 @@ export function MedicineList({
     return () => ro.disconnect()
   }, [])
 
-  const { favoriteIds, toggleFavorite } = useFavorites()
+  const { isFavorite, toggle: toggleFavoriteByDrugId } = useFavorites()
   const cartItems = usePurchaseCart((s) => s.items)
 
   const cartQtyByMedicine = useMemo(() => {
@@ -63,33 +72,91 @@ export function MedicineList({
     return map
   }, [cartItems])
 
-  const allFavoriteIds = useMemo(() => {
-    const mockFavIds = mockMedicines.filter((m) => m.isFavorite).map((m) => m.id)
-    return Array.from(new Set([...mockFavIds, ...favoriteIds]))
-  }, [favoriteIds])
+  // Compat-слой для MedicineTable/MedicineRow: они работают с composite-id
+  // (`${drugId}::${manufacturer}`), а API хранит чистый drug_id. Здесь
+  // конвертируем — отдаём вниз только composite-id из текущего списка.
 
-  const baseList = useMemo(() => {
+  // ── Backend search для manual-вкладки ──────────────────────────────
+  // POS-вкладка живёт на mock'ах (своя структура — позиции склада).
+  // Manual-вкладка идёт через /api/drugsearch/search; debounce встроен в хук.
+  const isApiDriven = activeTab === 'manual'
+  const PAGE_SIZE = 30
+  const [page, setPage] = useState(1)
+
+  // Имена выбранных производителей — кэш на стороне MedicineList. Заполняется
+  // когда юзер выбирает в dropdown'е (server-side). Нужен для UI: чтобы при
+  // pagination/смене query внутри dropdown'а ✓ оставались на выбранных.
+  const [selectedManufacturers, setSelectedManufacturers] = useState<ManufacturerOption[]>([])
+
+  // Стабильный ключ для useEffect-зависимости — без него каждый ре-рендер
+  // создавал новый массив и триггерил лишний refetch.
+  const producerIdsKey = manufacturerIds.slice().sort((a, b) => a - b).join(',')
+
+  // Сбрасываем page=1 при смене query/фильтра/тоггла избранных.
+  useEffect(() => {
+    setPage(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, producerIdsKey, showFavorites])
+
+  const drugStoreId = useAuthStore((s) => s.drugStore?.drugStoreId ?? null)
+  // Дебаунс search — иначе каждое нажатие клавиши = отдельный POST к бэку.
+  const debouncedSearch = useDebouncedValue(search, 300)
+  const apiSearch = useDrugSearch({
+    drugStoreId,
+    drugName: isApiDriven ? debouncedSearch : '',
+    producerIds: isApiDriven && manufacturerIds.length > 0 ? manufacturerIds : null,
+    favoritesOnly: isApiDriven && showFavorites,
+    page,
+    pageSize: PAGE_SIZE,
+    enabled: isApiDriven,
+  })
+
+  const apiMedicines = useMemo<Medicine[]>(() => {
+    if (!isApiDriven) return []
+    const items =
+      apiSearch.data && 'items' in apiSearch.data ? apiSearch.data.items : []
+    return items.map((row) => mapDrugRowToMedicine(row))
+  }, [isApiDriven, apiSearch.data])
+
+  const baseList = useMemo<Medicine[]>(() => {
     if ((activeTab as string) === 'pos') return mockPosItems
+    if (isApiDriven) return apiMedicines
     return mockMedicines
-  }, [activeTab])
+  }, [activeTab, isApiDriven, apiMedicines])
+
+  // Mock-вкладки (POS/Excel/Post) больше не имеют manufacturer-фильтра —
+  // это server-side фича через ManufacturerDropdown, привязанная к API.
+  // Если понадобится — отдельный mock-dropdown в UI этих вкладок.
 
   const filteredList = useMemo(() => {
     let list = baseList
-    if (showFavorites) list = list.filter((m) => allFavoriteIds.includes(m.id))
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      list = list.filter(
-        (m) => m.name.toLowerCase().includes(q) || m.manufacturer.toLowerCase().includes(q)
-      )
+    // В API-режиме ВСЕ фильтры (включая favoritesOnly) обрабатывает бэк — фронт только рисует.
+    // В mock-режиме (POS/Excel/Post) фильтрация client-side: showFavorites + поиск по имени.
+    if (!isApiDriven) {
+      if (showFavorites) list = list.filter((m) => isFavorite(m.drugId))
+      if (search.trim()) {
+        const q = search.toLowerCase()
+        list = list.filter(
+          (m) => m.name.toLowerCase().includes(q) || m.manufacturer.toLowerCase().includes(q),
+        )
+      }
     }
-    if (manufacturerFilter.length) list = list.filter((m) => manufacturerFilter.includes(m.manufacturer))
     return list
-  }, [baseList, showFavorites, allFavoriteIds, search, manufacturerFilter])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseList, isApiDriven, showFavorites, search, isFavorite])
 
-  const manufacturers = useMemo(
-    () => Array.from(new Set(mockMedicines.map((m) => m.manufacturer))).sort(),
-    []
+  // Composite-id-ы текущего списка, которые сейчас в избранном —
+  // нужно для MedicineTable/MedicineRow (они оперируют id, а не drugId).
+  const favoriteIdsInList = useMemo(
+    () => filteredList.filter((m) => isFavorite(m.drugId)).map((m) => m.id),
+    [filteredList, isFavorite],
   )
+
+  // Конвертим composite-id в drugId и зовём API.
+  const handleToggleFavorite = (medicineId: string) => {
+    const med = filteredList.find((m) => m.id === medicineId)
+    if (med?.drugId) toggleFavoriteByDrugId(med.drugId)
+  }
 
   // Post tab
   if (activeTab === 'post') {
@@ -141,9 +208,25 @@ export function MedicineList({
         <MedicineFilters
           search={search}
           onSearch={setSearch}
-          selectedManufacturers={manufacturerFilter}
-          onManufacturers={setManufacturerFilter}
-          manufacturers={manufacturers}
+          selectedManufacturerIds={manufacturerIds}
+          selectedManufacturers={selectedManufacturers}
+          onToggleManufacturer={(opt) => {
+            const isAdding = !manufacturerIds.includes(opt.id)
+            setManufacturerIds(
+              isAdding
+                ? [...manufacturerIds, opt.id]
+                : manufacturerIds.filter((id) => id !== opt.id),
+            )
+            setSelectedManufacturers(
+              isAdding
+                ? [...selectedManufacturers.filter((s) => s.id !== opt.id), opt]
+                : selectedManufacturers.filter((s) => s.id !== opt.id),
+            )
+          }}
+          onClearManufacturers={() => {
+            setManufacturerIds([])
+            setSelectedManufacturers([])
+          }}
           visibleColumns={visibleColumns}
           onToggleColumn={toggleColumn}
         />
@@ -152,21 +235,37 @@ export function MedicineList({
       {/* Таблица — скролл по X и Y только на десктопе; на мобиле — карточки без X-скролла */}
       <div
         ref={panel1Ref}
-        className="min-h-0 flex-1 overflow-y-scroll md:overflow-x-scroll"
+        className="relative min-h-0 flex-1 overflow-y-scroll md:overflow-x-scroll"
       >
+        <LoadingOverlay show={isApiDriven && apiSearch.isLoading} label="Загрузка…" />
         <MedicineTable
           medicines={filteredList}
           selectedId={selectedMedicine?.id ?? null}
           onSelect={onSelect}
           checkedIds={checkedIds}
           onToggleCheck={onToggleCheck}
-          favoriteIds={allFavoriteIds}
-          onToggleFavorite={toggleFavorite}
+          favoriteIds={favoriteIdsInList}
+          onToggleFavorite={handleToggleFavorite}
           cartQtyByMedicine={cartQtyByMedicine}
           panel1Width={panel1Width}
           showMnn={visibleColumns.mnn}
+          startIndex={isApiDriven ? (page - 1) * PAGE_SIZE : 0}
         />
       </div>
+
+      {isApiDriven && apiSearch.data && apiSearch.data.totalCount > 0 && (
+        <div className="flex-shrink-0 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
+          <Pagination
+            page={apiSearch.data.pageNumber}
+            totalPages={apiSearch.data.totalPages}
+            totalCount={apiSearch.data.totalCount}
+            hasPrevious={apiSearch.data.hasPrevious}
+            hasNext={apiSearch.data.hasNext}
+            isLoading={apiSearch.isLoading}
+            onChange={setPage}
+          />
+        </div>
+      )}
 
       {/* Авто-подбор — показывается когда выбрано 2+ */}
       {checkedIds.length >= 2 && (

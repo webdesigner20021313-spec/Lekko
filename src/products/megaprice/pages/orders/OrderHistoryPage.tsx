@@ -6,7 +6,10 @@ import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency, formatDate } from '@/shared/utils/format'
 import { BottomSheet } from '@/shared/ui-kit/BottomSheet'
-import { useOrdersStore } from '@/products/megaprice/stores/useOrdersStore'
+import { LoadingOverlay } from '@/shared/ui-kit/LoadingOverlay'
+import { usePurchases, useDistributorsBatch, type DistributorFull } from '@/products/megaprice/api/hooks'
+import { useAuthStore } from '@/shared/auth/useAuthStore'
+import { buildOrdersFromPurchases } from '@/products/megaprice/pages/orders/adapters'
 import { mp } from '@/products/megaprice/utils/path'
 import {
   ORDER_STATUS_CONFIG,
@@ -53,8 +56,8 @@ function exportToExcel(orders: Order[], t: (key: string, opts?: Record<string, u
     [t('orders_excel_number')]:       o.number,
     [t('orders_excel_pharmacy')]:     o.pharmacyName,
     [t('orders_excel_city')]:         o.pharmacyCity,
-    [t('orders_excel_distributors')]: o.groups.map(g => g.distributorName).join(', '),
-    [t('orders_excel_positions')]:    o.groups.reduce((s, g) => s + g.items.length, 0),
+    [t('orders_excel_distributors')]: o.groups.map(g => g.distributorName).filter(Boolean).join(', ') || String(o.groups.length),
+    [t('orders_excel_positions')]:    o.lineCount,
     [t('orders_excel_qty')]:          o.totalQty,
     [t('orders_excel_sum')]:          o.totalSum,
     [t('orders_excel_date')]:         formatDate(o.createdAt),
@@ -205,7 +208,50 @@ function RangeCalendar({ from, to, onChange }: {
 export function OrderHistoryPage() {
   const { t } = useTranslation()
   const navigate   = useNavigate()
-  const orders     = useOrdersStore(s => s.orders)
+
+  // ── Real API: purchases с хотя бы одним placed order ──────────────────────────
+  // Показываем закупки где есть хотя бы один placed order — это покрывает:
+  //   1) Полностью оформленные (status_id=1, все orders placed)
+  //   2) Partial place — purchase ещё активна (status_id=0), но 1+ orders placed.
+  //      В таком случае cart покажет оставшиеся draft items в этой же purchase.
+  const drugStore = useAuthStore(s => s.drugStore)
+  const purchasesQuery = usePurchases({ page: 1, pageSize: 200, hasPlacedOrders: true })
+  const apiPurchases = purchasesQuery.data?.items ?? []
+
+  // Имена дистров — batch HTTP. Собираем все distinct ids из purchases (бэк
+  // отдаёт массив per-purchase), и запрашиваем имена одним запросом.
+  const distributorsBatch = useDistributorsBatch()
+  const allDistributorIds = useMemo(() => {
+    const set = new Set<number>()
+    apiPurchases.forEach(p => p.distributorIds?.forEach(id => { if (id) set.add(id) }))
+    return Array.from(set)
+  }, [apiPurchases])
+
+  // useEffect→appendData чтобы триггерить запрос только при смене набора id.
+  // Stringified key, чтобы не циклиться на reference-неравенстве массива.
+  const idsKey = useMemo(() => allDistributorIds.slice().sort((a, b) => a - b).join(','), [allDistributorIds])
+  useEffect(() => {
+    if (allDistributorIds.length === 0) return
+    distributorsBatch.appendData({ ids: allDistributorIds })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey])
+
+  const distributorNameById = useMemo(() => {
+    const m = new Map<number, string>()
+    const list = (distributorsBatch.data as DistributorFull[] | undefined) ?? []
+    list.forEach(d => m.set(d.id, d.name))
+    return m
+  }, [distributorsBatch.data])
+
+  const orders: Order[] = useMemo(
+    () => buildOrdersFromPurchases(apiPurchases, {
+      pharmacyName: drugStore?.drugStoreName ?? null,
+      pharmacyAddress: drugStore?.address ?? null,
+      pharmacyCity: null,
+      distributorNameById,
+    }),
+    [apiPurchases, drugStore, distributorNameById],
+  )
   const [search,       setSearch]       = useState('')
   const [dateRange,    setDateRange]    = useState('')
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
@@ -250,7 +296,7 @@ export function OrderHistoryPage() {
         return true
       })
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  }, [search, statusFilter, dateFromISO, dateToISO])
+  }, [orders, search, statusFilter, dateFromISO, dateToISO])
 
   const hasFilters = search.trim().length > 0 || statusFilter !== 'all' || !!dateRange.trim()
 
@@ -469,7 +515,8 @@ export function OrderHistoryPage() {
       </div>
 
       {/* ── Список ── */}
-      <div className="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111111]">
+      <div className="relative min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111111]">
+        <LoadingOverlay show={purchasesQuery.isLoading} label="Загрузка заказов…" />
         {filteredOrders.length === 0 ? (
           <EmptyState hasFilters={hasFilters} />
         ) : (
@@ -477,7 +524,7 @@ export function OrderHistoryPage() {
           {/* Mobile cards */}
           <div className="md:hidden divide-y divide-gray-100 dark:divide-[#333333]">
             {filteredOrders.map((order) => {
-              const totalItems  = order.groups.reduce((s, g) => s + g.items.length, 0)
+              const totalItems  = order.lineCount
               const hasProposal = order.groups.some(g => g.distributorStatus === 'offer')
               return (
                 <button
@@ -495,7 +542,7 @@ export function OrderHistoryPage() {
                     </div>
                     <p className="mt-1 truncate text-sm font-medium text-gray-900 dark:text-gray-100">{order.pharmacyName}</p>
                     <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">
-                      {order.groups.length === 1
+                      {order.groups.length === 1 && order.groups[0].distributorName
                         ? `${order.groups[0].distributorName} · ${order.pharmacyCity}`
                         : `${t('orders_n_distributors', { n: order.groups.length })} · ${order.pharmacyCity}`}
                     </p>
@@ -547,7 +594,7 @@ export function OrderHistoryPage() {
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-[#333333]">
                 {filteredOrders.map((order, idx) => {
-                  const totalItems  = order.groups.reduce((s, g) => s + g.items.length, 0)
+                  const totalItems  = order.lineCount
                   const isChecked   = checked.includes(order.id)
                   const hasProposal = order.groups.some(g => g.distributorStatus === 'offer')
 
@@ -578,7 +625,7 @@ export function OrderHistoryPage() {
                         <p className="text-xs text-gray-400 dark:text-[#929292]">{order.pharmacyCity}</p>
                       </td>
                       <td className="px-3 py-2.5" onClick={() => navigate(mp(`/orders/${order.id}`))}>
-                        {order.groups.length === 1 ? (
+                        {order.groups.length === 1 && order.groups[0].distributorName ? (
                           <>
                             <p className="text-sm text-gray-700 dark:text-gray-300">{order.groups[0].distributorName}</p>
                             <p className="text-xs text-gray-400 dark:text-[#929292]">{order.groups[0].distributorCity}</p>
@@ -587,7 +634,7 @@ export function OrderHistoryPage() {
                           <>
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('orders_n_distributors', { n: order.groups.length })}</p>
                             <p className="truncate text-xs text-gray-400 dark:text-[#929292]" style={{ maxWidth: 180 }}>
-                              {order.groups.map(g => g.distributorName).join(', ')}
+                              {order.groups.map(g => g.distributorName).filter(Boolean).join(', ')}
                             </p>
                           </>
                         )}
