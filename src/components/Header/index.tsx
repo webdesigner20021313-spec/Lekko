@@ -68,10 +68,14 @@ export function Header() {
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       const t = e.target as Node
-      if (notifRef.current   && !notifRef.current.contains(t))   setShowNotifications(false)
-      if (profileRef.current && !profileRef.current.contains(t)) setShowProfile(false)
-      if (mNotifRef.current  && !mNotifRef.current.contains(t))  setShowNotifications(false)
-      if (mProfileRef.current && !mProfileRef.current.contains(t)) setShowProfile(false)
+      // Profile and notifications each have BOTH a desktop ref and a mobile ref
+      // sharing the same `show*` state. We must close only when the click is
+      // outside BOTH (otherwise clicking the visible dropdown closes itself
+      // because the click is "outside" the hidden-but-still-mounted twin).
+      const inProfile = profileRef.current?.contains(t) || mProfileRef.current?.contains(t)
+      if (!inProfile) setShowProfile(false)
+      const inNotif = notifRef.current?.contains(t) || mNotifRef.current?.contains(t)
+      if (!inNotif) setShowNotifications(false)
       if (searchRef.current  && !searchRef.current.contains(t))  { setShowSearch(false); setSearchQuery('') }
       if (langRef.current    && !langRef.current.contains(t))    setShowLang(false)
     }
