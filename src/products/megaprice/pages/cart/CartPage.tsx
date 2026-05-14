@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useRef, useEffect, Fragment } from 'rea
 import {
   ShoppingCart, Trash2, Minus, Plus,
   ChevronDown, ChevronUp, MapPin,
-  Receipt, ArrowRight, Package, Check, X,
+  Receipt, ArrowRight, Package, X,
 } from 'lucide-react'
 
 import { Link, useNavigate } from 'react-router-dom'
@@ -12,6 +12,7 @@ import { formatCurrency } from '@/shared/utils/format'
 import { Button } from '@/shared/ui-kit/Button'
 import { BottomSheet } from '@/shared/ui-kit/BottomSheet'
 import { LoadingOverlay } from '@/shared/ui-kit/LoadingOverlay'
+import { useToast } from '@/shared/ui-kit/Toaster'
 import {
   useCart,
   useDistributorsBatch,
@@ -29,7 +30,7 @@ import type { CartItem, Pharmacy } from '@/products/megaprice/pages/purchase/typ
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface DistGroup { id: string; name: string; city: string; items: CartItem[]; contactType: 'telegram' | 'email'; contact: string }
-interface ConfirmPayload { groups: DistGroup[]; pharmacy: Pharmacy; orderNum: string }
+interface ConfirmPayload { groups: Array<DistGroup & { subtotal: number; qty: number }>; pharmacy: Pharmacy }
 
 // ─── Qty Control ──────────────────────────────────────────────────────────────
 
@@ -71,45 +72,48 @@ function EmptyCart() {
   )
 }
 
-// ─── Success Modal ────────────────────────────────────────────────────────────
+// ─── Confirm Modal — превью заказа, API-запрос отправляется на «Готово» ─────
 
-function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: () => void }) {
+function ConfirmModal({
+  payload,
+  onConfirm,
+  onClose,
+  isLoading,
+}: {
+  payload: ConfirmPayload
+  onConfirm: () => void
+  onClose: () => void
+  isLoading: boolean
+}) {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-  const orderNum = payload.orderNum
-  const totalSum = payload.groups.reduce((s, g) => s + (g as DistGroup & { subtotal?: number }).subtotal!, 0)
+  const totalSum = payload.groups.reduce((s, g) => s + g.subtotal, 0)
   const totalItems = payload.groups.reduce((s, g) => s + g.items.length, 0)
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
-      <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={isLoading ? undefined : onClose} />
       <div className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-[#111111] dark:border dark:border-gray-700">
 
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+          disabled={isLoading}
+          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:opacity-40 dark:hover:bg-gray-800 dark:hover:text-gray-300"
           aria-label={t('cart_close')}
         >
           <X className="h-4 w-4" />
         </button>
 
         <div className="flex flex-col items-center px-6 pt-8 pb-6 text-center">
-          <div className="relative mb-4 flex items-center justify-center">
-            <div className="absolute h-[80px] w-[80px] rounded-full border-[6px] border-green-100 dark:border-green-900/40" />
-            <div className="relative flex h-[60px] w-[60px] items-center justify-center rounded-full bg-[#22C55E] shadow-md shadow-green-200">
-              <Check className="h-7 w-7 text-white" strokeWidth={2.5} />
-            </div>
+          <div className="mb-4 flex h-[60px] w-[60px] items-center justify-center rounded-2xl bg-gray-100 dark:bg-[#222222]">
+            <Receipt className="h-7 w-7 text-gray-700 dark:text-gray-300" />
           </div>
           <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('cart_success_title')}</p>
-          <p className="mt-1 text-sm text-gray-400 dark:text-[#929292]">{payload.pharmacy.name}</p>
+          <p className="mt-1 text-sm text-gray-400 dark:text-[#929292]">{t('cart_confirm_hint')}</p>
+          <p className="mt-2 text-xs font-medium text-gray-500 dark:text-[#929292]">{payload.pharmacy.name}</p>
         </div>
 
         <div className="px-6 pb-4">
           <div className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:divide-[#333333] dark:border-gray-700 dark:bg-[#222222]">
-            <div className="flex items-center justify-between px-4 py-3">
-              <span className="text-sm text-gray-500 dark:text-[#929292]">{t('cart_success_order_num')}</span>
-              <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{orderNum}</span>
-            </div>
             <div className="flex items-center justify-between px-4 py-3">
               <span className="text-sm text-gray-500 dark:text-[#929292]">{t('cart_success_order_sum')}</span>
               <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(totalSum)}</span>
@@ -134,23 +138,7 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{group.name}</p>
-                  <div className="mt-0.5 flex items-center gap-1">
-                    {group.contactType === 'telegram' ? (
-                      <>
-                        <svg className="h-3 w-3 shrink-0 text-sky-400" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z" />
-                        </svg>
-                        <span className="text-xs text-gray-400 dark:text-[#929292]">{group.contact}</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="h-3 w-3 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m2 7 10 7 10-7" />
-                        </svg>
-                        <span className="text-xs text-gray-400 dark:text-[#929292]">{group.contact}</span>
-                      </>
-                    )}
-                  </div>
+                  <p className="mt-0.5 text-xs text-gray-400 dark:text-[#929292]">{group.city}</p>
                 </div>
                 <span className="text-sm font-semibold tabular-nums text-gray-900 dark:text-gray-100">{group.items.length}</span>
               </div>
@@ -160,16 +148,27 @@ function SuccessModal({ payload, onClose }: { payload: ConfirmPayload; onClose: 
 
         <div className="flex gap-3 border-t border-gray-100 px-6 py-4 dark:border-gray-700">
           <button
-            onClick={() => { onClose(); navigate(mp('/orders')) }}
-            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            onClick={onClose}
+            disabled={isLoading}
+            className="flex h-11 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           >
-            {t('cart_my_orders')} <ArrowRight className="h-3.5 w-3.5" />
+            {t('cart_cancel')}
           </button>
           <button
-            onClick={() => { onClose(); navigate(mp('/orders')) }}
-            className="flex h-11 flex-1 items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-70 dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
           >
-            {t('cart_done')}
+            {isLoading ? (
+              <>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                {t('cart_placing')}
+              </>
+            ) : (
+              <>
+                {t('cart_done')} <ArrowRight className="h-3.5 w-3.5" />
+              </>
+            )}
           </button>
         </div>
 
@@ -230,7 +229,8 @@ export function CartPage() {
 
   const updateApi = useUpdateCartQty()
   const removeApi = useRemoveFromCart()
-  const placeOrdersApi = usePlaceOrders()
+  const navigate = useNavigate()
+  const { toast } = useToast()
   const drugStoreId = useAuthStore(s => s.drugStore?.drugStoreId ?? null)
 
   // Адаптер API-cart → UI-CartItem (тот же shape что у usePurchaseCart-mock).
@@ -297,12 +297,25 @@ export function CartPage() {
 
   const [pharmacyId,     setPharmacyId]     = useState(mockPharmacies[0]?.id ?? '')
   const [checkedIds,     setCheckedIds]     = useState<Set<string>>(new Set())
-  const [successPayload, setSuccessPayload] = useState<ConfirmPayload | null>(null)
+  const [confirmPayload, setConfirmPayload] = useState<ConfirmPayload | null>(null)
   const [distFilter,     setDistFilter]     = useState<string | null>(null)
   const [collapsed,      setCollapsed]      = useState<Set<string>>(new Set())
   const [showPharmacyDrop, setShowPharmacyDrop] = useState(false)
   const [mobileSheetOpen,  setMobileSheetOpen]  = useState(false)
   const pharmacyDropRef = useRef<HTMLDivElement>(null)
+
+  // POST /api/purchases/place-orders — отправляется ТОЛЬКО при подтверждении в
+  // confirm-модалке (нажатие «Готово»). Сам клик «Заказать» лишь открывает модалку.
+  const placeOrdersApi = usePlaceOrders(() => {
+    setCheckedIds(new Set())
+    setConfirmPayload(null)
+    navigate(mp('/orders'))
+    toast({
+      title: t('cart_placed_toast_title'),
+      description: t('cart_placed_toast_desc'),
+      variant: 'default',
+    })
+  })
 
   const pharmacy = mockPharmacies.find(p => p.id === pharmacyId) ?? mockPharmacies[0]
 
@@ -392,13 +405,20 @@ export function CartPage() {
   const invoiceItemCnt = invoiceGroups.reduce((s, g) => s + g.items.length, 0)
   const invoiceQtyCnt  = invoiceGroups.reduce((s, g) => s + g.qty, 0)
 
+  // «Заказать»: только открывает confirm-модалку с превью. Никаких API-запросов.
   function createOrder() {
     if (!invoiceGroups.length || !drugStoreId) return
+    setConfirmPayload({ groups: invoiceGroups, pharmacy })
+  }
 
-    // Собираем cart-item ids (purchase_items.id) из ВЫБРАННЫХ позиций (checkboxes).
-    // api.id ↔ строка purchase_items (новый flow корзины).
+  // «Готово» внутри confirm-модалки: вот тут реально летит POST.
+  // На success хук usePlaceOrders сделает refetchCart + наш onSuccess
+  // (выше) сбросит чекбоксы, закроет модалку, перейдёт на /orders + тост.
+  function confirmPlace() {
+    if (!confirmPayload || !drugStoreId || placeOrdersApi.isLoading) return
+
     const selectedOfferIds = new Set<string>()
-    invoiceGroups.forEach(g => g.items.forEach(i => selectedOfferIds.add(i.offerId)))
+    confirmPayload.groups.forEach(g => g.items.forEach(i => selectedOfferIds.add(i.offerId)))
 
     const cartItemIds: number[] = []
     apiItems.forEach(api => {
@@ -407,31 +427,15 @@ export function CartPage() {
 
     if (cartItemIds.length === 0) return
 
-    // ОДИН POST → бэк создаёт НОВУЮ snapshot-закупку: группирует cart-items по
-    // дистру → purchase_orders/items (клиент-копия) + distributor_orders/items
-    // (зеркало). Placed cart-items удаляются из активной корзины.
-    placeOrdersApi.appendData({
-      drugStoreId,
-      cartItemIds,
-    })
-
-    // Optimistic success-модалка с временным номером. Реальный number (Cart-{ts})
-    // подтянется на /orders когда пользователь туда перейдёт.
-    setSuccessPayload({
-      groups: invoiceGroups,
-      pharmacy,
-      orderNum: 'Оформляется…',
-    })
+    placeOrdersApi.appendData({ drugStoreId, cartItemIds })
   }
 
-  function handleSuccessClose() {
-    // После place бэк-заказы уже placed (statusId=10) — refetchCart в onSuccess
-    // выкинет их из активной корзины. Локально только сбрасываем чекбоксы и закрываем модалку.
-    setCheckedIds(new Set())
-    setSuccessPayload(null)
+  function handleConfirmClose() {
+    if (placeOrdersApi.isLoading) return
+    setConfirmPayload(null)
   }
 
-  if (items.length === 0 && !successPayload) {
+  if (items.length === 0 && !confirmPayload) {
     return (
       <div className="flex h-full flex-col bg-gray-50 dark:bg-[#111111]">
         <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-4 md:px-6 dark:border-gray-700 dark:bg-[#111111]">
@@ -985,8 +989,13 @@ export function CartPage() {
         </div>
       </BottomSheet>
 
-      {successPayload && (
-        <SuccessModal payload={successPayload} onClose={handleSuccessClose} />
+      {confirmPayload && (
+        <ConfirmModal
+          payload={confirmPayload}
+          onConfirm={confirmPlace}
+          onClose={handleConfirmClose}
+          isLoading={placeOrdersApi.isLoading}
+        />
       )}
     </div>
   )
