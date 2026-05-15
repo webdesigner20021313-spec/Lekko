@@ -13,6 +13,8 @@ export type LoginResult =
   | { ok: true }
   | { ok: false; reason: 'license_expired'; details: LicenseExpiredError }
   | { ok: false; reason: 'invalid_credentials'; message: string }
+  | { ok: false; reason: 'rate_limited'; retryAfterSeconds: number; message: string }
+  | { ok: false; reason: 'captcha_failed'; message: string }
   | { ok: false; reason: 'network'; message: string }
 
 interface AuthState {
@@ -25,7 +27,7 @@ interface AuthState {
   hasBootstrapped: boolean
 
   bootstrap: () => Promise<void>
-  login: (login: string, password: string) => Promise<LoginResult>
+  login: (login: string, password: string, captchaToken?: string | null) => Promise<LoginResult>
   logout: () => Promise<void>
 }
 
@@ -69,11 +71,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     return bootstrapInFlight
   },
 
-  async login(login, password) {
+  async login(login, password, captchaToken) {
     try {
       const { data } = await api.post<MeResponse>('/api/auth/login', {
         login: login.trim(),
         password,
+        captchaToken: captchaToken ?? null,
       })
       set({
         user: data.user,
@@ -102,6 +105,25 @@ export const useAuthStore = create<AuthState>((set) => ({
             message: pickApiError(err),
           }
         }
+        if (err.response?.status === 429) {
+          const body = err.response.data as { retryAfterSeconds?: number; error?: string } | undefined
+          return {
+            ok: false,
+            reason: 'rate_limited',
+            retryAfterSeconds: body?.retryAfterSeconds ?? 300,
+            message: body?.error ?? pickApiError(err),
+          }
+        }
+        if (err.response?.status === 400) {
+          const body = err.response.data as { captchaFailed?: boolean; error?: string } | undefined
+          if (body?.captchaFailed) {
+            return {
+              ok: false,
+              reason: 'captcha_failed',
+              message: body.error ?? 'Подтвердите что вы не робот',
+            }
+          }
+        }
       }
       return { ok: false, reason: 'network', message: pickApiError(err) }
     }
@@ -120,5 +142,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       isAuthenticated: false,
       hasBootstrapped: true,
     })
+    // Очищаем уведомления другого пользователя (lazy import чтобы не создавать
+    // циклической зависимости shared/auth ↔ shared/stores).
+    import('@/shared/stores/useNotificationStore').then((m) => {
+      m.useNotificationStore.getState().reset()
+    }).catch(() => {})
   },
 }))

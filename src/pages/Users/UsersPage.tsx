@@ -41,7 +41,7 @@ export function UsersPage() {
         </button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <UserList onEditUser={handleEditUser} />
+        <UserList onEditUser={handleEditUser} refetchUsers={refetchUsers} />
       </div>
       <UserCreateModal
         open={userModal}

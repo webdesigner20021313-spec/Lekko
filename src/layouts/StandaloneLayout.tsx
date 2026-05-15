@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
+import { useOrderNotifications } from '@/shared/notifications/useOrderNotifications'
 import type { ProductId } from '@/config/mode'
 
 interface StandaloneLayoutProps {
@@ -8,6 +9,7 @@ interface StandaloneLayoutProps {
 }
 
 export function StandaloneLayout({ productId }: StandaloneLayoutProps) {
+  useOrderNotifications()
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-[#111111]">
       <Sidebar mode="standalone" productId={productId} />

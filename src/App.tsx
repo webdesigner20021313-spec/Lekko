@@ -8,6 +8,7 @@ import { LoginPage } from '@/shared/auth/LoginPage'
 import { Dashboard } from '@/pages/Dashboard'
 import { UsersPage } from '@/pages/Users/UsersPage'
 import { RolesPage } from '@/pages/Users/RolesPage'
+import { DistributorPortalPage } from '@/pages/DistributorPortal/DistributorPortalPage'
 import { megapriceRoutes } from '@/products/megaprice/routes'
 
 function App() {
@@ -17,6 +18,8 @@ function App() {
     return (
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        {/* Временная страница дистра — без layout/auth (см. ТЗ "временная"). */}
+        <Route path="/distributor-portal" element={<DistributorPortalPage />} />
         <Route
           element={
             <PrivateRoute>
@@ -59,6 +62,8 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      {/* Временная страница дистра — без layout/auth. */}
+      <Route path="/distributor-portal" element={<DistributorPortalPage />} />
       <Route
         element={
           <PrivateRoute>

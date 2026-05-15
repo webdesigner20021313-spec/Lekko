@@ -40,8 +40,9 @@ api.interceptors.request.use((cfg: InternalAxiosRequestConfig) => {
   return cfg
 })
 
-// 401 → редирект на /login (кроме самой /login и /api/auth/me — её обрабатывает bootstrap).
-const PUBLIC_PATHS = ['/login']
+// 401 → редирект на /login (кроме самой /login, /distributor-portal — это
+// временная страница без логина, и /api/auth/me — её обрабатывает bootstrap).
+const PUBLIC_PATHS = ['/login', '/distributor-portal']
 const SILENT_API = ['/api/auth/me', '/api/auth/login', '/api/auth/refresh-token']
 
 api.interceptors.response.use(

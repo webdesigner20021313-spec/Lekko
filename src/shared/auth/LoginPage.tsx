@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Eye, EyeOff, User, Lock, X, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/shared/ui-kit/Button'
 import { useAuthStore } from '@/shared/auth/useAuthStore'
+import { TurnstileWidget } from '@/shared/auth/TurnstileWidget'
 import { cn } from '@/shared/utils/utils'
 import { detectMode } from '@/config/mode'
 import { getLogoForMode } from '@/config/products'
@@ -155,6 +156,10 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
 
 // ── Login page ─────────────────────────────────────────────────────────────
 
+// Turnstile site-key — если задан в env, на странице login показывается CAPTCHA.
+// На dev можно использовать test-ключ от CF (всегда passes): 1x00000000000000000000AA.
+const TURNSTILE_SITEKEY = (import.meta.env.VITE_TURNSTILE_SITEKEY as string | undefined)?.trim() || ''
+
 export function LoginPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -171,6 +176,8 @@ export function LoginPage() {
   const [authError, setAuthError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showForgot, setShowForgot] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [captchaResetKey, setCaptchaResetKey] = useState(0)
 
   const rawFrom =
     (location.state as { from?: { pathname: string } })?.from?.pathname
@@ -188,13 +195,22 @@ export function LoginPage() {
     e.preventDefault()
     setAuthError('')
     if (!validate()) return
+    // Если CAPTCHA включена — требуем токен.
+    if (TURNSTILE_SITEKEY && !captchaToken) {
+      setAuthError('Подтвердите что вы не робот')
+      return
+    }
     setIsLoading(true)
-    const result = await login(loginValue, password)
+    const result = await login(loginValue, password, captchaToken)
     setIsLoading(false)
     if (result.ok) {
       navigate(from, { replace: true })
       return
     }
+    // Любая ошибка → инвалидируем текущий token и форсим CAPTCHA снова
+    // (toke single-use в CF, нельзя переиспользовать).
+    setCaptchaToken(null)
+    setCaptchaResetKey((k) => k + 1)
     if (result.reason === 'license_expired') {
       const days = result.details.daysRemains
       const reason = result.details.blockReason
@@ -205,6 +221,15 @@ export function LoginPage() {
     }
     if (result.reason === 'invalid_credentials') {
       setAuthError(t('auth_error'))
+      return
+    }
+    if (result.reason === 'rate_limited') {
+      const mins = Math.max(1, Math.ceil(result.retryAfterSeconds / 60))
+      setAuthError(`Слишком много неудачных попыток. Попробуйте через ${mins} мин`)
+      return
+    }
+    if (result.reason === 'captcha_failed') {
+      setAuthError(result.message)
       return
     }
     setAuthError(result.message || t('auth_error'))
@@ -304,6 +329,17 @@ export function LoginPage() {
             </div>
             {passwordError && <p className="text-xs text-red-500">{passwordError}</p>}
           </div>
+
+          {/* CAPTCHA — рендерим только если задан VITE_TURNSTILE_SITEKEY */}
+          {TURNSTILE_SITEKEY && (
+            <TurnstileWidget
+              key={captchaResetKey}
+              sitekey={TURNSTILE_SITEKEY}
+              onVerify={setCaptchaToken}
+              onExpire={() => setCaptchaToken(null)}
+              onError={() => setCaptchaToken(null)}
+            />
+          )}
 
           {/* auth error */}
           {authError && (

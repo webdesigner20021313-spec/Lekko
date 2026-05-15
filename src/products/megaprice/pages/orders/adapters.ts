@@ -2,6 +2,8 @@ import type {
   ApiPurchase,
   ApiPurchaseOrder,
   ApiPurchaseOrderItem,
+  ApiDistributorOrder,
+  ApiDistributorOrderItem,
   ApiOrderStatus,
 } from '@/products/megaprice/api/hooks'
 import type {
@@ -9,6 +11,8 @@ import type {
   OrderDistributorGroup,
   OrderStatus,
   DistributorStatus,
+  WholesalerProposal,
+  ProposalChange,
 } from './types'
 
 // ── Backend statusId → UI status маппинги ────────────────────────────────────
@@ -20,6 +24,7 @@ export function mapPurchaseStatusToUi(statusId: number): OrderStatus {
     case 1: return 'new'        // оформлена, ждёт ответа дистров
     case 2: return 'modified'   // дистры что-то поменяли
     case 3: return 'completed'  // одобрено / отгружено / доставлено
+    case 4: return 'accepted'   // клиент принял предложение дистра (Phase 5)
     case 5:
     case 6: return 'cancelled'  // закрыта/отменена
     default: return 'new'
@@ -198,6 +203,134 @@ export function buildOrderFromPurchaseDetail({
     status: mapPurchaseStatusToUi(purchase.statusId),
     createdAt: purchase.createDate || new Date().toISOString(),
   }
+}
+
+// ── Diff (purchase /diff endpoint) → WholesalerProposal map per-distributor ──
+
+interface BuildProposalsOpts {
+  distributorOrders: ApiDistributorOrder[]
+  distributorItems: ApiDistributorOrderItem[]
+  clientItems: ApiPurchaseOrderItem[]
+  drugInfoById?: Map<number, { name: string; producer: string; country: string }>
+}
+
+/**
+ * Строит карту {distributorId → WholesalerProposal} из diff-response.
+ * Proposal формируется только если у distributor_order есть реально модифицированные
+ * items (isModified / isAdded / isRemoved). Для status_id=11 (отправлено клиенту
+ * на проверку) это всегда true.
+ *
+ * Сравнение идёт по `purchaseOrderItemId`: client.id ↔ distributor.purchaseOrderItemId.
+ * Если distributor-item не привязан к client-item (isAdded=1, purchaseOrderItemId=null)
+ * — это добавленная позиция.
+ */
+export function buildProposalsByDistributor({
+  distributorOrders,
+  distributorItems,
+  clientItems,
+  drugInfoById,
+}: BuildProposalsOpts): Map<string, WholesalerProposal> {
+  const result = new Map<string, WholesalerProposal>()
+  if (distributorOrders.length === 0) return result
+
+  // client items по id (purchase_order_items.id), для resolve старых значений.
+  const clientById = new Map<number, ApiPurchaseOrderItem>()
+  clientItems.forEach((it) => clientById.set(it.id, it))
+
+  // distributor_items сгруппированы по distributor_order_id.
+  const distItemsByOrder = new Map<number, ApiDistributorOrderItem[]>()
+  distributorItems.forEach((it) => {
+    const arr = distItemsByOrder.get(it.distributorOrderId) ?? []
+    arr.push(it)
+    distItemsByOrder.set(it.distributorOrderId, arr)
+  })
+
+  for (const order of distributorOrders) {
+    // Только status=11 — реально pending review. 12/13 уже разрешённые,
+    // 10 — ещё не редактировал. Диффы показываем только когда дистр сабмитнул.
+    if (order.statusId !== 11) continue
+
+    const items = distItemsByOrder.get(order.id) ?? []
+    const changes: ProposalChange[] = []
+
+    for (const d of items) {
+      const c = d.purchaseOrderItemId ? clientById.get(d.purchaseOrderItemId) : undefined
+      const drug = drugInfoById?.get(Number(d.drugId))
+      const medicineName = drug?.name ?? `Drug ${d.drugId}`
+
+      // Removed (мягко удалена).
+      if (d.isRemoved) {
+        changes.push({
+          itemId: String(c?.id ?? d.id),
+          type: 'removed',
+          oldValue: Number(c?.quantity ?? d.quantity ?? 0),
+          newValue: 0,
+          medicineName,
+        })
+        continue
+      }
+
+      // Added (новая позиция, без привязки к client-item).
+      if (d.isAdded || !c) {
+        changes.push({
+          itemId: String(d.id),
+          type: 'added',
+          oldValue: '',
+          newValue: Number(d.quantity ?? 0),
+          medicineName,
+          addedManufacturer: drug?.producer ?? '',
+          addedCountry: drug?.country ?? '',
+          addedPrice: Number(d.price ?? 0),
+        })
+        continue
+      }
+
+      // Substitute (заменён препарат).
+      if (d.replacementDrugId && d.replacementDrugId !== d.drugId) {
+        const replacementDrug = drugInfoById?.get(Number(d.replacementDrugId))
+        changes.push({
+          itemId: String(c.id),
+          type: 'substitute',
+          oldValue: medicineName,
+          newValue: replacementDrug?.name ?? `Drug ${d.replacementDrugId}`,
+          newManufacturer: replacementDrug?.producer,
+          newCountry: replacementDrug?.country,
+          medicineName,
+        })
+      }
+
+      // Quantity diff.
+      if (Number(d.quantity ?? 0) !== Number(c.quantity ?? 0)) {
+        changes.push({
+          itemId: String(c.id),
+          type: 'quantity',
+          oldValue: Number(c.quantity ?? 0),
+          newValue: Number(d.quantity ?? 0),
+          medicineName,
+        })
+      }
+
+      // Price diff.
+      if (Number(d.price ?? 0) !== Number(c.price ?? 0)) {
+        changes.push({
+          itemId: String(c.id),
+          type: 'price',
+          oldValue: Number(c.price ?? 0),
+          newValue: Number(d.price ?? 0),
+          medicineName,
+        })
+      }
+    }
+
+    if (changes.length > 0) {
+      result.set(String(order.distributorId), {
+        receivedAt: order.updateDate ?? order.createDate,
+        changes,
+      })
+    }
+  }
+
+  return result
 }
 
 export type { ApiOrderStatus }

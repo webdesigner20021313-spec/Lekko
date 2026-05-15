@@ -1,5 +1,5 @@
 // ── Global order status ───────────────────────────────────────────────────────
-export type OrderStatus = 'new' | 'modified' | 'completed' | 'cancelled'
+export type OrderStatus = 'new' | 'modified' | 'accepted' | 'completed' | 'cancelled'
 
 // ── Per-distributor status inside an order ────────────────────────────────────
 export type DistributorStatus =
@@ -19,6 +19,7 @@ export interface OrderStatusConfig {
 export const ORDER_STATUS_CONFIG: Record<OrderStatus, OrderStatusConfig> = {
   new:       { bg: 'bg-[#DBEAFE] dark:bg-[#1E3A8A]/40', text: 'text-[#1E40AF] dark:text-[#93C5FD]' },
   modified:  { bg: 'bg-[#FFEDD5] dark:bg-[#78350F]/40', text: 'text-[#9A3412] dark:text-[#FCD34D]' },
+  accepted:  { bg: 'bg-[#D1FAE5] dark:bg-[#064E3B]/40', text: 'text-[#065F46] dark:text-[#6EE7B7]' },
   completed: { bg: 'bg-[#D1FAE5] dark:bg-[#064E3B]/40', text: 'text-[#065F46] dark:text-[#6EE7B7]' },
   cancelled: { bg: 'bg-[#FEE2E2] dark:bg-[#7F1D1D]/40', text: 'text-[#991B1B] dark:text-[#FCA5A5]' },
 }
@@ -37,11 +38,18 @@ export const DISTRIBUTOR_STATUS_CONFIG: Record<DistributorStatus, OrderStatusCon
 
 export interface ProposalChange {
   itemId: string
-  type: 'quantity' | 'price' | 'substitute'
+  type: 'quantity' | 'price' | 'substitute' | 'added' | 'removed'
   oldValue: number | string
   newValue: number | string
   newManufacturer?: string
   newCountry?: string
+  /** Для added/removed/substitute — имя препарата, которое нужно показать в карточке. */
+  medicineName?: string
+  /** Для added — производитель добавленного товара. */
+  addedManufacturer?: string
+  addedCountry?: string
+  /** Для added — цена за штуку (для отображения). */
+  addedPrice?: number
 }
 
 export interface WholesalerProposal {
@@ -71,6 +79,8 @@ export interface OrderDistributorGroup {
   items: OrderItem[]
   subtotal: number
   proposal?: WholesalerProposal
+  /** distributor_orders.id — нужен для per-distributor accept/reject/cancel. */
+  distributorOrderId?: number
 }
 
 export interface Order {

@@ -5,18 +5,27 @@ import { cn } from '@/shared/utils/utils'
 import { formatDate } from '@/shared/utils/format'
 import { useUsersStore } from '@/pages/Users/stores/useUsersStore'
 import { ConfirmDeleteModal } from './ConfirmDeleteModal'
+import { useDeleteUser } from './api/users'
 import type { User } from './types/users.types'
 
 interface Props {
-  onEditUser: (user: User) => void
+  onEditUser:   (user: User) => void
+  refetchUsers: () => void
 }
 
-export function UserList({ onEditUser }: Props) {
+export function UserList({ onEditUser, refetchUsers }: Props) {
   const { t } = useTranslation()
-  const { users, roles, deleteUser } = useUsersStore()
+  const { users, roles } = useUsersStore()
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null)
+  const deleteApi = useDeleteUser(refetchUsers)
 
   const getRole = (roleId: string | null) => roles.find((r) => r.id === roleId)
+
+  function handleConfirmDelete() {
+    if (!deleteTarget) return
+    deleteApi.appendData(undefined, { id: Number(deleteTarget.id) })
+    setDeleteTarget(null)
+  }
 
   return (
     <>
@@ -141,7 +150,7 @@ export function UserList({ onEditUser }: Props) {
         open={!!deleteTarget}
         title={t('users_delete_title')}
         description={deleteTarget ? t('users_delete_desc', { name: deleteTarget.name }) : ''}
-        onConfirm={() => { deleteUser(deleteTarget!.id); setDeleteTarget(null) }}
+        onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />
     </>

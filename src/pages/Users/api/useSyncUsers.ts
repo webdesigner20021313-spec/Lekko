@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useAuthStore } from '@/shared/auth/useAuthStore'
 import { useUsersStore } from '@/pages/Users/stores/useUsersStore'
 import type { User } from '@/pages/Users/types/users.types'
-import { useUsersList, type ApiDrugStoreUser } from './users'
+import { useUsersList, buildAvatarUrl, type ApiDrugStoreUser } from './users'
 
 /**
  * Тянет юзеров текущей аптеки и пушит в `useUsersStore.users`, чтобы UserList
@@ -40,7 +40,9 @@ export function mapApiToUser(u: ApiDrugStoreUser): User {
     roleId: String(u.roleId),
     isActive: u.isActive,
     createdAt: u.createdAt,
-    avatar: undefined,
+    // Если в БД сохранён avatar_object_name — строим прокси-URL с cache-busting
+    // по updatedAt. Загрузка отдельным POST'ом после create/update.
+    avatar: u.avatarObjectName ? buildAvatarUrl(u.id, u.updatedAt) : undefined,
     pharmacyAccess: { all: true, ids: [] },
   }
 }

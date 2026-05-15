@@ -8,7 +8,7 @@ import {
 import { cn } from '@/shared/utils/utils'
 import { useAuthStore } from '@/shared/auth/useAuthStore'
 import { useUsersStore } from '@/pages/Users/stores/useUsersStore'
-import { useCreateUser } from './api/users'
+import { useCreateUser, useUpdateUser, uploadUserAvatar } from './api/users'
 import type { User, PharmacyAccess } from './types/users.types'
 import { MOCK_PHARMACIES } from './mocks/users.mocks'
 
@@ -42,25 +42,49 @@ type FieldError = Partial<Record<keyof FormState, string>>
 
 export function UserCreateModal({ open, drugStoreId, onClose, onCreated, editUser }: Props) {
   const { t } = useTranslation()
-  const { roles, updateUser } = useUsersStore()
+  const { roles } = useUsersStore()
   const companyId = useAuthStore((s) => s.user?.companyId ?? null)
   const [form,     setForm]     = useState<FormState>(EMPTY)
   const [errors,   setErrors]   = useState<FieldError>({})
   const [showPass, setShowPass] = useState(false)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const isEdit = !!editUser
 
+  // После create/update — если выбран новый файл аватара — заливаем его в
+  // MinIO через POST /api/users/{id}/avatar, потом закрываем модалку.
+  async function afterSave(userId: number) {
+    try {
+      if (avatarFile) {
+        setIsUploading(true)
+        await uploadUserAvatar(userId, avatarFile)
+      }
+    } catch (err) {
+      console.error('avatar upload failed', err)
+    } finally {
+      setIsUploading(false)
+      onCreated()
+      onClose()
+    }
+  }
+
   const createApi = useCreateUser(
-    () => { onCreated(); onClose() },
+    (data) => { void afterSave(data.id) },
     (msg) => setErrors((prev) => ({ ...prev, login: msg || t('user_login_error') })),
   )
-  const isSaving = createApi.isLoading
+  const updateApi = useUpdateUser(
+    () => { if (editUser) void afterSave(Number(editUser.id)) },
+    (msg) => setErrors((prev) => ({ ...prev, login: msg || t('user_login_error') })),
+  )
+  const isSaving = createApi.isLoading || updateApi.isLoading || isUploading
 
   useEffect(() => {
     if (!open) return
     setErrors({})
     setShowPass(false)
+    setAvatarFile(null)
     if (editUser) {
       setForm({
         name:           editUser.name,
@@ -81,9 +105,11 @@ export function UserCreateModal({ open, drugStoreId, onClose, onCreated, editUse
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => setForm((f) => ({ ...f, avatar: ev.target?.result as string }))
-    reader.readAsDataURL(file)
+    setAvatarFile(file)
+    // Preview через blob-URL — браузерный декодер, в отличие от base64 не
+    // подвешивает React state огромной строкой.
+    const previewUrl = URL.createObjectURL(file)
+    setForm((f) => ({ ...f, avatar: previewUrl }))
   }
 
   function set(field: keyof FormState, value: string | boolean) {
@@ -106,21 +132,19 @@ export function UserCreateModal({ open, drugStoreId, onClose, onCreated, editUse
     if (Object.keys(e).length) { setErrors(e); return }
 
     if (isEdit) {
-      // Edit пока не API-интегрирован — оставляем оптимистично через стор.
-      // Бекенд имеет PUT /api/users/{id}, но он принимает полный DrugStoreUser
-      // (с password_hash и пр.); подключим отдельной итерацией.
-      updateUser(editUser!.id, {
-        name:           form.name.trim(),
-        phone:          form.phone.trim(),
-        email:          form.email.trim() || undefined,
-        login:          form.login.trim(),
-        password:       form.password || editUser!.password,
-        roleId:         form.roleId || null,
-        isActive:       form.isActive,
-        avatar:         form.avatar || undefined,
-        pharmacyAccess: form.pharmacyAccess,
-      })
-      onClose()
+      // PUT /api/users/{id} — partial update. Password шлём только если ввели
+      // новый (форма в edit-режиме показывает placeholder «оставьте пустым»).
+      updateApi.appendData(
+        {
+          roleId: form.roleId ? Number(form.roleId) : null,
+          password: form.password.trim() || null,
+          fullName: form.name.trim() || null,
+          email: form.email.trim() || null,
+          phone: form.phone.trim() || null,
+          isActive: form.isActive,
+        },
+        { id: Number(editUser!.id) },
+      )
       return
     }
 

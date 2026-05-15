@@ -11,6 +11,7 @@ export interface AuthUser {
   dsRoleId: number | null
   userType: 'client' | 'manager'
   roles: string[]
+  avatarObjectName: string | null
 }
 
 export interface DrugStoreInfo {
