@@ -8,6 +8,8 @@ const ROW_H   = 56
 
 interface MedicineRowProps {
   medicine: Medicine
+  /** Порядковый номер с учётом смещения текущей страницы. */
+  rowNumber: number
   isSelected: boolean
   isChecked: boolean
   isFavorite: boolean
@@ -19,7 +21,7 @@ interface MedicineRowProps {
 }
 
 export function MedicineRow({
-  medicine,
+  medicine, rowNumber,
   isSelected, isChecked, isFavorite, cartQty,
   onSelect, onToggleCheck, onToggleFavorite, showMnn,
 }: MedicineRowProps) {
@@ -62,6 +64,14 @@ export function MedicineRow({
         </div>
       </td>
 
+      {/* № */}
+      <td style={{
+        padding: 0, textAlign: 'center',
+        borderRight: '1px solid var(--table-cell-border)',
+      }}>
+        <span className="text-xs tabular-nums text-gray-400">{rowNumber}</span>
+      </td>
+
       {/* Название */}
       <td style={{ padding: 0, overflow: 'hidden', borderRight: '1px solid var(--table-cell-border)' }}>
         <div style={{ height: ROW_H, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden', padding: '0 12px' }}>
@@ -71,25 +81,29 @@ export function MedicineRow({
           >
             {medicine.name}
           </p>
-          <p
-            className="text-xs text-gray-400"
-            style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
-          >
-            {medicine.manufacturer} · {medicine.country}
-          </p>
+          {(medicine.manufacturer || medicine.country) && (
+            <p
+              className="text-xs text-gray-400"
+              style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+            >
+              {[medicine.manufacturer, medicine.country].filter(Boolean).join(' · ')}
+            </p>
+          )}
         </div>
       </td>
 
-      {/* МНН */}
+      {/* МНН — пусто/«no mnn» уже отфильтровано адаптером, тут просто условие */}
       {showMnn && (
         <td style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', overflow: 'hidden', padding: '0 12px' }}>
-            <p
-              className="text-sm text-gray-600 dark:text-gray-400"
-              style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
-            >
-              {medicine.mnn}
-            </p>
+            {medicine.mnn && (
+              <p
+                className="text-sm text-gray-600 dark:text-gray-400"
+                style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+              >
+                {medicine.mnn}
+              </p>
+            )}
           </div>
         </td>
       )}

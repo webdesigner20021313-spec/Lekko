@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency, formatDate } from '@/shared/utils/format'
 import { QuantityControl } from './QuantityControl'
-import { useWholesalersStore } from '@/products/megaprice/stores/useWholesalersStore'
+import { useDiscounts } from '@/products/megaprice/stores/useDiscountStore'
 import type { SupplierOffer, BonusType, PaymentOption, ColumnKey } from '@/products/megaprice/pages/purchase/types/purchase.types'
 import type { Col2Widths, ReorderColKey } from './SupplierTable'
 
@@ -37,7 +37,8 @@ const cellDiv = (extra?: React.CSSProperties): React.CSSProperties => ({
 export function SupplierRow({ offer, index, avgPrice, quantity, onQuantityChange, visibleColumns, colOrder }: SupplierRowProps) {
   const { t } = useTranslation()
   const col = visibleColumns
-  const myDiscount   = useWholesalersStore(s => s.getDiscount(offer.distributor.name))
+  const { getDiscount } = useDiscounts()
+  const myDiscount   = getDiscount(offer.distributor.id)
   const effectivePrice = myDiscount ? Math.round(offer.priceWithVat * (1 - myDiscount / 100)) : offer.priceWithVat
 
   function getExpiryLabel(expiryDate: string): { text: string; urgent: boolean } | null {

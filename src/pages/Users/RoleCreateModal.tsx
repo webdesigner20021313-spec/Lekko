@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Check, CheckCircle2, ShieldCheck, X } from 'lucide-react'
 import { cn } from '@/shared/utils/utils'
+import { useAuthStore } from '@/shared/auth/useAuthStore'
 import { useUsersStore } from '@/pages/Users/stores/useUsersStore'
+import { useCreateRole } from './api/roles'
 import {
   PROJECTS_CONFIG, PORTAL_SECTIONS_CONFIG,
   buildEmptySectionAccess, buildEmptyProjectAccess,
@@ -12,13 +14,16 @@ import {
 const PERMS: PermissionType[] = ['view', 'edit', 'delete']
 
 interface Props {
-  open:    boolean
-  onClose: () => void
+  open:        boolean
+  drugStoreId: number | null
+  onClose:     () => void
+  onCreated:   () => void
 }
 
-export function RoleCreateModal({ open, onClose }: Props) {
+export function RoleCreateModal({ open, drugStoreId, onClose, onCreated }: Props) {
   const { t } = useTranslation()
-  const { addRole, roles } = useUsersStore()
+  const { roles } = useUsersStore()
+  const companyId = useAuthStore((s) => s.user?.companyId ?? null)
 
   const [name,           setName]           = useState('')
   const [nameError,      setNameError]      = useState('')
@@ -29,6 +34,17 @@ export function RoleCreateModal({ open, onClose }: Props) {
     () => Object.fromEntries(PORTAL_SECTIONS_CONFIG.map((s) => [s.id, buildEmptySectionAccess()]))
   )
   const [savedName, setSavedName] = useState<string | null>(null)
+
+  // 409 от backend содержит человекочитаемый текст про дубликат — показываем
+  // его прямо под полем имени.
+  const createApi = useCreateRole(
+    () => {
+      onCreated()
+      setSavedName(name.trim())
+    },
+    (msg) => setNameError(msg || t('role_name_exists')),
+  )
+  const isSaving = createApi.isLoading
 
   useEffect(() => {
     if (open) return
@@ -95,10 +111,16 @@ export function RoleCreateModal({ open, onClose }: Props) {
     if (roles.some((r) => r.name.toLowerCase() === trimmed.toLowerCase())) {
       setNameError(t('role_name_exists')); return
     }
-    const activeProjects = Object.fromEntries(Object.entries(projects).filter(([, p]) => p.enabled))
-    const activeSections = Object.fromEntries(Object.entries(portalSections).filter(([, s]) => s.enabled))
-    addRole({ name: trimmed, projects: activeProjects, portalSections: activeSections })
-    setSavedName(trimmed)
+    if (!drugStoreId) { setNameError(t('role_name_error')); return }
+    // UI-матрица проектов пока локальная — функции (storage/orders) подключим
+    // отдельной итерацией. Backend принимает пустые массивы.
+    createApi.appendData({
+      name: trimmed,
+      drugStoreId,
+      companyId,
+      storageFunctionIds: [],
+      ordersFunctionIds: [],
+    })
   }
 
   function getProjectLabel(id: string, fallback: string) {
@@ -367,9 +389,10 @@ export function RoleCreateModal({ open, onClose }: Props) {
             </button>
             <button
               onClick={handleSave}
-              className="h-9 rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
+              disabled={isSaving}
+              className="h-9 rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white hover:bg-black disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
             >
-              {t('role_create_btn')}
+              {isSaving ? '…' : t('role_create_btn')}
             </button>
           </div>
         </div>

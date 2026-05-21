@@ -5,7 +5,7 @@ import { cn } from '@/shared/utils/utils'
 import { formatCurrency, formatDate } from '@/shared/utils/format'
 import { SupplierRow } from './SupplierRow'
 import { QuantityControl } from './QuantityControl'
-import { useWholesalersStore } from '@/products/megaprice/stores/useWholesalersStore'
+import { useDiscounts } from '@/products/megaprice/stores/useDiscountStore'
 import type { SupplierOffer, SortField, SortDirection, ColumnKey, BonusType } from '@/products/megaprice/pages/purchase/types/purchase.types'
 
 const bonusStylesMobile: Record<BonusType, string> = {
@@ -22,7 +22,8 @@ function MobileOfferCard({ offer, avgPrice, quantity, onQuantityChange }: {
   onQuantityChange: (id: string, q: number) => void
 }) {
   const { t } = useTranslation()
-  const myDiscount = useWholesalersStore(s => s.getDiscount(offer.distributor.name))
+  const { getDiscount } = useDiscounts()
+  const myDiscount = getDiscount(offer.distributor.id)
   const effectivePrice = myDiscount ? Math.round(offer.priceWithVat * (1 - myDiscount / 100)) : offer.priceWithVat
   const discountPct = myDiscount ? myDiscount : (offer.originalPrice ? Math.round((1 - offer.priceWithVat / offer.originalPrice) * 100) : null)
 
@@ -99,6 +100,8 @@ interface SupplierTableProps {
   sortDir: SortDirection
   onSort: (field: SortField) => void
   visibleColumns: Record<ColumnKey, boolean>
+  /** Смещение для нумерации строк — `(page-1)*pageSize`. Default 0 (без пагинации). */
+  startIndex?: number
 }
 
 export type Col2Widths = {
@@ -133,7 +136,7 @@ function SortIcon({ field, sortField, sortDir }: { field: SortField; sortField: 
   return <ArrowDown className="h-3.5 w-3.5 text-gray-700 dark:text-gray-300" />
 }
 
-export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, sortField, sortDir, onSort, visibleColumns }: SupplierTableProps) {
+export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, sortField, sortDir, onSort, visibleColumns, startIndex = 0 }: SupplierTableProps) {
   const { t } = useTranslation()
 
   function colLabel(key: ReorderColKey): string {
@@ -247,15 +250,21 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
     {/* Mobile cards */}
     <div className="md:hidden h-full overflow-y-auto bg-gray-50 px-3 py-3 dark:bg-[#0a0a0a]">
       <div className="space-y-2.5">
-        {offers.map(offer => (
-          <MobileOfferCard
-            key={offer.id}
-            offer={offer}
-            avgPrice={avgPrice}
-            quantity={quantities[offer.id] ?? 0}
-            onQuantityChange={onQuantityChange}
-          />
-        ))}
+        {offers.map(offer => {
+          // Композитный key: itemId (offer.id) + priceId. На один items.id бэк может
+          // вернуть несколько prices строк (разные type_id/expiry) — без priceId
+          // React коллапсирует ряды как дубликаты, и +1 уходит не на тот ряд.
+          const rowKey = `${offer.id}__${offer.priceId ?? 0}`
+          return (
+            <MobileOfferCard
+              key={rowKey}
+              offer={offer}
+              avgPrice={avgPrice}
+              quantity={quantities[offer.id] ?? 0}
+              onQuantityChange={onQuantityChange}
+            />
+          )
+        })}
         {offers.length === 0 && (
           <div className="py-12 text-center text-sm text-gray-400 dark:text-[#929292]">{t('medicines_not_found')}</div>
         )}
@@ -290,19 +299,23 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
           </tr>
         </thead>
         <tbody>
-          {offers.map((offer, index) => (
-            <SupplierRow
-              key={offer.id}
-              offer={offer}
-              index={index + 1}
-              cols={cols}
-              avgPrice={avgPrice}
-              quantity={quantities[offer.id] ?? 0}
-              onQuantityChange={onQuantityChange}
-              visibleColumns={col}
-              colOrder={visibleOrder}
-            />
-          ))}
+          {offers.map((offer, index) => {
+            // см. комментарий в MobileOfferCard выше — нужен композитный key.
+            const rowKey = `${offer.id}__${offer.priceId ?? 0}`
+            return (
+              <SupplierRow
+                key={rowKey}
+                offer={offer}
+                index={startIndex + index + 1}
+                cols={cols}
+                avgPrice={avgPrice}
+                quantity={quantities[offer.id] ?? 0}
+                onQuantityChange={onQuantityChange}
+                visibleColumns={col}
+                colOrder={visibleOrder}
+              />
+            )
+          })}
         </tbody>
       </table>
     </div>

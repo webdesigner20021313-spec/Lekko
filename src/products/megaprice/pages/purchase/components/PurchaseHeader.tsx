@@ -2,7 +2,7 @@ import { ShoppingCart, Heart } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
-import { usePurchaseCart } from '@/products/megaprice/pages/purchase/hooks/usePurchaseCart'
+import { useCart } from '@/products/megaprice/api/hooks'
 import { mp } from '@/products/megaprice/utils/path'
 import type { PurchaseTab } from '../PurchasePage'
 
@@ -20,7 +20,9 @@ showFavorites,
   onFavoritesToggle,
 }: PurchaseHeaderProps) {
   const { t } = useTranslation()
-  const totalItems = usePurchaseCart((s) => s.totalItems)
+  const cart = useCart()
+  // lineCount — кол-во разных позиций; count — сумма quantity. Бэйдж — lineCount.
+  const totalItems = cart.data?.lineCount ?? 0
   const navigate = useNavigate()
 
   const tabs: { key: PurchaseTab; label: string }[] = [
@@ -70,9 +72,9 @@ showFavorites,
         <button onClick={() => navigate(mp('/cart'))} className="flex h-10 items-center gap-1.5 rounded-lg bg-gray-900 px-3 text-sm font-medium text-white transition-colors hover:bg-black md:px-4 dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]">
           <ShoppingCart className="h-4 w-4" />
           <span className="hidden md:inline">{t('cart_label')}</span>
-          {totalItems() > 0 && (
+          {totalItems > 0 && (
             <span className="inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-white px-1 text-xs font-semibold text-gray-900 dark:bg-gray-900 dark:text-white">
-              {totalItems()}
+              {totalItems}
             </span>
           )}
         </button>

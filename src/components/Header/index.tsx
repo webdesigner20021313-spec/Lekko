@@ -10,6 +10,7 @@ import {
   Sun,
   Moon,
   Menu,
+  User as UserIcon,
 } from 'lucide-react'
 import { cn } from '@/shared/utils/utils'
 import { detectMode } from '@/config/mode'
@@ -17,7 +18,17 @@ import { getLogoForMode, getLogoDarkForMode } from '@/config/products'
 import { useUIStore } from '@/shared/stores/useUIStore'
 import { useNotificationStore } from '@/shared/stores/useNotificationStore'
 import { useAuthStore } from '@/shared/auth/useAuthStore'
+import { buildAvatarUrl } from '@/pages/Users/api/users'
 import { useToast } from '@/shared/ui-kit/Toaster'
+import { Button } from '@/shared/ui-kit/Button'
+import {
+  Modal,
+  ModalContent,
+  ModalDescription,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
+} from '@/shared/ui-kit/Modal'
 import { formatDateTime } from '@/shared/utils/format'
 
 export function Header() {
@@ -28,7 +39,26 @@ export function Header() {
     ? getLogoDarkForMode(appMode.productId)
     : getLogoForMode(appMode.productId)
   const authUser = useAuthStore((s) => s.user)
-  const user = authUser ?? { name: '', email: '', role: '', avatar: '' }
+  const drugStore = useAuthStore((s) => s.drugStore)
+  const user = (() => {
+    if (!authUser) return { name: '', email: '', role: '', avatar: '', avatarUrl: null as string | null }
+    const name = authUser.fullName?.trim() || authUser.login
+    const initials = name
+      .split(/[\s.@]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase() ?? '')
+      .join('') || (authUser.login[0] ?? '?').toUpperCase()
+    return {
+      name,
+      email: authUser.email ?? authUser.login,
+      role: drugStore?.drugStoreName ?? authUser.roles[0] ?? '',
+      avatar: initials,
+      // Если у юзера есть аватар в MinIO — строим URL на прокси-эндпоинт.
+      // updatedAt /me не возвращает, поэтому cache-buster через объект-имя.
+      avatarUrl: authUser.avatarObjectName ? buildAvatarUrl(authUser.id, authUser.avatarObjectName) : null,
+    }
+  })()
   const { notifications, markAsRead, markAllRead, unreadCount } = useNotificationStore()
   const logout = useAuthStore((s) => s.logout)
   const { toast } = useToast()
@@ -39,6 +69,19 @@ export function Header() {
   const [showLang, setShowLang] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+
+  function requestLogout() {
+    setShowProfile(false)
+    setShowLogoutConfirm(true)
+  }
+
+  async function confirmLogout() {
+    setShowLogoutConfirm(false)
+    await logout()
+    navigate('/login', { replace: true })
+    toast({ title: t('logout_toast_title'), description: t('logout_toast_desc'), variant: 'default' })
+  }
 
   // Desktop refs
   const notifRef    = useRef<HTMLDivElement>(null)
@@ -109,16 +152,20 @@ export function Header() {
         <div ref={mProfileRef} className="relative">
           <button
             onClick={() => { setShowProfile(!showProfile); setShowNotifications(false) }}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white shadow-sm"
+            className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gray-900 text-xs font-bold text-white shadow-sm"
           >
-            {user.avatar}
+            {user.avatarUrl ? (
+              <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
+            ) : user.avatar}
           </button>
 
           {showProfile && (
             <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-[220px] rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
               <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3 dark:border-[#333333]">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white">
-                  {user.avatar}
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-900 text-sm font-bold text-white">
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
+                  ) : user.avatar}
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{user.name}</p>
@@ -127,12 +174,7 @@ export function Header() {
               </div>
               <div className="border-t border-gray-100 py-1 dark:border-[#333333]">
                 <button
-                  onClick={() => {
-                    setShowProfile(false)
-                    logout()
-                    navigate('/login', { replace: true })
-                    toast({ title: t('logout_toast_title'), description: t('logout_toast_desc'), variant: 'default' })
-                  }}
+                  onClick={requestLogout}
                   className="flex w-full items-center gap-3 px-4 py-2 text-sm text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
                   <LogOut className="h-4 w-4" />
@@ -245,7 +287,7 @@ export function Header() {
         {/* Left */}
         <div className="flex items-center gap-4">
           <div className="flex cursor-pointer items-center select-none" onClick={() => navigate('/')}>
-            <img src={logoSvg} alt="Lekko" className="h-8 w-auto" />
+            <img src={logoSvg} alt="Lekko" className="h-10 w-auto" />
           </div>
 
           {/* Search */}
@@ -426,8 +468,10 @@ export function Header() {
                 showProfile ? 'bg-gray-100 dark:bg-[#222222]' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
               )}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white shadow-sm">
-                {user.avatar}
+              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-gray-900 text-xs font-bold text-white shadow-sm">
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
+                ) : user.avatar}
               </div>
               <div className="hidden text-left lg:block">
                 <p className="text-sm font-semibold leading-none text-gray-900 dark:text-gray-100">{user.name}</p>
@@ -438,22 +482,28 @@ export function Header() {
             {showProfile && (
               <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[220px] rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
                 <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3 dark:border-[#333333]">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white">
-                    {user.avatar}
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-900 text-sm font-bold text-white">
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
+                    ) : user.avatar}
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{user.name}</p>
                     <p className="truncate text-xs text-gray-400">{user.email}</p>
                   </div>
                 </div>
+                <div className="py-1">
+                  <button
+                    onClick={() => { setShowProfile(false); navigate('/profile') }}
+                    className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                  >
+                    <UserIcon className="h-4 w-4 text-gray-400" />
+                    {t('header_profile_link', { defaultValue: 'Профиль' })}
+                  </button>
+                </div>
                 <div className="border-t border-gray-100 py-1 dark:border-[#333333]">
                   <button
-                    onClick={() => {
-                      setShowProfile(false)
-                      logout()
-                      navigate('/login', { replace: true })
-                      toast({ title: t('logout_toast_title'), description: t('logout_toast_desc'), variant: 'default' })
-                    }}
+                    onClick={requestLogout}
                     className="flex w-full items-center gap-3 px-4 py-2 text-sm text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     <LogOut className="h-4 w-4" />
@@ -465,6 +515,31 @@ export function Header() {
           </div>
         </div>
       </div>
+
+      {/* Logout confirmation */}
+      <Modal open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <ModalContent className="max-w-sm">
+          <ModalHeader>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
+              <LogOut className="h-5 w-5 text-red-500" />
+            </div>
+            <ModalTitle>{t('logout_confirm_title')}</ModalTitle>
+            <ModalDescription>{t('logout_confirm_desc')}</ModalDescription>
+          </ModalHeader>
+          <ModalFooter>
+            <Button variant="outline" onClick={() => setShowLogoutConfirm(false)}>
+              {t('logout_confirm_no')}
+            </Button>
+            <Button
+              onClick={confirmLogout}
+              className="bg-red-500 text-white shadow-sm hover:bg-red-600 active:bg-red-700 dark:bg-red-500 dark:text-white dark:hover:bg-red-600 dark:active:bg-red-700"
+            >
+              <LogOut className="h-4 w-4" />
+              {t('logout_confirm_yes')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </header>
   )
 }

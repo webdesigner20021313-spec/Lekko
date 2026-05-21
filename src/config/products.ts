@@ -60,7 +60,13 @@ export const products: Record<ProductId, Product> = {
     logoDark: analyticLogoDark,
     domain: 'analytic.com',
     basePath: '/analytic',
-    sections: [],
+    // Разделы дистрибьютора. В портальном сайдбаре показываются только дистрибьютору
+    // (см. buildPortalCategories), контент гейтится AnalyticFrame.
+    sections: [
+      { label: 'Кабинет',    slug: 'cabinet',    iconName: 'ClipboardList' },
+      { label: 'Мои аптеки', slug: 'pharmacies', iconName: 'Building2' },
+      { label: 'Аналитика',  slug: 'analytics',  iconName: 'BarChart3' },
+    ],
   },
 }
 

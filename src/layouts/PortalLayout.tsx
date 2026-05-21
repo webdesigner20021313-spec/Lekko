@@ -1,8 +1,10 @@
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
+import { useOrderNotifications } from '@/shared/notifications/useOrderNotifications'
 
 export function PortalLayout() {
+  useOrderNotifications()
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-[#111111]">
       <Sidebar mode="portal" />

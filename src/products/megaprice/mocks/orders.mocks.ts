@@ -1,6 +1,7 @@
 import type { Order } from '@/products/megaprice/pages/orders/types'
 
-export const mockOrders: Order[] = [
+// lineCount считается из групп при экспорте (см. ниже) — в литералах не дублируем.
+const rawOrders: Omit<Order, 'lineCount'>[] = [
 
   // ── Новые (не отправлены) ──────────────────────────────────────────────────
 
@@ -694,3 +695,9 @@ export const mockOrders: Order[] = [
     ],
   },
 ]
+
+// lineCount = число строк (позиций) во всех группах заказа — как в adapters.ts.
+export const mockOrders: Order[] = rawOrders.map((o) => ({
+  ...o,
+  lineCount: o.groups.reduce((sum, g) => sum + g.items.length, 0),
+}))

@@ -13,20 +13,24 @@ interface MedicineTableProps {
   onToggleCheck: (id: string) => void
   favoriteIds: string[]
   onToggleFavorite: (id: string) => void
-  cartQtyByMedicine: Record<string, number>
+  cartQtyByDrugId: Record<number, number>
   panel1Width: number
   showMnn: boolean
+  /** Смещение для нумерации (с учётом текущей страницы пагинации). Default 0. */
+  startIndex?: number
 }
 
 const COL_CB  = 56
+const COL_NUM = 48
 const COL_MNN = 240
 const COL_FAV = 56
-const FIXED   = COL_CB + COL_FAV
+const FIXED   = COL_CB + COL_NUM + COL_FAV
 const MIN_NAME = 400
 
 export function MedicineTable({
   medicines, selectedId, onSelect, checkedIds, onToggleCheck,
-  favoriteIds, onToggleFavorite, cartQtyByMedicine, panel1Width, showMnn,
+  favoriteIds, onToggleFavorite, cartQtyByDrugId, panel1Width, showMnn,
+  startIndex = 0,
 }: MedicineTableProps) {
   const { t } = useTranslation()
   const nameW  = Math.max(MIN_NAME, panel1Width - FIXED - (showMnn ? COL_MNN : 0))
@@ -61,7 +65,7 @@ export function MedicineTable({
         const isSelected = medicine.id === selectedId
         const isChecked  = checkedIds.includes(medicine.id)
         const isFavorite = favoriteIds.includes(medicine.id)
-        const cartQty    = cartQtyByMedicine[medicine.id] ?? 0
+        const cartQty    = (medicine.drugId != null ? cartQtyByDrugId[medicine.drugId] : 0) ?? 0
         return (
           <div
             key={medicine.id}
@@ -83,9 +87,11 @@ export function MedicineTable({
               <p className={cn('truncate text-sm', isSelected ? 'font-semibold' : 'font-medium', 'text-gray-900 dark:text-gray-100')}>
                 {medicine.name}
               </p>
-              <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">
-                {medicine.manufacturer} · {medicine.country}
-              </p>
+              {(medicine.manufacturer || medicine.country) && (
+                <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">
+                  {[medicine.manufacturer, medicine.country].filter(Boolean).join(' · ')}
+                </p>
+              )}
               {showMnn && medicine.mnn && (
                 <p className="mt-0.5 truncate text-[11px] text-gray-400 dark:text-gray-500">{medicine.mnn}</p>
               )}
@@ -116,6 +122,7 @@ export function MedicineTable({
     <table className="hidden md:table" style={{ tableLayout: 'fixed', width: tableW, borderCollapse: 'collapse' }}>
       <colgroup>
         <col style={{ width: COL_CB }} />
+        <col style={{ width: COL_NUM }} />
         <col style={{ width: nameW }} />
         {showMnn && <col style={{ width: COL_MNN }} />}
         <col style={{ width: COL_FAV }} />
@@ -139,6 +146,15 @@ export function MedicineTable({
                 className="h-4 w-4 cursor-pointer rounded border-gray-300 accent-gray-900"
               />
             </div>
+          </th>
+          <th
+            style={{
+              position: 'sticky', top: 0, zIndex: 2, height: 48, background: 'var(--table-header-bg)',
+              padding: 0, textAlign: 'center',
+              borderBottom: '1px solid var(--table-border)', borderRight: '1px solid var(--table-border)',
+            }}
+          >
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">№</span>
           </th>
           <th
             style={{
@@ -179,14 +195,15 @@ export function MedicineTable({
         </tr>
       </thead>
       <tbody>
-        {medicines.map((medicine) => (
+        {medicines.map((medicine, idx) => (
           <MedicineRow
             key={medicine.id}
             medicine={medicine}
+            rowNumber={startIndex + idx + 1}
             isSelected={medicine.id === selectedId}
             isChecked={checkedIds.includes(medicine.id)}
             isFavorite={favoriteIds.includes(medicine.id)}
-            cartQty={cartQtyByMedicine[medicine.id] ?? 0}
+            cartQty={(medicine.drugId != null ? cartQtyByDrugId[medicine.drugId] : 0) ?? 0}
             onSelect={() => onSelect(medicine)}
             onToggleCheck={() => onToggleCheck(medicine.id)}
             onToggleFavorite={() => onToggleFavorite(medicine.id)}

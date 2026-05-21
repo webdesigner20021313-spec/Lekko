@@ -30,3 +30,8 @@ dist-ssr
 *.xlsx
 *.xls
 *.csv
+
+# Deploy: реальные ключи в .env не коммитим, держим только .env.example.
+.env
+.env.production
+.env.staging

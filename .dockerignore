@@ -1,0 +1,45 @@
+# Не отправляем мусор в build context — ускоряет docker build значительно
+# (особенно node_modules, который может быть 500MB).
+
+node_modules
+dist
+build
+.cache
+.vite
+coverage
+*.log
+.DS_Store
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Env (build-args берутся из compose, не из .env-файлов внутри context)
+.env
+.env.local
+.env.*.local
+
+# Docker (не нужно копировать самого себя в context)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Tests / CI
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+playwright-report
+test-results
+
+# Документация
+README.md
+CHANGELOG.md
+*.md

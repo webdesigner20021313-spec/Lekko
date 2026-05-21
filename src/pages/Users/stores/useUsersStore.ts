@@ -1,16 +1,19 @@
 import { create } from 'zustand'
-import type { User, Role, ProjectAccess, SectionAccess } from '@/pages/Users/types/users.types'
-import { mockUsers, mockRoles } from '@/pages/Users/mocks/users.mocks'
+import type { User, Role } from '@/pages/Users/types/users.types'
 
 interface UsersState {
+  // Юзеры тянутся из API (drug_store_users) — наполняются через setUsers в
+  // UsersPage (useSyncUsers). Локальные addUser/updateUser/deleteUser держим
+  // только для оптимистичной правки, но они не персистят на бекенд (это будет
+  // следующей итерацией).
   users: User[]
+  // Аналогично — роли (drug_store_roles), наполняются через setRoles.
   roles: Role[]
   addUser:    (data: Omit<User, 'id' | 'createdAt'>) => void
   updateUser: (id: string, data: Partial<Omit<User, 'id' | 'createdAt'>>) => void
   deleteUser: (id: string) => void
-  addRole:    (data: Omit<Role, 'id'>) => void
-  updateRole: (id: string, data: { name: string; projects: Record<string, ProjectAccess>; portalSections: Record<string, SectionAccess> }) => void
-  deleteRole: (id: string) => void
+  setUsers:   (users: User[]) => void
+  setRoles:   (roles: Role[]) => void
 }
 
 function genId(prefix: string) {
@@ -18,8 +21,8 @@ function genId(prefix: string) {
 }
 
 export const useUsersStore = create<UsersState>((set) => ({
-  users: mockUsers,
-  roles: mockRoles,
+  users: [],
+  roles: [],
 
   addUser: (data) =>
     set((s) => ({
@@ -32,15 +35,6 @@ export const useUsersStore = create<UsersState>((set) => ({
   deleteUser: (id) =>
     set((s) => ({ users: s.users.filter((u) => u.id !== id) })),
 
-  addRole: (data) =>
-    set((s) => ({ roles: [...s.roles, { ...data, id: genId('role') }] })),
-
-  updateRole: (id, data) =>
-    set((s) => ({ roles: s.roles.map((r) => (r.id === id ? { ...r, ...data } : r)) })),
-
-  deleteRole: (id) =>
-    set((s) => ({
-      roles: s.roles.filter((r) => r.id !== id),
-      users: s.users.map((u) => (u.roleId === id ? { ...u, roleId: null } : u)),
-    })),
+  setUsers: (users) => set({ users }),
+  setRoles: (roles) => set({ roles }),
 }))

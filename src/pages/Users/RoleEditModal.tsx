@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Check, X } from 'lucide-react'
 import { cn } from '@/shared/utils/utils'
+import { useAuthStore } from '@/shared/auth/useAuthStore'
 import { useUsersStore } from '@/pages/Users/stores/useUsersStore'
+import { useUpdateRole } from './api/roles'
 import {
   PROJECTS_CONFIG, PORTAL_SECTIONS_CONFIG,
   mergeProjectAccess, buildEmptySectionAccess,
@@ -12,20 +14,29 @@ import {
 const PERMS: PermissionType[] = ['view', 'edit', 'delete']
 
 interface Props {
-  open:    boolean
-  roleId:  string | null
-  onClose: () => void
+  open:        boolean
+  roleId:      string | null
+  drugStoreId: number | null
+  onClose:     () => void
+  onUpdated:   () => void
 }
 
-export function RoleEditModal({ open, roleId, onClose }: Props) {
+export function RoleEditModal({ open, roleId, drugStoreId, onClose, onUpdated }: Props) {
   const { t } = useTranslation()
-  const { roles, updateRole } = useUsersStore()
+  const { roles } = useUsersStore()
+  const companyId = useAuthStore((s) => s.user?.companyId ?? null)
   const role = roles.find((r) => r.id === roleId) ?? null
 
   const [name,           setName]           = useState('')
   const [nameError,      setNameError]      = useState('')
   const [projects,       setProjects]       = useState<Record<string, ProjectAccess>>({})
   const [portalSections, setPortalSections] = useState<Record<string, SectionAccess>>({})
+
+  const updateApi = useUpdateRole(
+    () => { onUpdated(); onClose() },
+    (msg) => setNameError(msg || t('role_name_exists')),
+  )
+  const isSaving = updateApi.isLoading
 
   useEffect(() => {
     if (!open || !role) return
@@ -91,10 +102,18 @@ export function RoleEditModal({ open, roleId, onClose }: Props) {
     if (roles.some((r) => r.id !== roleId && r.name.toLowerCase() === trimmed.toLowerCase())) {
       setNameError(t('role_name_exists')); return
     }
-    const activeProjects = Object.fromEntries(Object.entries(projects).filter(([, p]) => p.enabled))
-    const activeSections = Object.fromEntries(Object.entries(portalSections).filter(([, s]) => s.enabled))
-    updateRole(roleId!, { name: trimmed, projects: activeProjects, portalSections: activeSections })
-    onClose()
+    if (!roleId || !drugStoreId) { setNameError(t('role_name_error')); return }
+    updateApi.appendData(
+      {
+        roleId: Number(roleId),
+        name: trimmed,
+        drugStoreId,
+        companyId,
+        storageFunctionIds: [],
+        ordersFunctionIds: [],
+      },
+      { roleId: Number(roleId) },
+    )
   }
 
   function getProjectLabel(id: string, fallback: string) {
@@ -293,8 +312,12 @@ export function RoleEditModal({ open, roleId, onClose }: Props) {
             <button onClick={onClose} className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222] px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#333333]">
               {t('confirm_cancel')}
             </button>
-            <button onClick={handleSave} className="h-9 rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]">
-              {t('role_save_btn')}
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="h-9 rounded-lg bg-gray-900 px-5 text-sm font-semibold text-white hover:bg-black disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
+            >
+              {isSaving ? '…' : t('role_save_btn')}
             </button>
           </div>
         </div>

@@ -68,3 +68,51 @@ body {
 
 /* Prevent body scroll-bounce on iOS when modal/sheet is open */
 html, body { overscroll-behavior-y: none; }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Стабильный скроллбар: резервируем место под вертикальный скролл, чтобы
+   центрированный (mx-auto) контент НЕ дёргался по горизонтали при появлении/
+   исчезновении скроллбара во время навигации между разделами.
+   ─────────────────────────────────────────────────────────────────────────── */
+.scroll-stable { scrollbar-gutter: stable; }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Анимации появления контента при переходах. Тонкие, без «прыжков».
+   prefers-reduced-motion — уважаем системную настройку.
+   ─────────────────────────────────────────────────────────────────────────── */
+@keyframes lk-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes lk-fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes lk-scale-in {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes lk-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes lk-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.lk-float   { animation: lk-float 3s ease-in-out infinite; }
+.lk-shimmer {
+  background-size: 200% 100%;
+  animation: lk-shimmer 2.5s linear infinite;
+}
+
+.animate-page     { animation: lk-fade-in 0.28s ease-out both; }
+.animate-fade-in  { animation: lk-fade-in 0.28s ease-out both; }
+.animate-fade-in-up { animation: lk-fade-in-up 0.3s ease-out both; }
+.animate-scale-in { animation: lk-scale-in 0.22s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page,
+  .animate-fade-in,
+  .animate-scale-in { animation: none; }
+}

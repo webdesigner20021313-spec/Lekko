@@ -6,14 +6,18 @@ import {
   ModalDescription, ModalFooter,
 } from '@/shared/ui-kit/Modal'
 import { cn } from '@/shared/utils/utils'
+import { useAuthStore } from '@/shared/auth/useAuthStore'
 import { useUsersStore } from '@/pages/Users/stores/useUsersStore'
+import { useCreateUser, useUpdateUser, uploadUserAvatar } from './api/users'
 import type { User, PharmacyAccess } from './types/users.types'
 import { MOCK_PHARMACIES } from './mocks/users.mocks'
 
 interface Props {
-  open:      boolean
-  onClose:   () => void
-  editUser?: User | null
+  open:        boolean
+  drugStoreId: number | null
+  onClose:     () => void
+  onCreated:   () => void
+  editUser?:   User | null
 }
 
 interface FormState {
@@ -36,20 +40,51 @@ const EMPTY: FormState = {
 
 type FieldError = Partial<Record<keyof FormState, string>>
 
-export function UserCreateModal({ open, onClose, editUser }: Props) {
+export function UserCreateModal({ open, drugStoreId, onClose, onCreated, editUser }: Props) {
   const { t } = useTranslation()
-  const { roles, addUser, updateUser } = useUsersStore()
+  const { roles } = useUsersStore()
+  const companyId = useAuthStore((s) => s.user?.companyId ?? null)
   const [form,     setForm]     = useState<FormState>(EMPTY)
   const [errors,   setErrors]   = useState<FieldError>({})
   const [showPass, setShowPass] = useState(false)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const isEdit = !!editUser
+
+  // После create/update — если выбран новый файл аватара — заливаем его в
+  // MinIO через POST /api/users/{id}/avatar, потом закрываем модалку.
+  async function afterSave(userId: number) {
+    try {
+      if (avatarFile) {
+        setIsUploading(true)
+        await uploadUserAvatar(userId, avatarFile)
+      }
+    } catch (err) {
+      console.error('avatar upload failed', err)
+    } finally {
+      setIsUploading(false)
+      onCreated()
+      onClose()
+    }
+  }
+
+  const createApi = useCreateUser(
+    (data) => { void afterSave(data.id) },
+    (msg) => setErrors((prev) => ({ ...prev, login: msg || t('user_login_error') })),
+  )
+  const updateApi = useUpdateUser(
+    () => { if (editUser) void afterSave(Number(editUser.id)) },
+    (msg) => setErrors((prev) => ({ ...prev, login: msg || t('user_login_error') })),
+  )
+  const isSaving = createApi.isLoading || updateApi.isLoading || isUploading
 
   useEffect(() => {
     if (!open) return
     setErrors({})
     setShowPass(false)
+    setAvatarFile(null)
     if (editUser) {
       setForm({
         name:           editUser.name,
@@ -70,9 +105,11 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => setForm((f) => ({ ...f, avatar: ev.target?.result as string }))
-    reader.readAsDataURL(file)
+    setAvatarFile(file)
+    // Preview через blob-URL — браузерный декодер, в отличие от base64 не
+    // подвешивает React state огромной строкой.
+    const previewUrl = URL.createObjectURL(file)
+    setForm((f) => ({ ...f, avatar: previewUrl }))
   }
 
   function set(field: keyof FormState, value: string | boolean) {
@@ -84,8 +121,9 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
     const e: FieldError = {}
     if (!form.name.trim())    e.name     = t('user_name_error')
     if (!form.phone.trim())   e.phone    = t('user_phone_error')
-    if (!form.login.trim())   e.login    = t('user_login_error')
-    if (!isEdit && !form.password.trim()) e.password = t('user_password_error')
+    if (!form.login.trim() || form.login.trim().length < 3) e.login = t('user_login_error')
+    if (!isEdit && (!form.password.trim() || form.password.trim().length < 6)) e.password = t('user_password_error')
+    if (!isEdit && !form.roleId) e.roleId = t('user_role_error')
     return e
   }
 
@@ -93,24 +131,38 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
     const e = validate()
     if (Object.keys(e).length) { setErrors(e); return }
 
-    const payload: Omit<User, 'id' | 'createdAt'> = {
-      name:           form.name.trim(),
-      phone:          form.phone.trim(),
-      email:          form.email.trim() || undefined,
-      login:          form.login.trim(),
-      password:       form.password || editUser?.password || '',
-      roleId:         form.roleId || null,
-      isActive:       form.isActive,
-      avatar:         form.avatar || undefined,
-      pharmacyAccess: form.pharmacyAccess,
+    if (isEdit) {
+      // PUT /api/users/{id} — partial update. Password шлём только если ввели
+      // новый (форма в edit-режиме показывает placeholder «оставьте пустым»).
+      updateApi.appendData(
+        {
+          roleId: form.roleId ? Number(form.roleId) : null,
+          password: form.password.trim() || null,
+          fullName: form.name.trim() || null,
+          email: form.email.trim() || null,
+          phone: form.phone.trim() || null,
+          isActive: form.isActive,
+        },
+        { id: Number(editUser!.id) },
+      )
+      return
     }
 
-    if (isEdit) {
-      updateUser(editUser!.id, payload)
-    } else {
-      addUser(payload)
+    if (!drugStoreId || !form.roleId) {
+      setErrors({ login: t('user_login_error') })
+      return
     }
-    onClose()
+
+    createApi.appendData({
+      drugStoreId,
+      companyId,
+      roleId: Number(form.roleId),
+      login: form.login.trim(),
+      password: form.password,
+      fullName: form.name.trim() || null,
+      email: form.email.trim() || null,
+      phone: form.phone.trim() || null,
+    })
   }
 
   const initials = form.name.trim()
@@ -185,14 +237,17 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
               {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('user_role_label')}</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t('user_role_label')} {!isEdit && <span className="text-red-500">*</span>}
+              </label>
               <div className="relative">
                 <select
                   value={form.roleId}
                   onChange={(e) => set('roleId', e.target.value)}
                   className={cn(
-                    'h-10 w-full appearance-none rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222] pl-3 pr-8 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
-                    form.roleId === '' ? 'text-gray-400' : 'text-gray-900 dark:text-gray-100'
+                    'h-10 w-full appearance-none rounded-lg border bg-white dark:bg-[#222222] pl-3 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-400/20',
+                    form.roleId === '' ? 'text-gray-400' : 'text-gray-900 dark:text-gray-100',
+                    errors.roleId ? 'border-red-300 focus:border-red-400' : 'border-gray-200 dark:border-gray-600 focus:border-gray-400',
                   )}
                 >
                   <option value="">{t('user_no_role')}</option>
@@ -202,6 +257,7 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               </div>
+              {errors.roleId && <p className="text-xs text-red-500">{errors.roleId}</p>}
             </div>
           </div>
 
@@ -346,9 +402,10 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
           </button>
           <button
             onClick={handleSubmit}
-            className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
+            disabled={isSaving}
+            className="h-9 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"
           >
-            {isEdit ? t('confirm_save') : t('confirm_create')}
+            {isSaving ? '…' : (isEdit ? t('confirm_save') : t('confirm_create'))}
           </button>
         </ModalFooter>
       </ModalContent>

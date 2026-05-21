@@ -6,6 +6,7 @@ import { useUsersStore } from '@/pages/Users/stores/useUsersStore'
 import { PROJECTS_CONFIG, PORTAL_SECTIONS_CONFIG } from './types/users.types'
 import { ConfirmDeleteModal } from './ConfirmDeleteModal'
 import { RoleEditModal } from './RoleEditModal'
+import { useDeleteRole } from './api/roles'
 import type { Role, PermissionType } from './types/users.types'
 
 function getActiveLabels(
@@ -43,13 +44,30 @@ function getActiveLabels(
   }
 }
 
-export function RoleList() {
+interface Props {
+  drugStoreId:  number | null
+  refetchRoles: () => void
+  isLoading:    boolean
+}
+
+export function RoleList({ drugStoreId, refetchRoles, isLoading }: Props) {
   const { t } = useTranslation()
-  const { roles, users, deleteRole }    = useUsersStore()
+  const { roles, users }                = useUsersStore()
   const [deleteTarget, setDeleteTarget] = useState<Role | null>(null)
   const [editRoleId,   setEditRoleId]   = useState<string | null>(null)
 
+  const deleteApi = useDeleteRole(refetchRoles)
+
   const getUserCount = (roleId: string) => users.filter((u) => u.roleId === roleId).length
+
+  function handleConfirmDelete() {
+    if (!deleteTarget || !drugStoreId) return
+    deleteApi.appendData(undefined, {
+      roleId: Number(deleteTarget.id),
+      drugStoreId,
+    })
+    setDeleteTarget(null)
+  }
 
   return (
     <>
@@ -66,7 +84,11 @@ export function RoleList() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-[#333333]">
-            {roles.length === 0 ? (
+            {isLoading && roles.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-16 text-center text-sm text-gray-400">…</td>
+              </tr>
+            ) : roles.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-16 text-center text-sm text-gray-400">{t('roles_empty')}</td>
               </tr>
@@ -126,10 +148,16 @@ export function RoleList() {
         open={!!deleteTarget}
         title={t('roles_delete_title')}
         description={deleteTarget ? t('roles_delete_desc', { name: deleteTarget.name }) : ''}
-        onConfirm={() => { deleteRole(deleteTarget!.id); setDeleteTarget(null) }}
+        onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />
-      <RoleEditModal open={!!editRoleId} roleId={editRoleId} onClose={() => setEditRoleId(null)} />
+      <RoleEditModal
+        open={!!editRoleId}
+        roleId={editRoleId}
+        drugStoreId={drugStoreId}
+        onClose={() => setEditRoleId(null)}
+        onUpdated={refetchRoles}
+      />
     </>
   )
 }
