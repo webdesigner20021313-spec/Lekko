@@ -6,9 +6,9 @@ import { SupplierOffers } from '../components/SupplierOffers/SupplierOffers'
 import { AutoSelectModal } from '../components/AutoSelect/AutoSelectModal'
 import { WholesalersView } from '../components/WholesalersView'
 import { DistributorProducts } from '../components/DistributorProducts'
-import { mockSupplierOffers, mockMedicines } from '@/products/megaprice/mocks/purchase.mocks'
-import { usePurchaseCart } from '../hooks/usePurchaseCart'
-import type { Medicine, SupplierOffer, Distributor } from '../types/purchase.types'
+import { PharmaPlusLock } from '@/products/megaprice/components/PharmaPlusLock'
+import { useLayoutPrefsStore } from '@/shared/stores/useLayoutPrefsStore'
+import type { Medicine, Distributor } from '../types/purchase.types'
 
 export type PurchaseTab = 'manual' | 'post' | 'excel' | 'wholesalers'
 
@@ -19,8 +19,10 @@ export function PurchasePage() {
   const [checkedIds, setCheckedIds] = useState<string[]>([])
   const [showAutoSelect, setShowAutoSelect] = useState(false)
   const [showFavorites, setShowFavorites] = useState(false)
-  const [splitPct,    setSplitPct]    = useState(36)
-  const [wSplitPct,   setWSplitPct]   = useState(25)
+  // Единая ширина левой панели для всех tab'ов (manual/post/wholesalers) +
+  // персистится в localStorage per drugStoreId — см. useLayoutPrefsStore.
+  const leftPanelPct    = useLayoutPrefsStore((s) => s.leftPanelPct)
+  const setLeftPanelPct = useLayoutPrefsStore((s) => s.setLeftPanelPct)
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -41,11 +43,6 @@ export function PurchasePage() {
     setMobileDetailOpen(false)
   }
 
-  const { addItem } = usePurchaseCart()
-
-  const currentSplit    = activeTab === 'wholesalers' ? wSplitPct    : splitPct
-  const setCurrentSplit = activeTab === 'wholesalers' ? setWSplitPct : setSplitPct
-
   function startSplitResize(e: React.MouseEvent) {
     e.preventDefault()
     if (!containerRef.current) return
@@ -53,7 +50,7 @@ export function PurchasePage() {
     const containerWidth = containerRef.current.offsetWidth
     function onMove(ev: MouseEvent) {
       const pct = ((ev.clientX - containerLeft) / containerWidth) * 100
-      setCurrentSplit(Math.min(80, Math.max(20, pct)))
+      setLeftPanelPct(pct) // store сам клампит 20..80
     }
     function onUp() {
       document.removeEventListener('mousemove', onMove)
@@ -69,16 +66,9 @@ export function PurchasePage() {
     )
   }
 
-  function handleAutoSelectConfirm(
-    results: { medicine: Medicine; offer: SupplierOffer | null }[]
-  ) {
-    results.forEach(({ medicine, offer }) => {
-      if (!offer) return
-      addItem({ offerId: offer.id, medicineId: medicine.id, quantity: 1, offer, medicine })
-    })
-  }
-
-  const checkedMedicines = mockMedicines.filter((m) => checkedIds.includes(m.id))
+  // Full Medicine[] актуальных чекнутых строк — приходит от MedicineList,
+  // которая знает реальный API-baseList. Без этого modal получала mock-данные.
+  const [checkedMedicines, setCheckedMedicines] = useState<Medicine[]>([])
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
@@ -89,11 +79,17 @@ export function PurchasePage() {
         onFavoritesToggle={() => setShowFavorites((v) => !v)}
       />
 
+      {activeTab === 'post' ? (
+        // POS — премиум-функция (PharmaPlus). Заглушка на всю область.
+        <div className="flex-1 overflow-hidden">
+          <PharmaPlusLock feature="POS" perks={['Интеграция с кассой', 'Учёт продаж в реальном времени', 'Автозаказ по остаткам']} />
+        </div>
+      ) : (
       <div ref={containerRef} className="flex flex-1 overflow-hidden">
         {/* Left panel — list view. Full-width on mobile, split % on desktop */}
         <div
           className={`flex flex-col overflow-hidden border-r border-gray-200 dark:border-gray-700 ${mobileDetailOpen ? 'hidden md:flex' : 'flex'}`}
-          style={{ width: window.innerWidth >= 768 ? `${currentSplit}%` : '100%', minWidth: window.innerWidth >= 768 ? 200 : undefined }}
+          style={{ width: window.innerWidth >= 768 ? `${leftPanelPct}%` : '100%', minWidth: window.innerWidth >= 768 ? 200 : undefined }}
         >
           {activeTab === 'wholesalers'
             ? <WholesalersView
@@ -106,6 +102,7 @@ export function PurchasePage() {
                 onSelect={handleSelectMedicine}
                 checkedIds={checkedIds}
                 onToggleCheck={handleToggleCheck}
+                onCheckedMedicinesChange={setCheckedMedicines}
                 showFavorites={showFavorites}
                 onAutoSelect={() => setShowAutoSelect(true)}
               />
@@ -134,13 +131,12 @@ export function PurchasePage() {
           }
         </div>
       </div>
+      )}
 
       {showAutoSelect && (
         <AutoSelectModal
           medicines={checkedMedicines}
-          offers={mockSupplierOffers}
           onClose={() => setShowAutoSelect(false)}
-          onConfirm={handleAutoSelectConfirm}
         />
       )}
     </div>

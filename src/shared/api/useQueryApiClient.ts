@@ -240,7 +240,12 @@ export function useQueryApiClient<T = unknown>({
       const status = axios.isAxiosError(e) ? e.response?.status : undefined
       console.error(e)
 
-      if (status === 401) navigate('/login', { replace: true })
+      // Продукт «Аналитика» (/analytic) — оболочка дистра со своей сессией; сам
+      // редиректит на /login через свой auth-гейт. На 401 здесь НЕ дёргаем
+      // клиентский redirect (иначе ломаем рендер до загрузки /me).
+      const onDistributorArea = typeof window !== 'undefined'
+        && window.location.pathname.startsWith('/analytic')
+      if (status === 401 && !onDistributorArea) navigate('/login', { replace: true })
 
       setIsError(true)
       onError?.(pickApiError(e))

@@ -46,7 +46,9 @@ export function Toaster({ children }: { children: React.ReactNode }) {
 
   return (
     <ToastContext.Provider value={{ toast }}>
-      <ToastProvider>
+      {/* duration=8000 — раньше использовался Radix-дефолт 5s, и для order-status уведомлений
+        юзер не успевал среагировать. Сейчас 8 сек — баланс между «успеваю прочитать» и «не мешает». */}
+      <ToastProvider duration={8000} swipeDirection="right">
         {children}
         {toasts.map((t) => (
           <Toast

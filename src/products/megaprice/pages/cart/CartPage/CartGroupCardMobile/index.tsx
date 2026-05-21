@@ -21,7 +21,7 @@ export function CartGroupCardMobile({
   isCollapsed: boolean
   checkedIds: Set<string>
   effPrice: (item: CartItem) => number
-  getDiscount: (distributorId: string | number) => number | undefined
+  getDiscount: (distributorId: string | number) => number | null
   onToggleCollapse: (id: string) => void
   onToggleGroup: (group: DistGroup) => void
   onToggleItem: (offerId: string) => void

@@ -1,9 +1,21 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LoadingOverlay } from '@/shared/ui-kit/LoadingOverlay'
-import { usePurchases, useDistributorsBatch, type DistributorFull } from '@/products/megaprice/api/hooks'
+import { Pagination } from '@/shared/ui-kit/Pagination'
+import {
+  usePurchases,
+  usePurchaseStats,
+  useDistributorsBatch,
+  useDistributorsPaged,
+  type DistributorFull,
+} from '@/products/megaprice/api/hooks'
 import { useAuthStore } from '@/shared/auth/useAuthStore'
-import { buildOrdersFromPurchases } from '@/products/megaprice/pages/orders/adapters'
+import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue'
+import {
+  buildOrdersFromPurchases,
+  mapPurchaseStatusToUi,
+  mapUiStatusToPurchaseStatusIds,
+} from '@/products/megaprice/pages/orders/adapters'
 import { type OrderStatus, type Order } from '@/products/megaprice/pages/orders/types'
 import { DesktopHeader } from './DesktopHeader'
 import { EmptyState } from './EmptyState'
@@ -24,8 +36,95 @@ export function OrderHistoryPage() {
   //   2) Partial place — purchase ещё активна (status_id=0), но 1+ orders placed.
   //      В таком случае cart покажет оставшиеся draft items в этой же purchase.
   const drugStore = useAuthStore(s => s.drugStore)
-  const purchasesQuery = usePurchases({ page: 1, pageSize: 200, hasPlacedOrders: true })
-  const apiPurchases = purchasesQuery.data?.items ?? []
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+
+  // ── Сырые «pending» значения, которые пользователь меняет в UI ──
+  // На бэк уходят дебаунснутые версии (см. ниже), чтобы при быстром клике/печати
+  // не было каскада запросов. Сам UI остаётся отзывчивым (input не лагает).
+  const [search,       setSearch]       = useState('')
+  const [dateRange,    setDateRange]    = useState('')
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
+
+  // dd.MM.yyyy - dd.MM.yyyy → ISO yyyy-MM-dd для бэка.
+  const parts        = dateRange.split(' - ')
+  const dateFromISO  = parseDMYtoISO(parts[0]?.trim() ?? '') || null
+  const dateToISO    = parseDMYtoISO(parts[1]?.trim() ?? '') || null
+
+  // ── Один общий debounce на весь объект фильтров (300мс) ──
+  // search, date-range, statusFilter мержим в один объект и дебаунсим целиком.
+  // Это гарантирует, что:
+  //   1) Печать в поле поиска не шлёт запрос на каждый символ.
+  //   2) Быстрое последовательное переключение KPI-плиток (клик-клик-клик) тоже
+  //      склеивается в один запрос на бэк.
+  //   3) Все три запроса (purchases / stats / distributors-by-search) стартуют
+  //      одновременно и снимают одну страницу состояния — без рассинхронизации.
+  const pendingFilters = useMemo(
+    () => ({ search, dateFromISO, dateToISO, statusFilter }),
+    [search, dateFromISO, dateToISO, statusFilter],
+  )
+  const debouncedFilters = useDebouncedValue(pendingFilters, 300)
+  const dSearch       = debouncedFilters.search
+  const dDateFrom     = debouncedFilters.dateFromISO
+  const dDateTo       = debouncedFilters.dateToISO
+  const dStatusFilter = debouncedFilters.statusFilter
+
+  // UI статус → бэковский int[]. 'accepted' маппится в []; передаём [-1],
+  // чтобы бэк гарантированно вернул пусто (а не «снять фильтр»).
+  const statusIds = useMemo<number[] | null>(() => {
+    if (dStatusFilter === 'all') return null
+    const ids = mapUiStatusToPurchaseStatusIds(dStatusFilter)
+    return ids.length > 0 ? ids : [-1]
+  }, [dStatusFilter])
+
+  // ── Резолв дистров по search-строке ──────────────────────────────────────
+  // Purchase-сервис не может ходить в DrugStoreCatalog за именами (DB-per-service),
+  // поэтому если пользователь ввёл, например, «BAYER», мы ищем дистров с таким
+  // именем сами и отдаём бэку их ids. Бэк OR'ит это с поиском по purchase_number/id.
+  // Лимит 50 — больше точно не нужно, юзер всегда сузит запрос.
+  const searchDistributorsQuery = useDistributorsPaged({
+    query: dSearch,
+    page: 1,
+    pageSize: 50,
+    drugStoreId: drugStore?.drugStoreId ?? null,
+    enabled: dSearch.trim().length > 0,
+  })
+  const searchDistributorIds = useMemo<number[] | null>(() => {
+    if (!dSearch.trim()) return null
+    const items = searchDistributorsQuery.data?.items ?? []
+    return items.length > 0 ? items.map(d => d.id) : null
+  }, [dSearch, searchDistributorsQuery.data?.items])
+
+  // Сбрасываем страницу в 1 при изменении любого фильтра.
+  useEffect(() => {
+    setPage(1)
+  }, [dSearch, dDateFrom, dDateTo, dStatusFilter])
+
+  const purchasesQuery = usePurchases({
+    page,
+    pageSize,
+    hasPlacedOrders: true,
+    search:    dSearch,
+    dateFrom:  dDateFrom,
+    dateTo:    dDateTo,
+    statusIds,
+    searchDistributorIds,
+  })
+  const apiPurchases = useMemo(() => purchasesQuery.data?.items ?? [], [purchasesQuery.data])
+  const totalPages = purchasesQuery.data?.totalPages ?? 1
+  const totalCount = purchasesQuery.data?.totalCount ?? 0
+  const hasPrevious = purchasesQuery.data?.hasPrevious ?? false
+  const hasNext = purchasesQuery.data?.hasNext ?? false
+
+  // KPI: отдельный лёгкий endpoint /purchases/stats — без statusIds (плитки
+  // должны показывать суммы по всем бакетам одновременно).
+  const statsQuery = usePurchaseStats({
+    hasPlacedOrders: true,
+    search:   dSearch,
+    dateFrom: dDateFrom,
+    dateTo:   dDateTo,
+    searchDistributorIds,
+  })
 
   // Имена дистров — batch HTTP. Собираем все distinct ids из purchases (бэк
   // отдаёт массив per-purchase), и запрашиваем имена одним запросом.
@@ -52,6 +151,8 @@ export function OrderHistoryPage() {
     return m
   }, [distributorsBatch.data])
 
+  // Бэк уже отдал отфильтрованные/отсортированные/постранично. Фронт ничего
+  // не фильтрует — просто маппит DTO → UI и рендерит.
   const orders: Order[] = useMemo(
     () => buildOrdersFromPurchases(apiPurchases, {
       pharmacyName: drugStore?.drugStoreName ?? null,
@@ -62,56 +163,33 @@ export function OrderHistoryPage() {
     [apiPurchases, drugStore, distributorNameById],
   )
 
-  const [search,       setSearch]       = useState('')
-  const [dateRange,    setDateRange]    = useState('')
-  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
   const [checked,      setChecked]      = useState<string[]>([])
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [calFrom,      setCalFrom]      = useState('')
   const [calTo,        setCalTo]        = useState('')
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
 
-  const parts        = dateRange.split(' - ')
-  const dateFromISO  = parseDMYtoISO(parts[0]?.trim() ?? '')
-  const dateToISO    = parseDMYtoISO(parts[1]?.trim() ?? '')
-
-  const filteredOrders = useMemo(() => {
-    return orders
-      .filter(o => {
-        if (search.trim()) {
-          const q = search.toLowerCase()
-          const match =
-            o.number.toLowerCase().includes(q) ||
-            o.pharmacyName.toLowerCase().includes(q) ||
-            o.pharmacyCity.toLowerCase().includes(q) ||
-            o.groups.some(g => g.distributorName.toLowerCase().includes(q))
-          if (!match) return false
-        }
-        if (statusFilter !== 'all' && o.status !== statusFilter) return false
-        if (dateFromISO && o.createdAt.slice(0, 10) < dateFromISO) return false
-        if (dateToISO   && o.createdAt.slice(0, 10) > dateToISO)   return false
-        return true
-      })
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  }, [orders, search, statusFilter, dateFromISO, dateToISO])
-
   const hasFilters = search.trim().length > 0 || statusFilter !== 'all' || !!dateRange.trim()
 
+  // Бэковский [{statusId, count, totalSum}] → UI Record<OrderStatus, ...>.
+  // status_id 3/4/5 → 'completed' (см. mapPurchaseStatusToUi), 1→'new', 2→'modified',
+  // 6→'cancelled', 7→'partial'. 'accepted' остаётся 0 — плитка осталась как заглушка.
   const stats = useMemo(() => {
-    const byStatus = (s: OrderStatus) => orders.filter(o => o.status === s)
-    const sum      = (list: typeof orders) => list.reduce((acc, o) => acc + o.totalSum, 0)
-    // accepted считаем в общей completed-плитке (UX — заказы где клиент принял
-    // и/или закрыл, в одну KPI). Если потом потребуется отдельная плитка
-    // «Принято» — расщепить.
-    const all: Record<OrderStatus, { count: number; total: number }> = {
-      new:       { count: byStatus('new').length,       total: sum(byStatus('new')) },
-      modified:  { count: byStatus('modified').length,  total: sum(byStatus('modified')) },
-      accepted:  { count: byStatus('accepted').length,  total: sum(byStatus('accepted')) },
-      completed: { count: byStatus('completed').length, total: sum(byStatus('completed')) },
-      cancelled: { count: byStatus('cancelled').length, total: sum(byStatus('cancelled')) },
+    const empty = () => ({ count: 0, total: 0 })
+    const acc: Record<OrderStatus, { count: number; total: number }> = {
+      new: empty(), modified: empty(), accepted: empty(),
+      completed: empty(), cancelled: empty(), partial: empty(),
     }
-    return all
-  }, [orders])
+    // useQueryApiClient инициализирует data=[] но при первом маунте до ответа
+    // может прилететь не-массив на race — защищаемся через Array.isArray.
+    const rows = Array.isArray(statsQuery.data) ? statsQuery.data : []
+    rows.forEach(r => {
+      const ui = mapPurchaseStatusToUi(Number(r.statusId))
+      acc[ui].count += Number(r.count) || 0
+      acc[ui].total += Number(r.totalSum) || 0
+    })
+    return acc
+  }, [statsQuery.data])
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
@@ -122,7 +200,7 @@ export function OrderHistoryPage() {
           setSearch={setSearch}
           hasFilters={hasFilters}
           onOpenFilters={() => setMobileFiltersOpen(true)}
-          onExport={() => exportToExcel(filteredOrders, t)}
+          onExport={() => exportToExcel(orders, t)}
         />
         <DesktopHeader
           search={search}
@@ -135,29 +213,45 @@ export function OrderHistoryPage() {
           setCalTo={setCalTo}
           calendarOpen={calendarOpen}
           setCalendarOpen={setCalendarOpen}
-          onExport={() => exportToExcel(filteredOrders, t)}
+          onExport={() => exportToExcel(orders, t)}
         />
       </div>
 
       <KpiCardsDesktop stats={stats} statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
-      <StatusPillsMobile totalCount={orders.length} stats={stats} statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
+      <StatusPillsMobile totalCount={totalCount} stats={stats} statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
 
       <div className="relative min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111111]">
         <LoadingOverlay show={purchasesQuery.isLoading} label="Загрузка заказов…" />
-        {filteredOrders.length === 0 ? (
+        {orders.length === 0 ? (
           <EmptyState hasFilters={hasFilters} />
         ) : (
           <>
-            <OrderListMobile filteredOrders={filteredOrders} totalCount={orders.length} />
+            <OrderListMobile filteredOrders={orders} totalCount={totalCount} />
             <OrderTableDesktop
-              filteredOrders={filteredOrders}
-              totalCount={orders.length}
+              filteredOrders={orders}
+              totalCount={totalCount}
               checked={checked}
               setChecked={setChecked}
             />
           </>
         )}
       </div>
+
+      {totalCount > 0 && (
+        <div className="shrink-0 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={pageSize}
+            hasPrevious={hasPrevious}
+            hasNext={hasNext}
+            isLoading={purchasesQuery.isLoading}
+            onChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1) }}
+          />
+        </div>
+      )}
 
       <MobileFiltersSheet
         open={mobileFiltersOpen}

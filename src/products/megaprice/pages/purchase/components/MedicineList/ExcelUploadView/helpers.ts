@@ -40,6 +40,58 @@ export function applyMapping(
   return { rows, errors }
 }
 
+// Результат бэкенд-резолва (POST /api/pricing/resolve-drug-producer), 1:1 с input.
+export interface ResolveResult {
+  originalName: string
+  originalProducer: string | null
+  drugId: number | null
+  canonicalDrugName: string | null
+  producerId: number | null
+  canonicalProducerName: string | null
+}
+
+/**
+ * Собирает Medicine[] из распарсенных строк + результатов бэкенд-резолва (порядок 1:1).
+ * Сматченные получают drugId (по нему SupplierOffers подтянет офферы) и canonical-имена.
+ * Несматченные — stub с пометкой unmatched.
+ */
+export function buildMatchedMedicines(rows: ParsedRow[], results: ResolveResult[]) {
+  const medicines: Medicine[] = []
+  const unmatchedIds = new Set<string>()
+
+  rows.forEach((row, i) => {
+    const r = results[i]
+    if (r && r.drugId != null) {
+      const id = String(r.drugId)
+      if (!medicines.find(m => m.id === id)) {
+        medicines.push({
+          id,
+          drugId: r.drugId,
+          name: r.canonicalDrugName || row.name || row.mnn || `Строка ${row.rowNum}`,
+          mnn: row.mnn,
+          manufacturer: r.canonicalProducerName || row.manufacturer || '—',
+          country: row.country || '—',
+          isFavorite: false,
+        })
+      }
+    } else {
+      const stubId = `unmatched-${row.rowNum}`
+      if (!medicines.find(m => m.id === stubId)) {
+        medicines.push({
+          id: stubId,
+          name: row.name || row.mnn || `Строка ${row.rowNum}`,
+          mnn: row.mnn,
+          manufacturer: row.manufacturer || '—',
+          country: row.country || '—',
+          isFavorite: false,
+        })
+        unmatchedIds.add(stubId)
+      }
+    }
+  })
+  return { medicines, unmatchedIds }
+}
+
 export function matchWithCatalog(rows: ParsedRow[], catalog: Medicine[]) {
   const medicines: Medicine[] = []
   const unmatchedIds = new Set<string>()

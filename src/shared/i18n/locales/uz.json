@@ -398,12 +398,14 @@
   "order_status_accepted": "Qabul qilindi",
   "order_status_completed": "Yakunlandi",
   "order_status_cancelled": "Bekor qilindi",
+  "order_status_partial": "Qisman bajarildi",
 
   "dist_status_new": "Yangi",
   "dist_status_sent": "Yuborildi",
   "dist_status_partial_sent": "Qisman yuborildi",
   "dist_status_offer": "Taklif",
   "dist_status_accepted": "Qabul qilindi",
+  "dist_status_completed": "Yakunlandi",
   "dist_status_rejected": "Rad etildi",
   "dist_status_cancelled": "Bekor qilindi",
 
@@ -534,7 +536,7 @@
   "cart_success_pos_col": "Joy",
   "cart_cancel": "Bekor qilish",
   "cart_my_orders": "Buyurtmalarim",
-  "cart_done": "Tayyor",
+  "cart_done": "Buyurtmani yakunlash",
   "cart_placing": "Rasmiylashtirilmoqda…",
   "cart_placed_toast_title": "Buyurtma rasmiylashtirildi",
   "cart_placed_toast_desc": "«Buyurtmalarim»ga o'tdik",
@@ -557,7 +559,7 @@
   "cart_distributors": "Distribyutorlar",
   "cart_order_content": "Buyurtma tarkibi",
   "cart_group_pos_qty": "{{pos}} joy · {{qty}} dona",
-  "cart_create_order": "Buyurtma yaratish",
+  "cart_create_order": "Buyurtmani yakunlash",
 
   "ws_title": "Distribyutorlar",
   "ws_subtitle": "Chegirtmangizni kiriting — u narxlarni hisoblashda qo'llaniladi",

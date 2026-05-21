@@ -250,15 +250,21 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
     {/* Mobile cards */}
     <div className="md:hidden h-full overflow-y-auto bg-gray-50 px-3 py-3 dark:bg-[#0a0a0a]">
       <div className="space-y-2.5">
-        {offers.map(offer => (
-          <MobileOfferCard
-            key={offer.id}
-            offer={offer}
-            avgPrice={avgPrice}
-            quantity={quantities[offer.id] ?? 0}
-            onQuantityChange={onQuantityChange}
-          />
-        ))}
+        {offers.map(offer => {
+          // Композитный key: itemId (offer.id) + priceId. На один items.id бэк может
+          // вернуть несколько prices строк (разные type_id/expiry) — без priceId
+          // React коллапсирует ряды как дубликаты, и +1 уходит не на тот ряд.
+          const rowKey = `${offer.id}__${offer.priceId ?? 0}`
+          return (
+            <MobileOfferCard
+              key={rowKey}
+              offer={offer}
+              avgPrice={avgPrice}
+              quantity={quantities[offer.id] ?? 0}
+              onQuantityChange={onQuantityChange}
+            />
+          )
+        })}
         {offers.length === 0 && (
           <div className="py-12 text-center text-sm text-gray-400 dark:text-[#929292]">{t('medicines_not_found')}</div>
         )}
@@ -293,19 +299,23 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
           </tr>
         </thead>
         <tbody>
-          {offers.map((offer, index) => (
-            <SupplierRow
-              key={offer.id}
-              offer={offer}
-              index={startIndex + index + 1}
-              cols={cols}
-              avgPrice={avgPrice}
-              quantity={quantities[offer.id] ?? 0}
-              onQuantityChange={onQuantityChange}
-              visibleColumns={col}
-              colOrder={visibleOrder}
-            />
-          ))}
+          {offers.map((offer, index) => {
+            // см. комментарий в MobileOfferCard выше — нужен композитный key.
+            const rowKey = `${offer.id}__${offer.priceId ?? 0}`
+            return (
+              <SupplierRow
+                key={rowKey}
+                offer={offer}
+                index={startIndex + index + 1}
+                cols={cols}
+                avgPrice={avgPrice}
+                quantity={quantities[offer.id] ?? 0}
+                onQuantityChange={onQuantityChange}
+                visibleColumns={col}
+                colOrder={visibleOrder}
+              />
+            )
+          })}
         </tbody>
       </table>
     </div>

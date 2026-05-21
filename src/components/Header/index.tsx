@@ -10,6 +10,7 @@ import {
   Sun,
   Moon,
   Menu,
+  User as UserIcon,
 } from 'lucide-react'
 import { cn } from '@/shared/utils/utils'
 import { detectMode } from '@/config/mode'
@@ -286,7 +287,7 @@ export function Header() {
         {/* Left */}
         <div className="flex items-center gap-4">
           <div className="flex cursor-pointer items-center select-none" onClick={() => navigate('/')}>
-            <img src={logoSvg} alt="Lekko" className="h-8 w-auto" />
+            <img src={logoSvg} alt="Lekko" className="h-10 w-auto" />
           </div>
 
           {/* Search */}
@@ -490,6 +491,15 @@ export function Header() {
                     <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{user.name}</p>
                     <p className="truncate text-xs text-gray-400">{user.email}</p>
                   </div>
+                </div>
+                <div className="py-1">
+                  <button
+                    onClick={() => { setShowProfile(false); navigate('/profile') }}
+                    className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                  >
+                    <UserIcon className="h-4 w-4 text-gray-400" />
+                    {t('header_profile_link', { defaultValue: 'Профиль' })}
+                  </button>
                 </div>
                 <div className="border-t border-gray-100 py-1 dark:border-[#333333]">
                   <button

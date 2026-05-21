@@ -11,8 +11,6 @@ import { formatDate } from '@/shared/utils/format'
 import { cn } from '@/shared/utils/utils'
 import type { Distributor } from '@/products/megaprice/pages/purchase/types/purchase.types'
 
-const PAGE_SIZE = 30
-
 interface WholesalersViewProps {
   selectedId: string | null
   onSelect: (distributor: Distributor) => void
@@ -31,6 +29,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
 
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [cityIds, setCityIds] = useState<number[]>([])
   const [selectedCities, setSelectedCities] = useState<IdNameOption[]>([])
 
@@ -42,7 +41,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
   const distributors = useDistributorsPaged({
     query: search,
     page,
-    pageSize: PAGE_SIZE,
+    pageSize: pageSize,
     drugStoreId,
     regionIds: cityIds.length > 0 ? cityIds : undefined,
   })
@@ -66,7 +65,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
 
   const data = distributors.data
   const totalPages = data ? Math.max(1, Math.ceil(data.totalCount / data.pageSize)) : 1
-  const showPagination = data && data.totalCount > PAGE_SIZE
+  const showPagination = data && data.totalCount > pageSize
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -110,7 +109,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
             {t('filter_nothing_found')}
           </div>
         ) : (
-          <DistributorList items={items} selectedId={selectedId} onSelect={onSelect} startIndex={(page - 1) * PAGE_SIZE} />
+          <DistributorList items={items} selectedId={selectedId} onSelect={onSelect} startIndex={(page - 1) * pageSize} />
         )}
       </div>
 
@@ -120,10 +119,12 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
             page={data.page}
             totalPages={totalPages}
             totalCount={data.totalCount}
+            pageSize={pageSize}
             hasPrevious={data.page > 1}
             hasNext={data.page < totalPages}
             isLoading={distributors.isLoading}
             onChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1) }}
           />
         </div>
       )}

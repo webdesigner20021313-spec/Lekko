@@ -55,11 +55,12 @@ export function ResultsStep({
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{r.medicine.name}</p>
                   <p className="mt-0.5 text-xs text-gray-500 dark:text-[#929292]">
-                    {r.offer!.distributor.name} · {r.offer!.distributor.city}
+                    {r.offer!.distributorName}
+                    {r.offer!.regionName ? ` · ${r.offer!.regionName}` : ''}
                   </p>
                 </div>
                 <span className="shrink-0 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                  {formatCurrency(r.offer!.priceWithVat)}
+                  {formatCurrency(r.offer!.discountedPrice ?? r.offer!.price)}
                 </span>
               </div>
             ))}

@@ -11,7 +11,7 @@ export function ResultsStep({
   onSelect,
   checkedIds,
   onToggleCheck,
-  cartQtyByMedicine,
+  cartQtyByDrugId,
   unmatchedIds,
   fileName,
   matchedCount,
@@ -26,7 +26,7 @@ export function ResultsStep({
   onSelect: (m: Medicine) => void
   checkedIds: string[]
   onToggleCheck: (id: string) => void
-  cartQtyByMedicine: Record<string, number>
+  cartQtyByDrugId: Record<number, number>
   unmatchedIds: Set<string>
   fileName: string
   matchedCount: number
@@ -82,7 +82,7 @@ export function ResultsStep({
         {medicines.map(medicine => {
           const isSelected  = medicine.id === selectedId
           const isChecked   = checkedIds.includes(medicine.id)
-          const cartQty     = cartQtyByMedicine[medicine.id] ?? 0
+          const cartQty     = (medicine.drugId != null ? cartQtyByDrugId[medicine.drugId] : 0) ?? 0
           const isUnmatched = unmatchedIds.has(medicine.id)
 
           return (

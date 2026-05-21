@@ -7,8 +7,7 @@ import { ExcelUploadView } from './ExcelUploadView'
 import { PostMedicineList } from '../Post/PostMedicineList'
 import { mockMedicines, mockPosItems } from '@/products/megaprice/mocks/purchase.mocks'
 import { useFavorites } from '@/products/megaprice/pages/purchase/hooks/useFavorites'
-import { usePurchaseCart } from '@/products/megaprice/pages/purchase/hooks/usePurchaseCart'
-import { useDrugSearch } from '@/products/megaprice/api/hooks'
+import { useCart, useDrugSearch } from '@/products/megaprice/api/hooks'
 import { mapDrugRowToMedicine } from '@/products/megaprice/api/adapters'
 import { useAuthStore } from '@/shared/auth/useAuthStore'
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue'
@@ -26,6 +25,10 @@ interface MedicineListProps {
   onToggleCheck: (id: string) => void
   showFavorites: boolean
   onAutoSelect: () => void
+  /** Колбэк с full Medicine[] актуальных чекнутых строк (resolved из baseList).
+   * Нужен AutoSelect-модалке, чтобы получить drugId/manufacturer реальных medicines —
+   * родитель сам не может это сделать (он не знает API-список). */
+  onCheckedMedicinesChange?: (medicines: Medicine[]) => void
 }
 
 export function MedicineList({
@@ -36,6 +39,7 @@ export function MedicineList({
   onToggleCheck,
   showFavorites,
   onAutoSelect,
+  onCheckedMedicinesChange,
 }: MedicineListProps) {
   const { t } = useTranslation()
   const [search, setSearch] = useState('')
@@ -62,15 +66,18 @@ export function MedicineList({
   }, [])
 
   const { isFavorite, toggle: toggleFavoriteByDrugId } = useFavorites()
-  const cartItems = usePurchaseCart((s) => s.items)
-
-  const cartQtyByMedicine = useMemo(() => {
-    const map: Record<string, number> = {}
-    cartItems.forEach((item) => {
-      map[item.medicineId] = (map[item.medicineId] ?? 0) + item.quantity
+  // Реальная корзина (backend) — индексируем по drugId, т.к. CartItem из API
+  // имеет drugId:number, а medicine.id — composite-string. Mock-стор Zustand
+  // (usePurchaseCart) больше не используется здесь — он отдавал demoCart-данные
+  // и бейдж всегда был 0 для реально добавленных позиций.
+  const cart = useCart()
+  const cartQtyByDrugId = useMemo(() => {
+    const map: Record<number, number> = {}
+    cart.data?.items?.forEach((it) => {
+      map[it.drugId] = (map[it.drugId] ?? 0) + it.quantity
     })
     return map
-  }, [cartItems])
+  }, [cart.data?.items])
 
   // Compat-слой для MedicineTable/MedicineRow: они работают с composite-id
   // (`${drugId}::${manufacturer}`), а API хранит чистый drug_id. Здесь
@@ -80,8 +87,8 @@ export function MedicineList({
   // POS-вкладка живёт на mock'ах (своя структура — позиции склада).
   // Manual-вкладка идёт через /api/drugsearch/search; debounce встроен в хук.
   const isApiDriven = activeTab === 'manual'
-  const PAGE_SIZE = 30
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
 
   // Имена выбранных производителей — кэш на стороне MedicineList. Заполняется
   // когда юзер выбирает в dropdown'е (server-side). Нужен для UI: чтобы при
@@ -95,7 +102,6 @@ export function MedicineList({
   // Сбрасываем page=1 при смене query/фильтра/тоггла избранных.
   useEffect(() => {
     setPage(1)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, producerIdsKey, showFavorites])
 
   const drugStoreId = useAuthStore((s) => s.drugStore?.drugStoreId ?? null)
@@ -107,7 +113,7 @@ export function MedicineList({
     producerIds: isApiDriven && manufacturerIds.length > 0 ? manufacturerIds : null,
     favoritesOnly: isApiDriven && showFavorites,
     page,
-    pageSize: PAGE_SIZE,
+    pageSize: pageSize,
     enabled: isApiDriven,
   })
 
@@ -123,6 +129,27 @@ export function MedicineList({
     if (isApiDriven) return apiMedicines
     return mockMedicines
   }, [activeTab, isApiDriven, apiMedicines])
+
+  // Аккумулируем чекнутые Medicine'ы поверх страниц: id может чекнуться на page=1,
+  // потом юзер переходит на page=2 (baseList уже другой), но medicine надо помнить.
+  // Map<id, Medicine> — single source of truth для AutoSelect модалки.
+  const [checkedMap, setCheckedMap] = useState<Map<string, Medicine>>(new Map())
+  useEffect(() => {
+    setCheckedMap((prev) => {
+      const next = new Map(prev)
+      // Добавляем новых из baseList'а если они в checkedIds.
+      baseList.forEach((m) => {
+        if (checkedIds.includes(m.id) && !next.has(m.id)) next.set(m.id, m)
+      })
+      // Удаляем тех кого uncheck'нули.
+      next.forEach((_, id) => { if (!checkedIds.includes(id)) next.delete(id) })
+      return next
+    })
+  }, [baseList, checkedIds])
+  useEffect(() => {
+    onCheckedMedicinesChange?.(Array.from(checkedMap.values()))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkedMap])
 
   // Mock-вкладки (POS/Excel/Post) больше не имеют manufacturer-фильтра —
   // это server-side фича через ManufacturerDropdown, привязанная к API.
@@ -142,7 +169,6 @@ export function MedicineList({
       }
     }
     return list
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseList, isApiDriven, showFavorites, search, isFavorite])
 
   // Composite-id-ы текущего списка, которые сейчас в избранном —
@@ -181,7 +207,7 @@ export function MedicineList({
           onSelect={onSelect}
           checkedIds={checkedIds}
           onToggleCheck={onToggleCheck}
-          cartQtyByMedicine={cartQtyByMedicine}
+          cartQtyByDrugId={cartQtyByDrugId}
         />
         {checkedIds.length >= 2 && (
           <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
@@ -246,10 +272,10 @@ export function MedicineList({
           onToggleCheck={onToggleCheck}
           favoriteIds={favoriteIdsInList}
           onToggleFavorite={handleToggleFavorite}
-          cartQtyByMedicine={cartQtyByMedicine}
+          cartQtyByDrugId={cartQtyByDrugId}
           panel1Width={panel1Width}
           showMnn={visibleColumns.mnn}
-          startIndex={isApiDriven ? (page - 1) * PAGE_SIZE : 0}
+          startIndex={isApiDriven ? (page - 1) * pageSize : 0}
         />
       </div>
 
@@ -259,10 +285,12 @@ export function MedicineList({
             page={apiSearch.data.pageNumber}
             totalPages={apiSearch.data.totalPages}
             totalCount={apiSearch.data.totalCount}
+            pageSize={pageSize}
             hasPrevious={apiSearch.data.hasPrevious}
             hasNext={apiSearch.data.hasNext}
             isLoading={apiSearch.isLoading}
             onChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1) }}
           />
         </div>
       )}

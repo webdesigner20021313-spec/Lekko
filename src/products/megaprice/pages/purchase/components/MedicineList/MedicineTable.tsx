@@ -13,7 +13,7 @@ interface MedicineTableProps {
   onToggleCheck: (id: string) => void
   favoriteIds: string[]
   onToggleFavorite: (id: string) => void
-  cartQtyByMedicine: Record<string, number>
+  cartQtyByDrugId: Record<number, number>
   panel1Width: number
   showMnn: boolean
   /** Смещение для нумерации (с учётом текущей страницы пагинации). Default 0. */
@@ -29,7 +29,7 @@ const MIN_NAME = 400
 
 export function MedicineTable({
   medicines, selectedId, onSelect, checkedIds, onToggleCheck,
-  favoriteIds, onToggleFavorite, cartQtyByMedicine, panel1Width, showMnn,
+  favoriteIds, onToggleFavorite, cartQtyByDrugId, panel1Width, showMnn,
   startIndex = 0,
 }: MedicineTableProps) {
   const { t } = useTranslation()
@@ -65,7 +65,7 @@ export function MedicineTable({
         const isSelected = medicine.id === selectedId
         const isChecked  = checkedIds.includes(medicine.id)
         const isFavorite = favoriteIds.includes(medicine.id)
-        const cartQty    = cartQtyByMedicine[medicine.id] ?? 0
+        const cartQty    = (medicine.drugId != null ? cartQtyByDrugId[medicine.drugId] : 0) ?? 0
         return (
           <div
             key={medicine.id}
@@ -203,7 +203,7 @@ export function MedicineTable({
             isSelected={medicine.id === selectedId}
             isChecked={checkedIds.includes(medicine.id)}
             isFavorite={favoriteIds.includes(medicine.id)}
-            cartQty={cartQtyByMedicine[medicine.id] ?? 0}
+            cartQty={(medicine.drugId != null ? cartQtyByDrugId[medicine.drugId] : 0) ?? 0}
             onSelect={() => onSelect(medicine)}
             onToggleCheck={() => onToggleCheck(medicine.id)}
             onToggleFavorite={() => onToggleFavorite(medicine.id)}

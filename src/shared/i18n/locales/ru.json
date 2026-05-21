@@ -398,12 +398,14 @@
   "order_status_accepted": "Принято",
   "order_status_completed": "Завершён",
   "order_status_cancelled": "Отменён",
+  "order_status_partial": "Частично выполнен",
 
   "dist_status_new": "Новый",
   "dist_status_sent": "Отправлен",
   "dist_status_partial_sent": "Частично отправлен",
   "dist_status_offer": "Предложение",
   "dist_status_accepted": "Принято",
+  "dist_status_completed": "Завершён",
   "dist_status_rejected": "Отклонено",
   "dist_status_cancelled": "Отменён",
 
@@ -534,7 +536,7 @@
   "cart_success_pos_col": "Поз.",
   "cart_cancel": "Отмена",
   "cart_my_orders": "Мои заказы",
-  "cart_done": "Готово",
+  "cart_done": "Завершить заказ",
   "cart_placing": "Оформляем…",
   "cart_placed_toast_title": "Заказ оформлен",
   "cart_placed_toast_desc": "Перешли в «Мои заказы»",
@@ -557,7 +559,7 @@
   "cart_distributors": "Дистрибуторов",
   "cart_order_content": "Состав заказа",
   "cart_group_pos_qty": "{{pos}} поз. · {{qty}} ед.",
-  "cart_create_order": "Создать заказ",
+  "cart_create_order": "Завершить заказ",
 
   "ws_title": "Дистрибуторы",
   "ws_subtitle": "Укажите вашу скидку — она будет применяться при расчёте цен",

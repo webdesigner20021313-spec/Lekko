@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
+import { useCancelActiveCart } from '@/products/megaprice/api/hooks'
 import type { DistGroup } from '../types'
 
-/** Сверху страницы: название + фильтр-чипы по дистрибьютору. */
+/** Сверху страницы: название + фильтр-чипы по дистрибьютору + кнопка «Отменить корзину». */
 export function CartHeader({
   itemCount,
   groups,
@@ -15,6 +16,14 @@ export function CartHeader({
   onChangeFilter: (next: string | null) => void
 }) {
   const { t } = useTranslation()
+  const cancelCart = useCancelActiveCart()
+
+  function handleCancel() {
+    if (cancelCart.isLoading) return
+    if (!confirm(t('cart_cancel_confirm', { defaultValue: 'Отменить корзину? Все позиции будут удалены.' }))) return
+    cancelCart.appendData({})
+  }
+
   return (
     <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-6 dark:border-gray-700 dark:bg-[#111111]">
       <div className="flex items-center gap-4">
@@ -51,6 +60,16 @@ export function CartHeader({
             </button>
           ))}
         </div>
+
+        {itemCount > 0 && (
+          <button
+            onClick={handleCancel}
+            disabled={cancelCart.isLoading}
+            className="shrink-0 rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900 dark:bg-[#111111] dark:text-red-400 dark:hover:bg-red-950"
+          >
+            {t('cart_cancel_btn', { defaultValue: 'Отменить корзину' })}
+          </button>
+        )}
       </div>
     </div>
   )

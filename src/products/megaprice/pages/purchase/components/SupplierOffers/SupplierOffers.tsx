@@ -16,7 +16,6 @@ import { Pagination } from '@/shared/ui-kit/Pagination'
 import { LoadingOverlay } from '@/shared/ui-kit/LoadingOverlay'
 import type { Medicine, SortField, SortDirection, BonusType, ColumnKey } from '@/products/megaprice/pages/purchase/types/purchase.types'
 
-const PAGE_SIZE = 20
 
 interface SupplierOffersProps {
   medicine: Medicine | null
@@ -41,13 +40,14 @@ export function SupplierOffers({ medicine }: SupplierOffersProps) {
   const [sortField, setSortField] = useState<SortField | null>(null)
   const [sortDir, setSortDir] = useState<SortDirection>('asc')
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
 
   const drugStoreId = useAuthStore((s) => s.drugStore?.drugStoreId ?? null)
 
   // Backend: офферы для выбранного drugId — все фильтры (distributor/region) уходят на бэк.
   const apiOffers = useOffersByDrugId(medicine?.drugId ?? null, {
     page,
-    pageSize: PAGE_SIZE,
+    pageSize: pageSize,
     distributorIds: distributorIds.length > 0 ? distributorIds : undefined,
     regionIds: cityIds.length > 0 ? cityIds : undefined,
   })
@@ -89,12 +89,11 @@ export function SupplierOffers({ medicine }: SupplierOffersProps) {
   }, [medicine?.id])
 
   // Сброс page=1 при смене фильтров (без него можно «застрять» на 5-й стр).
+  const distrIdsKey = distributorIds.slice().sort((a, b) => a - b).join(',')
+  const cityIdsKey = cityIds.slice().sort((a, b) => a - b).join(',')
   useEffect(() => {
     setPage(1)
-  }, [
-    distributorIds.slice().sort((a, b) => a - b).join(','),
-    cityIds.slice().sort((a, b) => a - b).join(','),
-  ])
+  }, [distrIdsKey, cityIdsKey])
 
   const offersForMedicine = useMemo(() => {
     if (!medicine?.drugId) return []
@@ -231,20 +230,22 @@ export function SupplierOffers({ medicine }: SupplierOffersProps) {
           sortDir={sortDir}
           onSort={handleSort}
           visibleColumns={visibleColumns}
-          startIndex={(page - 1) * PAGE_SIZE}
+          startIndex={(page - 1) * pageSize}
         />
       </div>
 
-      {apiOffers.data && 'totalCount' in apiOffers.data && apiOffers.data.totalCount > PAGE_SIZE && (
+      {apiOffers.data && 'totalCount' in apiOffers.data && apiOffers.data.totalCount > pageSize && (
         <div className="flex-shrink-0 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
           <Pagination
             page={apiOffers.data.pageNumber}
             totalPages={apiOffers.data.totalPages}
             totalCount={apiOffers.data.totalCount}
+            pageSize={pageSize}
             hasPrevious={apiOffers.data.hasPrevious}
             hasNext={apiOffers.data.hasNext}
             isLoading={apiOffers.isLoading}
             onChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1) }}
           />
         </div>
       )}

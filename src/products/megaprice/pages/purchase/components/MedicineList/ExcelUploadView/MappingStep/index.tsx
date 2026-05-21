@@ -19,6 +19,7 @@ export function MappingStep({
   onClear,
   onApply,
   onFile,
+  applying = false,
 }: {
   fileName: string
   rawData: unknown[][]
@@ -30,6 +31,7 @@ export function MappingStep({
   onClear: () => void
   onApply: () => void
   onFile: (f: File | undefined) => void
+  applying?: boolean
 }) {
   const { t } = useTranslation()
 
@@ -132,10 +134,10 @@ export function MappingStep({
           <div className="shrink-0 border-t border-gray-200 bg-white px-5 py-4 dark:border-gray-700 dark:bg-[#111111]">
             <button
               onClick={onApply}
-              disabled={colMap.name === -1 && colMap.mnn === -1}
+              disabled={applying || (colMap.name === -1 && colMap.mnn === -1)}
               className="h-9 w-full rounded-lg bg-gray-900 text-sm font-semibold text-white transition-colors hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {t('excel_apply')}
+              {applying ? 'Сопоставляем…' : t('excel_apply')}
             </button>
           </div>
 

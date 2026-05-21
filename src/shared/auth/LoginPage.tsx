@@ -204,7 +204,8 @@ export function LoginPage() {
     const result = await login(loginValue, password, captchaToken)
     setIsLoading(false)
     if (result.ok) {
-      navigate(from, { replace: true })
+      // redirectTo задаётся для дистрибьютора (единая точка входа → его кабинет).
+      navigate(result.redirectTo ?? from, { replace: true })
       return
     }
     // Любая ошибка → инвалидируем текущий token и форсим CAPTCHA снова

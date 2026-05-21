@@ -1,8 +1,7 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useState, useMemo, useEffect } from 'react'
 import {
-  Package, Plus, Trash2, ArrowLeftRight, ChevronLeft, ChevronDown,
-  Send, Search, Building2, MapPin, X,
+  Package, Plus, Trash2, ArrowLeftRight, ChevronLeft,
+  Send, Building2, MapPin, X, Check, XCircle,
 } from 'lucide-react'
 import { cn } from '@/shared/utils/utils'
 import {
@@ -12,20 +11,19 @@ import {
   useAddItem,
   useRemoveItem,
   useUpdateStatus,
-  useDistributorsAll,
+  useAcceptOrder,
+  useRejectOrder,
   useDrugStoresBatch,
   useDrugsEnrichment,
   DISTR_ORDER_STATUS,
   type ApiDistributorOrder,
   type ApiDistributorOrderItem,
-  type ApiDistributorBrief,
   type ApiDrugStoreBrief,
   type ApiDrugBrief,
-} from './api/hooks'
-import { ItemPicker } from './ItemPicker'
+} from '@/pages/DistributorPortal/api/hooks'
+import { ItemPicker } from '@/pages/DistributorPortal/ItemPicker'
 
-// Временная страница (см. ТЗ): /distributor-portal?id=<distributorId>, без логина.
-// Backend контроллеры [AllowAnonymous]. Когда понадобится прод — заменим на JWT.
+// Раздел «Дистрибьютор кабинет» — заказы всех филиалов (скоуп по distributorIds из JWT).
 
 const STATUS_LABEL: Record<number, string> = {
   10: 'Новый',
@@ -54,188 +52,20 @@ function drugStoreLabel(ds: ApiDrugStoreBrief | undefined, fallbackId: number) {
   return ds.nameRu || ds.nameUz || ds.name || `Аптека #${fallbackId}`
 }
 
-// ─── Searchable single-select для дистра ──────────────────────────────────
-
-function DistributorSelect({
-  value,
-  options,
-  onChange,
-  isLoading,
-}: {
-  value: number | null
-  options: ApiDistributorBrief[]
-  onChange: (id: number) => void
-  isLoading: boolean
-}) {
-  const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState('')
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function onClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', onClick)
-    return () => document.removeEventListener('mousedown', onClick)
-  }, [])
-
-  const selected = useMemo(() => options.find((d) => d.id === value) ?? null, [options, value])
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return options.slice(0, 100)
-    return options
-      .filter((d) => d.name.toLowerCase().includes(q) || String(d.id).includes(q))
-      .slice(0, 100)
-  }, [options, query])
-
-  return (
-    <div ref={ref} className="relative w-[360px]">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex h-11 w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 text-left text-sm transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-[#111111] dark:hover:bg-[#222222]"
-      >
-        <span className="min-w-0 flex-1 truncate">
-          {selected ? (
-            <>
-              <span className="text-gray-900 dark:text-gray-100">{selected.name}</span>
-              <span className="ml-2 text-xs text-gray-400">#{selected.id}</span>
-            </>
-          ) : (
-            <span className="text-gray-400">{isLoading ? 'Загружаем…' : 'Выберите дистрибьютора'}</span>
-          )}
-        </span>
-        <ChevronDown className={cn('h-4 w-4 shrink-0 text-gray-400 transition-transform', open && 'rotate-180')} />
-      </button>
-
-      {open && (
-        <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#111111]">
-          <div className="flex h-10 items-center gap-2 border-b border-gray-100 px-3 dark:border-gray-700">
-            <Search className="h-4 w-4 text-gray-400" />
-            <input
-              autoFocus
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Поиск по названию или id…"
-              className="h-full flex-1 bg-transparent text-sm focus:outline-none dark:text-gray-200"
-            />
-            {query && (
-              <button onClick={() => setQuery('')} className="text-gray-300 hover:text-gray-500">
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </div>
-          <div className="max-h-[300px] overflow-y-auto">
-            {filtered.length === 0 ? (
-              <p className="py-6 text-center text-sm text-gray-400">Ничего не найдено</p>
-            ) : (
-              filtered.map((d) => (
-                <button
-                  key={d.id}
-                  onClick={() => { onChange(d.id); setOpen(false); setQuery('') }}
-                  className={cn(
-                    'flex w-full items-start gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50 dark:hover:bg-[#222222]',
-                    d.id === value && 'bg-gray-50 dark:bg-[#222222]',
-                  )}
-                >
-                  <Building2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gray-400" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-gray-900 dark:text-gray-100">{d.name}</p>
-                    {d.note && <p className="truncate text-xs text-gray-400">{d.note}</p>}
-                  </div>
-                  <span className="shrink-0 text-xs text-gray-400">#{d.id}</span>
-                </button>
-              ))
-            )}
-          </div>
-          {!query && options.length > 100 && (
-            <p className="border-t border-gray-100 px-3 py-1.5 text-[11px] text-gray-400 dark:border-gray-700">
-              Показано 100 из {options.length}. Введите запрос для фильтра.
-            </p>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Главный компонент ────────────────────────────────────────────────────
-
-export function DistributorPortalPage() {
-  const [params, setParams] = useSearchParams()
-  const distributorId = Number(params.get('id')) || null
+export function CabinetSection() {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
-
-  const distrApi = useDistributorsAll()
-  const distrList = (distrApi.data as { items?: ApiDistributorBrief[] })?.items ?? []
-  const distrById = useMemo(() => {
-    const m = new Map<number, ApiDistributorBrief>()
-    distrList.forEach((d) => m.set(d.id, d))
-    return m
-  }, [distrList])
-  const selectedDistr = distributorId ? distrById.get(distributorId) ?? null : null
-
-  function selectDistributor(id: number) {
-    const next = new URLSearchParams(params)
-    next.set('id', String(id))
-    setParams(next)
-    setSelectedOrderId(null)
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a]">
-      {/* Глобальная шапка с селектом дистра — присутствует и в списке, и в детали. */}
-      <header className="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-6">
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Кабинет дистрибьютора</h1>
-            {selectedDistr ? (
-              <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
-                <span className="font-medium text-gray-700 dark:text-gray-300">{selectedDistr.name}</span>
-                {selectedDistr.note && <> · {selectedDistr.note}</>}
-                <> · id {selectedDistr.id}</>
-              </p>
-            ) : (
-              <p className="mt-0.5 text-xs text-gray-400">Выберите дистрибьютора для работы с заказами</p>
-            )}
-          </div>
-          <DistributorSelect
-            value={distributorId}
-            options={distrList}
-            onChange={selectDistributor}
-            isLoading={distrApi.isLoading}
-          />
-        </div>
-      </header>
-
-      {!distributorId ? (
-        <div className="mx-auto max-w-6xl px-6 py-16 text-center">
-          <Building2 className="mx-auto h-12 w-12 text-gray-300" />
-          <p className="mt-4 text-sm text-gray-500">Выберите дистрибьютора в селекте справа</p>
-        </div>
-      ) : selectedOrderId ? (
-        <OrderDetail
-          distributorId={distributorId}
-          orderId={selectedOrderId}
-          onBack={() => setSelectedOrderId(null)}
-        />
-      ) : (
-        <OrdersList distributorId={distributorId} onOpen={setSelectedOrderId} />
-      )}
-    </div>
-  )
+  return selectedOrderId
+    ? <OrderDetail orderId={selectedOrderId} onBack={() => setSelectedOrderId(null)} />
+    : <OrdersList onOpen={setSelectedOrderId} />
 }
 
 // ─── Список заказов ────────────────────────────────────────────────────────
 
-function OrdersList({ distributorId, onOpen }: { distributorId: number; onOpen: (id: number) => void }) {
+function OrdersList({ onOpen }: { onOpen: (id: number) => void }) {
   const [statusFilter, setStatusFilter] = useState<number | null>(null)
-  const api = useDistributorOrdersList(distributorId, statusFilter)
+  const api = useDistributorOrdersList(statusFilter)
   const orders = (Array.isArray(api.data) ? api.data : []) as ApiDistributorOrder[]
 
-  // Резолв drug_store_id → name через batch.
   const storesApi = useDrugStoresBatch()
   const storeIds = useMemo(
     () => Array.from(new Set(orders.map((o) => o.drugStoreId).filter(Boolean))),
@@ -269,7 +99,6 @@ function OrdersList({ distributorId, onOpen }: { distributorId: number; onOpen: 
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-4">
-      {/* Filters */}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-2">
           {FILTERS.map((f) => (
@@ -290,7 +119,6 @@ function OrdersList({ distributorId, onOpen }: { distributorId: number; onOpen: 
         <span className="text-sm text-gray-500 dark:text-gray-400">Всего: {orders.length}</span>
       </div>
 
-      {/* Table */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-[#222222]">
@@ -361,20 +189,11 @@ function OrdersList({ distributorId, onOpen }: { distributorId: number; onOpen: 
 
 // ─── Детали заказа + редактирование ────────────────────────────────────────
 
-function OrderDetail({
-  distributorId,
-  orderId,
-  onBack,
-}: {
-  distributorId: number
-  orderId: number
-  onBack: () => void
-}) {
+function OrderDetail({ orderId, onBack }: { orderId: number; onBack: () => void }) {
   const detail = useDistributorOrderDetail(orderId)
   const order = (detail.data as { order?: ApiDistributorOrder })?.order ?? null
   const items = (detail.data as { items?: ApiDistributorOrderItem[] })?.items ?? []
 
-  // Резолв drug_id → name через cart-enrichment.
   const drugsApi = useDrugsEnrichment()
   const drugIds = useMemo(() => {
     const set = new Set<number>()
@@ -396,7 +215,6 @@ function OrderDetail({
     return m
   }, [drugsApi.data])
 
-  // Резолв drugStore (только текущей аптеки).
   const storesApi = useDrugStoresBatch()
   useEffect(() => {
     if (order?.drugStoreId) storesApi.appendData({ ids: [order.drugStoreId] })
@@ -404,7 +222,6 @@ function OrderDetail({
   }, [order?.drugStoreId])
   const storeBrief = (Array.isArray(storesApi.data) ? storesApi.data : [])[0] as ApiDrugStoreBrief | undefined
 
-  // Локальные правки.
   const [drafts, setDrafts] = useState<Record<number, { quantity?: number; price?: number; replacementDrugId?: number | '' }>>({})
   const [newItems, setNewItems] = useState<Array<{ drugId: number | ''; quantity: number | ''; price: number | '' }>>([])
   const [busy, setBusy] = useState(false)
@@ -420,6 +237,8 @@ function OrderDetail({
   const addApi = useAddItem()
   const removeApi = useRemoveItem()
   const statusApi = useUpdateStatus(() => { detail.refetch() }, (m) => setError(m))
+  const acceptApi = useAcceptOrder(() => { detail.refetch() }, (m) => setError(m))
+  const rejectApi = useRejectOrder(() => { detail.refetch() }, (m) => setError(m))
 
   function setDraft(itemId: number, patch: Partial<{ quantity: number; price: number; replacementDrugId: number | '' }>) {
     setDrafts((d) => ({ ...d, [itemId]: { ...d[itemId], ...patch } }))
@@ -464,6 +283,26 @@ function OrderDetail({
     setTimeout(() => detail.refetch(), 400)
   }
 
+  function handleAcceptDirect() {
+    if (!order || !order.purchaseId) {
+      setError('Нет purchaseId — заказ не привязан к закупке')
+      return
+    }
+    if (!confirm('Принять заказ без изменений? Статус перейдёт в «Подтверждён».')) return
+    setError(null)
+    acceptApi.appendData({ purchaseId: order.purchaseId, actorRole: 'distributor' }, { orderId: order.id })
+  }
+
+  function handleRejectDirect() {
+    if (!order || !order.purchaseId) {
+      setError('Нет purchaseId — заказ не привязан к закупке')
+      return
+    }
+    if (!confirm('Отклонить заказ? Это финальное действие, заказ не может быть восстановлен.')) return
+    setError(null)
+    rejectApi.appendData({ purchaseId: order.purchaseId, actorRole: 'distributor' }, { orderId: order.id })
+  }
+
   if (!order && detail.isLoading) {
     return <div className="mx-auto max-w-6xl p-8 text-sm text-gray-500">Загружаем…</div>
   }
@@ -476,7 +315,6 @@ function OrderDetail({
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-6 space-y-4">
-      {/* Header */}
       <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-[#111111]">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
@@ -514,7 +352,6 @@ function OrderDetail({
         </div>
       )}
 
-      {/* Items */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
         <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-700">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -581,7 +418,7 @@ function OrderDetail({
                       <div className="min-w-0 flex-1">
                         {editable ? (
                           <ItemPicker
-                            distributorId={distributorId}
+                            distributorId={order.distributorId}
                             selectedDrugId={typeof replacement === 'number' ? replacement : null}
                             buttonLabel={replacementDrug ? 'Сменить' : 'Выбрать'}
                             onSelect={(picked) => {
@@ -631,7 +468,6 @@ function OrderDetail({
                 </tr>
               )
             })}
-            {/* Новые позиции — ещё не отправлены */}
             {newItems.map((n, idx) => {
               const drug = typeof n.drugId === 'number' ? drugById.get(n.drugId) : undefined
               const newPickerLabel = drug ? 'Сменить' : 'Выбрать препарат'
@@ -639,7 +475,7 @@ function OrderDetail({
                 <tr key={`new-${idx}`} className="bg-blue-50/40 dark:bg-blue-900/10">
                   <td className="px-3 py-2">
                     <ItemPicker
-                      distributorId={distributorId}
+                      distributorId={order.distributorId}
                       selectedDrugId={typeof n.drugId === 'number' ? n.drugId : null}
                       buttonLabel={newPickerLabel}
                       onSelect={(picked) => {
@@ -695,18 +531,45 @@ function OrderDetail({
         </table>
       </div>
 
-      {editable && (
-        <div className="flex justify-end">
-          <button
-            onClick={handleSaveAndSubmit}
-            disabled={busy}
-            className="flex items-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-black disabled:opacity-60 dark:bg-[#f1f1f1] dark:text-gray-900"
-          >
-            <Send className="h-4 w-4" />
-            {busy ? 'Отправляем…' : 'Сохранить и отправить клиенту на проверку'}
-          </button>
-        </div>
-      )}
+      {editable && (() => {
+        const hasDrafts = Object.keys(drafts).length > 0 || newItems.some(n => n.drugId && n.quantity)
+        const acting = busy || acceptApi.isLoading || rejectApi.isLoading
+        return (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <button
+              onClick={handleRejectDirect}
+              disabled={acting}
+              className="flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60 dark:border-red-900 dark:bg-[#111111] dark:text-red-400 dark:hover:bg-red-950"
+            >
+              <XCircle className="h-4 w-4" />
+              Отклонить
+            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              {hasDrafts ? (
+                <button
+                  onClick={handleSaveAndSubmit}
+                  disabled={acting}
+                  className="flex items-center gap-2 rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-600 disabled:opacity-60"
+                  title="Сохранить изменения и отправить аптеке на ревью"
+                >
+                  <Send className="h-4 w-4" />
+                  {busy ? 'Отправляем…' : 'Отправить изменения клиенту'}
+                </button>
+              ) : (
+                <button
+                  onClick={handleAcceptDirect}
+                  disabled={acting}
+                  className="flex items-center gap-2 rounded-lg bg-green-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60"
+                  title="Принять заказ как есть (без изменений)"
+                >
+                  <Check className="h-4 w-4" />
+                  {acceptApi.isLoading ? 'Принимаем…' : 'Принять'}
+                </button>
+              )}
+            </div>
+          </div>
+        )
+      })()}
     </main>
   )
 }

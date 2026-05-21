@@ -15,6 +15,20 @@ import type {
   ProposalChange,
 } from './types'
 
+// ── Формат номера заказа: «№42 от 18.05.2026» ────────────────────────────────
+// Заменяет старые непонятные «Cart-260518071049» / «ЗАК-42» / «DO-47».
+// Используется и в /orders list, и в /orders/{id} деталке, и в SignalR-нотификациях
+// (бэк формирует ту же строку — см. DistributorOrderService.PublishStatusChangeAsync).
+export function formatOrderNumber(purchaseId: number, createDate?: string | null): string {
+  if (!createDate) return `№${purchaseId}`
+  const d = new Date(createDate)
+  if (isNaN(d.getTime())) return `№${purchaseId}`
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const yyyy = d.getFullYear()
+  return `№${purchaseId} от ${dd}.${mm}.${yyyy}`
+}
+
 // ── Backend statusId → UI status маппинги ────────────────────────────────────
 
 /** Purchase.status_id → UI OrderStatus (для list-view). */
@@ -24,10 +38,28 @@ export function mapPurchaseStatusToUi(statusId: number): OrderStatus {
     case 1: return 'new'        // оформлена, ждёт ответа дистров
     case 2: return 'modified'   // дистры что-то поменяли
     case 3: return 'completed'  // одобрено / отгружено / доставлено
-    case 4: return 'accepted'   // клиент принял предложение дистра (Phase 5)
-    case 5:
-    case 6: return 'cancelled'  // закрыта/отменена
+    case 4: return 'completed'  // legacy "accepted" — теперь сливаем в completed
+    case 5: return 'completed'  // все дистры приняли (NEW: Recalc ставит 5, не 4)
+    case 6: return 'cancelled'  // все отказались / аптека отменила
+    case 7: return 'partial'    // часть дистров приняла, часть отменила
     default: return 'new'
+  }
+}
+
+/**
+ * Обратное отображение: UI OrderStatus → массив purchases.status_id для серверного
+ * фильтра в GET /api/purchases?statusIds=…
+ * UI-статус 'accepted' сейчас не выставляется маппером (см. выше) — возвращаем [],
+ * чтобы плитка просто была пустой и не путала фильтрацию.
+ */
+export function mapUiStatusToPurchaseStatusIds(ui: OrderStatus): number[] {
+  switch (ui) {
+    case 'new':       return [1]
+    case 'modified':  return [2]
+    case 'accepted':  return []
+    case 'completed': return [3, 4, 5]
+    case 'cancelled': return [6]
+    case 'partial':   return [7]
   }
 }
 
@@ -45,14 +77,29 @@ export function mapOrderStatusToUi(statusId: number): OrderStatus {
   }
 }
 
-export function mapStatusIdToDistributorStatus(statusId: number): DistributorStatus {
+/**
+ * distributor_orders.status_id → UI DistributorStatus.
+ *
+ * Тонкость для 12 (approved) при мульти-дистре:
+ *  - Если в этой же закупке остаются дистры в активных статусах (10/11) — значит
+ *    клиент принял этого, но заказ ещё не финализирован остальными → 'accepted'
+ *    (промежуточный статус «Принят»).
+ *  - Если все остальные уже определились (12/13/14/15) — этот тоже становится
+ *    'completed' («Завершён»). Покупка в этот момент становится 5 или 7.
+ *
+ * Для single-distributor закупок hasPendingOthers=false → 12 сразу = 'completed'.
+ */
+export function mapStatusIdToDistributorStatus(
+  statusId: number,
+  opts: { hasPendingOthers?: boolean } = {},
+): DistributorStatus {
   switch (statusId) {
     case 10: return 'sent'
     case 11: return 'offer'
-    case 12: return 'accepted'
+    case 12: return opts.hasPendingOthers ? 'accepted' : 'completed'
     case 13: return 'rejected'
     case 14:
-    case 15: return 'accepted'
+    case 15: return 'completed'   // shipped/delivered — финальный.
     default: return 'new'
   }
 }
@@ -100,7 +147,7 @@ export function buildOrderFromPurchase(p: ApiPurchase, opts: ListBuildOpts = {})
 
   return {
     id: String(p.id),
-    number: p.purchaseNumber || `ЗАК-${p.id}`,
+    number: formatOrderNumber(p.id, p.createDate),
     pharmacyName: opts.pharmacyName ?? '',
     pharmacyAddress: opts.pharmacyAddress ?? '',
     pharmacyCity: opts.pharmacyCity ?? '',
@@ -148,6 +195,11 @@ export function buildOrderFromPurchaseDetail({
     itemsByOrder.get(oid)!.push(it)
   })
 
+  // Есть ли в этой покупке хоть один дистр, который ещё не ответил
+  // (status_id 10 или 11). Используется маппером для разделения accepted/completed:
+  // 12 + ждём остальных = 'accepted'; 12 + все остальные финализированы = 'completed'.
+  const hasPendingOthers = orders.some(o => o.statusId === 10 || o.statusId === 11)
+
   const groups: OrderDistributorGroup[] = orders.map((o) => {
     const oi = itemsByOrder.get(o.id) ?? []
     const subtotal = oi.reduce(
@@ -163,7 +215,7 @@ export function buildOrderFromPurchaseDetail({
       distributorCity: '',
       contactType: 'email',
       contact: '',
-      distributorStatus: mapStatusIdToDistributorStatus(o.statusId),
+      distributorStatus: mapStatusIdToDistributorStatus(o.statusId, { hasPendingOthers }),
       items: oi.map((it) => {
         const info = drugInfoById?.get(Number(it.drugId))
         return {
@@ -192,7 +244,7 @@ export function buildOrderFromPurchaseDetail({
 
   return {
     id: String(purchase.id),
-    number: purchase.purchaseNumber || `ЗАК-${purchase.id}`,
+    number: formatOrderNumber(purchase.id, purchase.createDate),
     pharmacyName: pharmacyName ?? '',
     pharmacyAddress: pharmacyAddress ?? '',
     pharmacyCity: pharmacyCity ?? '',

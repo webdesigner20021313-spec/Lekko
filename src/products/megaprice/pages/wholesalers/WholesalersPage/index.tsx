@@ -16,8 +16,6 @@ import { DiscountModal } from './DiscountModal'
 import { WholesalerCardMobile } from './WholesalerCardMobile'
 import { WholesalersTable } from './WholesalersTable'
 
-const PAGE_SIZE = 30
-
 export function WholesalersPage() {
   const { t } = useTranslation()
   const drugStoreId = useAuthStore(s => s.drugStore?.drugStoreId ?? null)
@@ -28,6 +26,7 @@ export function WholesalersPage() {
 
   const [search, setSearch] = useState('')
   const [page,   setPage]   = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const debouncedSearch = useDebouncedValue(search, 300)
 
   // Сброс page при смене query.
@@ -36,12 +35,12 @@ export function WholesalersPage() {
   const distributorsQuery = useDistributorsPaged({
     query: debouncedSearch,
     page,
-    pageSize: PAGE_SIZE,
+    pageSize,
     drugStoreId,
   })
 
   // Batch-обогащение видимой страницы: phone/telegram/inn/minOrderAmount/...
-  const pagedItems = distributorsQuery.data?.items ?? []
+  const pagedItems = useMemo(() => distributorsQuery.data?.items ?? [], [distributorsQuery.data])
   const pageIds = useMemo(() => pagedItems.map(d => d.id), [pagedItems])
   const pageIdsKey = pageIds.slice().sort((a, b) => a - b).join(',')
   const distributorsFull = useDistributorsBatch()
@@ -49,12 +48,13 @@ export function WholesalersPage() {
     if (pageIds.length > 0) distributorsFull.appendData({ ids: pageIds })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageIdsKey])
+  const fullData = distributorsFull.data
   const fullById = useMemo(() => {
-    const m = new Map<number, NonNullable<typeof distributorsFull.data>[number]>()
-    const list = Array.isArray(distributorsFull.data) ? distributorsFull.data : []
+    const m = new Map<number, NonNullable<typeof fullData>[number]>()
+    const list = Array.isArray(fullData) ? fullData : []
     list.forEach(d => m.set(d.id, d))
     return m
-  }, [distributorsFull.data])
+  }, [fullData])
 
   // Скидки берём из shared store (useDiscounts triggers fetch выше).
   const { getDiscount: getDiscountFor } = useDiscounts()
@@ -84,7 +84,7 @@ export function WholesalersPage() {
   }, [pagedItems, fullById, getDiscountFor])
 
   const totalCount = distributorsQuery.data?.totalCount ?? 0
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
   const [modalWholesaler, setModalWholesaler] = useState<Wholesaler | null>(null)
 
@@ -177,7 +177,7 @@ export function WholesalersPage() {
             <WholesalersTable
               wholesalers={wholesalers}
               page={page}
-              pageSize={PAGE_SIZE}
+              pageSize={pageSize}
               onOpenDiscount={setModalWholesaler}
             />
           </>
@@ -191,10 +191,12 @@ export function WholesalersPage() {
             page={page}
             totalPages={totalPages}
             totalCount={totalCount}
+            pageSize={pageSize}
             hasPrevious={page > 1}
             hasNext={page < totalPages}
             isLoading={distributorsQuery.isLoading}
             onChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1) }}
           />
         </div>
       )}

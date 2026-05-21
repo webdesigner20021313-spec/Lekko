@@ -16,8 +16,6 @@ import { formatCurrency, formatDate } from '@/shared/utils/format'
 import { cn } from '@/shared/utils/utils'
 import type { Distributor } from '@/products/megaprice/pages/purchase/types/purchase.types'
 
-const PAGE_SIZE = 20
-
 interface Props {
   distributor: Distributor | null
 }
@@ -33,10 +31,11 @@ interface Props {
 export function DistributorProducts({ distributor }: Props) {
   const { t } = useTranslation()
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const drugStoreId = useAuthStore((s) => s.drugStore?.drugStoreId ?? null)
 
   const distributorId = distributor ? Number(distributor.id) : null
-  const items = useDistributorPriceItems(distributorId, { page, pageSize: PAGE_SIZE })
+  const items = useDistributorPriceItems(distributorId, { page, pageSize })
 
   // Сброс page при смене дистра.
   useEffect(() => {
@@ -116,7 +115,7 @@ export function DistributorProducts({ distributor }: Props) {
   }
 
   const totalPages = items.data
-    ? Math.max(1, items.data.totalPages || Math.ceil(items.data.totalCount / PAGE_SIZE))
+    ? Math.max(1, items.data.totalPages || Math.ceil(items.data.totalCount / pageSize))
     : 1
 
   return (
@@ -135,20 +134,22 @@ export function DistributorProducts({ distributor }: Props) {
         ) : products.length === 0 ? (
           <div className="py-12 text-center text-sm text-gray-400">{t('products_empty')}</div>
         ) : (
-          <ProductTable products={products} quantities={quantities} onQty={handleQtyChange} startIndex={(page - 1) * PAGE_SIZE} />
+          <ProductTable products={products} quantities={quantities} onQty={handleQtyChange} startIndex={(page - 1) * pageSize} />
         )}
       </div>
 
-      {items.data && items.data.totalCount > PAGE_SIZE && (
+      {items.data && items.data.totalCount > pageSize && (
         <div className="shrink-0 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
           <Pagination
             page={items.data.pageNumber}
             totalPages={totalPages}
             totalCount={items.data.totalCount}
+            pageSize={pageSize}
             hasPrevious={items.data.hasPrevious}
             hasNext={items.data.hasNext}
             isLoading={items.isLoading}
             onChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1) }}
           />
         </div>
       )}

@@ -5,6 +5,8 @@ import { useQueryApiClient } from '@/shared/api/useQueryApiClient'
 export interface ApiDistributorOrder {
   id: number
   purchaseOrderId: number
+  /** id "зонтика"-закупки (purchases.id) — нужен для accept/reject endpoints. */
+  purchaseId: number
   distributorId: number
   drugStoreId: number
   statusId: number
@@ -44,19 +46,188 @@ export const DISTR_ORDER_STATUS = {
   delivered: 15,
 } as const
 
+// ── Auth кабинета дистрибьютора (cookie-JWT) ───────────────────────────────
+
+export interface DistributorMe {
+  id: number
+  name: string | null
+  regionId: number | null
+  contacts: string | null
+  emails: string | null
+  emailForOrders: string | null
+  note: string | null
+}
+
+export interface DistributorLoginInfo {
+  id: number
+  name: string | null
+  login: string
+  /** Все distributor_id под этим логином (филиалы). */
+  distributorIds: number[]
+}
+
+/**
+ * GET /api/auth/distributor/me — профиль залогиненного дистра + все его филиалы
+ * (distributorIds из JWT). 401 если не вошёл.
+ */
+export function useDistributorMe() {
+  return useQueryApiClient<{ distributor: DistributorMe; distributorIds: number[] }>({
+    request: { url: '/api/auth/distributor/me', method: 'GET' },
+  })
+}
+
+/** POST /api/auth/distributor/login — { login, password } → access-cookie. */
+export function useDistributorLogin(onSuccess?: () => void, onError?: (m: string) => void) {
+  return useQueryApiClient<{ distributor: DistributorLoginInfo }>({
+    request: { url: '/api/auth/distributor/login', method: 'POST', disableOnMount: true },
+    onSuccess: () => onSuccess?.(),
+    onError: (m) => onError?.(typeof m === 'string' ? m : 'Request failed'),
+  })
+}
+
+/** POST /api/auth/distributor/logout — очистка cookie. */
+export function useDistributorLogout(onSuccess?: () => void) {
+  return useQueryApiClient({
+    request: { url: '/api/auth/distributor/logout', method: 'POST', disableOnMount: true },
+    onSuccess: () => onSuccess?.(),
+  })
+}
+
+// ── Аналитика поиска (ClientInsights, /api/client-insights/searches) ───────
+// Источник — легаси-таблица item_search_logs/_dt (1:1 с monolith log_drug_id_search),
+// наполняется живым пайплайном DrugSearch → DrugSearchedIntegrationEvent → ClientInsights.
+
+/** Агрегат поиска по препарату (ClientInsights SearchLogEntry). */
+export interface SearchStatEntry {
+  drugId: number
+  /** Бэк отдаёт пусто — имя резолвим на фронте через drugs-enrichment. */
+  drugName: string
+  searchCount: number
+  uniqueUsers: number
+  firstSearchDate: string
+  lastSearchDate: string
+}
+
+/**
+ * GET /api/client-insights/searches?distributorIds=…&fromDate=&toDate= —
+ * статистика поисков клиентов по всем филиалам дистра (агрегат по drug_id).
+ * Возвращает плоский массив (не paged).
+ */
+export function useDistributorSearchStats(
+  distributorIds: number[] | null,
+  fromDate?: string,
+  toDate?: string,
+) {
+  const ids = distributorIds ?? []
+  return useQueryApiClient<SearchStatEntry[]>({
+    request: {
+      url: '/api/client-insights/searches',
+      method: 'GET',
+      params: { distributorIds: ids, fromDate: fromDate || undefined, toDate: toDate || undefined },
+    },
+    enabled: ids.length > 0,
+  })
+}
+
+/** Активность по аптекам (ClientInsights ClientActivity). */
+export interface PharmacyStatEntry {
+  drugStoreId: number
+  drugStoreName: string | null
+  searchCount: number
+  lastSearchDate: string | null
+}
+
+/** GET /api/client-insights/pharmacy-stats?distributorIds=… — агрегат по аптекам. */
+export function useDistributorPharmacyStats(
+  distributorIds: number[] | null,
+  fromDate?: string,
+  toDate?: string,
+) {
+  const ids = distributorIds ?? []
+  return useQueryApiClient<PharmacyStatEntry[]>({
+    request: {
+      url: '/api/client-insights/pharmacy-stats',
+      method: 'GET',
+      params: { distributorIds: ids, fromDate: fromDate || undefined, toDate: toDate || undefined },
+    },
+    enabled: ids.length > 0,
+  })
+}
+
+/** Строка ленты последних поисков (ClientInsights RecentSearch). */
+export interface RecentSearchEntry {
+  drugStoreId: number
+  drugStoreName: string | null
+  drugId: number
+  drugName: string | null
+  searchDate: string
+}
+
+/** GET /api/client-insights/recent?distributorIds=… — лента последних поисков. */
+export function useDistributorRecentSearches(
+  distributorIds: number[] | null,
+  fromDate?: string,
+  toDate?: string,
+) {
+  const ids = distributorIds ?? []
+  return useQueryApiClient<RecentSearchEntry[]>({
+    request: {
+      url: '/api/client-insights/recent',
+      method: 'GET',
+      params: { distributorIds: ids, limit: 100, fromDate: fromDate || undefined, toDate: toDate || undefined },
+    },
+    enabled: ids.length > 0,
+  })
+}
+
+// ── Справочник всех аптек (раздел «Мои аптеки») ────────────────────────────
+
+export interface ApiDrugStoreFull {
+  id: number
+  name: string
+  nameRu: string | null
+  nameUz: string | null
+  address: string | null
+  phone: string | null
+  email: string | null
+  areaId: number | null
+  statusId: number | null
+}
+
+interface DrugStoresPaged {
+  items: ApiDrugStoreFull[]
+  pageNumber: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+  hasPrevious: boolean
+  hasNext: boolean
+}
+
+/** GET /api/drugstores?page=&pageSize= — пагинированный справочник всех аптек. */
+export function useAllPharmacies(page: number, pageSize: number) {
+  return useQueryApiClient<DrugStoresPaged>({
+    request: {
+      url: '/api/drugstores',
+      method: 'GET',
+      params: { page, pageSize },
+    },
+  })
+}
+
 // ── Hooks ──────────────────────────────────────────────────────────────────
 
-/** GET /api/distributor-orders?distributorId=…&statusId=… */
-export function useDistributorOrdersList(distributorId: number | null, statusId?: number | null) {
+/**
+ * GET /api/distributor-orders?statusId=… — заказы ВСЕХ моих филиалов.
+ * Скоуп по distributorIds из JWT (бэк), без явного distributorId.
+ */
+export function useDistributorOrdersList(statusId?: number | null) {
   return useQueryApiClient<ApiDistributorOrder[]>({
     request: {
       url: '/api/distributor-orders',
       method: 'GET',
-      params: distributorId
-        ? { distributorId, statusId: statusId ?? undefined }
-        : undefined,
+      params: statusId ? { statusId } : undefined,
     },
-    enabled: !!distributorId,
   })
 }
 
@@ -102,6 +273,32 @@ export function useRemoveItem(onSuccess?: () => void, onError?: (m: string) => v
 export function useUpdateStatus(onSuccess?: () => void, onError?: (m: string) => void) {
   return useQueryApiClient({
     request: { url: '/api/distributor-orders/:orderId/status', method: 'PUT', disableOnMount: true },
+    onSuccess: () => onSuccess?.(),
+    onError: (m) => onError?.(typeof m === 'string' ? m : 'Request failed'),
+  })
+}
+
+/**
+ * POST /api/distributor-orders/{id}/accept — принять под-заказ.
+ * Body: { purchaseId }. 10→12 (дистр сразу принимает) или 11→12 (аптека ревью).
+ * После — recalc purchase.status + SignalR-нотификация в обе группы.
+ */
+export function useAcceptOrder(onSuccess?: () => void, onError?: (m: string) => void) {
+  return useQueryApiClient({
+    request: { url: '/api/distributor-orders/:orderId/accept', method: 'POST', disableOnMount: true },
+    onSuccess: () => onSuccess?.(),
+    onError: (m) => onError?.(typeof m === 'string' ? m : 'Request failed'),
+  })
+}
+
+/**
+ * POST /api/distributor-orders/{id}/reject — отклонить под-заказ.
+ * Body: { purchaseId }. 10→13 (дистр отказывается) или 11→13 (аптека отклонила изменения).
+ * После — recalc purchase.status + SignalR.
+ */
+export function useRejectOrder(onSuccess?: () => void, onError?: (m: string) => void) {
+  return useQueryApiClient({
+    request: { url: '/api/distributor-orders/:orderId/reject', method: 'POST', disableOnMount: true },
     onSuccess: () => onSuccess?.(),
     onError: (m) => onError?.(typeof m === 'string' ? m : 'Request failed'),
   })

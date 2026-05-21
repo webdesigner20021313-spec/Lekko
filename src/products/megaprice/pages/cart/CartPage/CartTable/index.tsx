@@ -1,4 +1,4 @@
-import { Fragment, useRef } from 'react'
+import { Fragment, useEffect, useRef } from 'react'
 import { ChevronDown, Package, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
@@ -27,7 +27,7 @@ export function CartTable({
   collapsed: Set<string>
   checkedIds: Set<string>
   effPrice: (item: CartItem) => number
-  getDiscount: (distributorId: string | number) => number | undefined
+  getDiscount: (distributorId: string | number) => number | null
   allChecked: boolean
   someChecked: boolean
   onToggleAll: () => void
@@ -38,8 +38,11 @@ export function CartTable({
   onUpdateQty: (offerId: string, qty: number) => void
 }) {
   const { t } = useTranslation()
+  // indeterminate нельзя задать через JSX-атрибут — ставим на DOM после рендера.
   const cbRef = useRef<HTMLInputElement>(null)
-  if (cbRef.current) cbRef.current.indeterminate = someChecked
+  useEffect(() => {
+    if (cbRef.current) cbRef.current.indeterminate = someChecked
+  }, [someChecked])
 
   return (
     <table className="w-full border-collapse">

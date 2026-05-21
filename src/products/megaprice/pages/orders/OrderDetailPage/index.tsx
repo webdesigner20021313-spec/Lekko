@@ -8,29 +8,14 @@ import {
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency, formatDateTime } from '@/shared/utils/format'
-import { useAuthStore } from '@/shared/auth/useAuthStore'
 import { useDiscounts } from '@/products/megaprice/stores/useDiscountStore'
-import {
-  usePurchaseDetail,
-  useDistributorsBatch,
-  useDrugsCartEnrichment,
-  usePurchaseDiff,
-  useAcceptOneDistributor,
-  useRejectOneDistributor,
-} from '@/products/megaprice/api/hooks'
 import {
   downloadInvoicePdf,
   downloadInvoiceXlsx,
 } from '@/products/megaprice/api/invoice'
-import {
-  buildOrderFromPurchaseDetail,
-  buildProposalsByDistributor,
-} from '@/products/megaprice/pages/orders/adapters'
 import { mp } from '@/products/megaprice/utils/path'
 import {
   type Order,
-  type OrderStatus,
-  type DistributorStatus,
   type OrderDistributorGroup,
   type WholesalerProposal,
 } from '@/products/megaprice/pages/orders/types'
@@ -40,6 +25,8 @@ import { GlobalStatusBadge } from './GlobalStatusBadge'
 import { HistoryModal } from './HistoryModal'
 import { InfoCard } from './InfoCard'
 import { buildFullPayload, buildGroupPayload, type ModalState } from './payload'
+import { useOrderDetailData } from './useOrderDetailData'
+import { useOrderActions } from './useOrderActions'
 
 // ─── Order Detail Page (entry) ────────────────────────────────────────────────
 
@@ -48,110 +35,18 @@ export function OrderDetailPage() {
   const { id }   = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  // id в URL = purchaseId. Backend возвращает {purchase, orders, items} одним вызовом.
+  // id в URL = purchaseId. Сбор данных (detail + diff + обогащение) — в useOrderDetailData.
   const purchaseId = Number(id)
-  const detailQuery = usePurchaseDetail(Number.isFinite(purchaseId) && purchaseId > 0 ? purchaseId : null)
-  const drugStore = useAuthStore(s => s.drugStore)
-  // Персональные скидки аптеки — нужны и для UI (DistributorCard) и для PDF/Excel.
-  // Hook автозагружает данные в shared store; getDiscount берём в OrderDetailContent.
-  useDiscounts()
+  const {
+    isLoading,
+    rawOrder,
+    proposalsByDistributor,
+    distrOrderIdByDistributorId,
+    drugInfoById,
+    refetch,
+  } = useOrderDetailData(purchaseId)
 
-  const apiPurchase = detailQuery.data?.purchase ?? null
-  const apiOrders = detailQuery.data?.orders ?? []
-  const apiItems = detailQuery.data?.items ?? []
-
-  // Batch-обогащение: distributor names + drug names.
-  const distributorIds = useMemo(
-    () => Array.from(new Set(apiOrders.map(o => o.distributorId).filter(Boolean))),
-    [apiOrders],
-  )
-  const distrIdsKey = distributorIds.slice().sort((a, b) => a - b).join(',')
-  const distributors = useDistributorsBatch()
-  useEffect(() => {
-    if (distributorIds.length > 0) distributors.appendData({ ids: distributorIds })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [distrIdsKey])
-  const distrNameById = useMemo(() => {
-    const m = new Map<number, string>()
-    const list = Array.isArray(distributors.data) ? distributors.data : []
-    list.forEach(d => m.set(d.id, d.name))
-    return m
-  }, [distributors.data])
-
-  // Phase 5: diff клиентской копии vs distributor-копии — нужен прямо здесь,
-  // чтобы добавить drugIds распределительных позиций в batch enrichment
-  // (иначе added/replacement препараты в diff-карточках будут "Drug 76").
-  const diffQuery = usePurchaseDiff(
-    Number.isFinite(purchaseId) && purchaseId > 0 ? purchaseId : null,
-  )
-
-  // Все drug_ids которые нужно резолвить: client-items + distributor-items
-  // (added) + replacement-drug-id (substitute).
-  const drugIds = useMemo(() => {
-    const ids = new Set<number>()
-    apiItems.forEach((it) => { if (it.drugId) ids.add(Number(it.drugId)) })
-    const distrItems = diffQuery.data?.distributor?.items ?? []
-    distrItems.forEach((it) => {
-      if (it.drugId) ids.add(Number(it.drugId))
-      if (it.replacementDrugId) ids.add(Number(it.replacementDrugId))
-    })
-    return Array.from(ids)
-  }, [apiItems, diffQuery.data])
-  const drugIdsKey = drugIds.slice().sort((a, b) => a - b).join(',')
-  // Cart-enrichment: drug + producer + country одним запросом для item-карточек.
-  const drugs = useDrugsCartEnrichment()
-  useEffect(() => {
-    if (drugIds.length > 0) drugs.appendData({ ids: drugIds })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [drugIdsKey])
-  const drugInfoById = useMemo(() => {
-    const m = new Map<number, { name: string; producer: string; country: string }>()
-    const list = Array.isArray(drugs.data) ? drugs.data : []
-    list.forEach(d => m.set(d.id, {
-      name: d.fullName,
-      producer: d.producerName ?? '',
-      country: d.countryName ?? '',
-    }))
-    return m
-  }, [drugs.data])
-
-  const rawOrder = useMemo<Order | null>(() => {
-    if (!apiPurchase) return null
-    return buildOrderFromPurchaseDetail({
-      purchase: apiPurchase,
-      orders: apiOrders,
-      items: apiItems,
-      distributorNameById: distrNameById,
-      drugInfoById,
-      pharmacyName: drugStore?.drugStoreName ?? null,
-      pharmacyAddress: drugStore?.address ?? null,
-      pharmacyCity: null,
-    })
-  }, [apiPurchase, apiOrders, apiItems, distrNameById, drugInfoById, drugStore])
-
-  const proposalsByDistributor = useMemo(() => {
-    const distr = diffQuery.data?.distributor
-    const client = diffQuery.data?.client
-    if (!distr || !client) return new Map<string, WholesalerProposal>()
-    return buildProposalsByDistributor({
-      distributorOrders: distr.orders ?? [],
-      distributorItems: distr.items ?? [],
-      clientItems: client.items ?? [],
-      drugInfoById,
-    })
-  }, [diffQuery.data, drugInfoById])
-
-  // Карта distributorId → distributor_order.id — нужна для per-distributor
-  // accept/reject/cancel (без неё фронт не знает какой distributor_order адресовать).
-  const distrOrderIdByDistributorId = useMemo(() => {
-    const m = new Map<string, number>()
-    ;(diffQuery.data?.distributor?.orders ?? []).forEach((o) => {
-      m.set(String(o.distributorId), o.id)
-    })
-    return m
-  }, [diffQuery.data])
-
-  if (detailQuery.isLoading) {
+  if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
         <p className="text-sm text-gray-400">{t('orders_loading') ?? 'Загрузка…'}</p>
@@ -181,10 +76,7 @@ export function OrderDetailPage() {
       proposalsByDistributor={proposalsByDistributor}
       distrOrderIdByDistributorId={distrOrderIdByDistributorId}
       drugInfoById={drugInfoById}
-      onRefetchDetail={() => {
-        detailQuery.refetch?.()
-        diffQuery.refetch?.()
-      }}
+      onRefetchDetail={refetch}
     />
   )
 }
@@ -210,17 +102,6 @@ function OrderDetailContent({
   const navigate      = useNavigate()
   // Персональные скидки — shared store, hook реактивный (для UI DistributorCard).
   const { getDiscount } = useDiscounts()
-  // TODO: workflow на бэке (PUT /api/purchaseorders/:id/place|approve|reject|ship|deliver).
-  // Локальные мутации complete оставляем UI-only — он не идёт в backend.
-  const updateOrder   = (_: Order) => { void _ }
-
-  // Per-distributor accept/reject (Phase 5.1) — действие применяется только
-  // к одному distributor_order. purchases.status_id пересчитывается на бэке
-  // по совокупности (RecalcPurchaseStatus). Глобальный accept/reject больше
-  // не используется на странице — каждая карточка живёт независимо.
-  const acceptApi = useAcceptOneDistributor(() => onRefetchDetail())
-  const rejectApi = useRejectOneDistributor(() => onRefetchDetail())
-  const proposalBusy = acceptApi.isLoading || rejectApi.isLoading
 
   // Сливаем proposals + distrOrderId из diff в order.groups.
   const orderWithProposals = useMemo<Order>(() => {
@@ -257,90 +138,21 @@ function OrderDetailContent({
   const totalItems    = order.groups.reduce((s, g) => s + g.items.length, 0)
   const hasProposals  = order.groups.some(g => g.distributorStatus === 'offer')
 
-  // ── Helpers ─────────────────────────────────────────────────────────────────
-
-  function recalcTotals(groups: OrderDistributorGroup[]) {
-    const active = groups.filter(g => g.distributorStatus !== 'cancelled')
-    return {
-      totalSum: active.reduce((s, g) => s + g.subtotal, 0),
-      totalQty: active.reduce((s, g) => s + g.items.reduce((qs, i) => qs + i.quantity, 0), 0),
-    }
-  }
-
-  // ── Handlers ─────────────────────────────────────────────────────────────────
-
-  // Per-distributor accept — применяется ТОЛЬКО к одному дистру, не ко всем.
-  function handleAcceptProposal(distributorId: string) {
-    if (proposalBusy) return
-    const group = order.groups.find((g) => g.distributorId === distributorId)
-    if (!group?.distributorOrderId) return
-    acceptApi.appendData({}, { id: purchaseId, distrOrderId: group.distributorOrderId })
-    // Optimistic — после refetch'а реальное состояние перезаполнится.
-    const updatedGroups = order.groups.map((g) =>
-      g.distributorId === distributorId
-        ? { ...g, distributorStatus: 'accepted' as DistributorStatus, proposal: undefined }
-        : g,
-    )
-    setOrder({ ...order, groups: updatedGroups })
-  }
-
-  function handleRejectProposal(distributorId: string) {
-    if (proposalBusy) return
-    const group = order.groups.find((g) => g.distributorId === distributorId)
-    if (!group?.distributorOrderId) return
-    rejectApi.appendData({}, { id: purchaseId, distrOrderId: group.distributorOrderId })
-    const updatedGroups = order.groups.map((g) =>
-      g.distributorId === distributorId
-        ? { ...g, distributorStatus: 'cancelled' as DistributorStatus, proposal: undefined }
-        : g,
-    )
-    const allCancelled   = updatedGroups.every(g => g.distributorStatus === 'cancelled')
-    const next = {
-      ...order,
-      groups: updatedGroups,
-      ...recalcTotals(updatedGroups),
-      status: (allCancelled ? 'cancelled' : order.status) as OrderStatus,
-    }
-    setOrder(next)
-    updateOrder(next)
-  }
-
-  function handleCompleteOrder() {
-    const next = { ...order, status: 'completed' as OrderStatus }
-    setOrder(next)
-    updateOrder(next)
-  }
-
-  function handleCancelOrder() {
-    // Глобальный cancel — реджектим ВСЕ distributor_orders по одному.
-    if (proposalBusy) return
-    order.groups.forEach((g) => {
-      if (g.distributorOrderId) {
-        rejectApi.appendData({}, { id: purchaseId, distrOrderId: g.distributorOrderId })
-      }
-    })
-    const updatedGroups = order.groups.map(g => ({
-      ...g,
-      distributorStatus: 'cancelled' as DistributorStatus,
-    }))
-    const next = { ...order, status: 'cancelled' as OrderStatus, groups: updatedGroups }
-    setOrder(next)
-    updateOrder(next)
-  }
-
-  // Phase 5.1: cancel одного дистра из 3-точечного меню в карточке.
-  function handleCancelDistributor(distributorId: string) {
-    if (proposalBusy) return
-    const group = order.groups.find((g) => g.distributorId === distributorId)
-    if (!group?.distributorOrderId) return
-    rejectApi.appendData({}, { id: purchaseId, distrOrderId: group.distributorOrderId })
-    const updatedGroups = order.groups.map(g =>
-      g.distributorId === distributorId
-        ? { ...g, distributorStatus: 'cancelled' as DistributorStatus, proposal: undefined }
-        : g,
-    )
-    setOrder({ ...order, groups: updatedGroups, ...recalcTotals(updatedGroups) })
-  }
+  // Действия (accept/reject/cancel per-distributor и all) вынесены в useOrderActions.
+  const {
+    proposalBusy,
+    handleAcceptProposal,
+    handleRejectProposal,
+    handleCompleteOrder,
+    handleCancelOrder,
+    handleCancelDistributor,
+  } = useOrderActions({
+    purchaseId,
+    order,
+    setOrder,
+    closeModal: () => setModal(null),
+    onRefetchDetail,
+  })
 
   const distCountLabel = order.groups.length === 1
     ? t('orders_n_dist_1')

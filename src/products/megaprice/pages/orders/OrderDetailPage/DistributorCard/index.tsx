@@ -38,10 +38,16 @@ export function DistributorCard({
   const [showMenu, setShowMenu] = useState(false)
 
   const isCancelled = group.distributorStatus === 'cancelled'
-  const isAccepted  = group.distributorStatus === 'accepted'
   const hasOffer    = group.distributorStatus === 'offer'
-  const canCancel   = isOrderActive && !isCancelled && !isAccepted
-                      && group.distributorStatus !== 'rejected'
+  // Финальные статусы — отменять нельзя (бэк ответит 409, см.
+  // SetStatusForPurchase: WHERE status_id IN (10, 11)).
+  // 'completed' — новый маппинг для 12 (было 'accepted'). Оба покрыты на случай legacy.
+  const isFinal =
+    group.distributorStatus === 'completed' ||
+    group.distributorStatus === 'accepted'  ||
+    group.distributorStatus === 'rejected'  ||
+    group.distributorStatus === 'cancelled'
+  const canCancel = isOrderActive && !isFinal
   const totalQty    = group.items.reduce((s, i) => s + i.quantity, 0)
 
   // Скидка

@@ -10,7 +10,7 @@ import type {
 } from '@/shared/api/types'
 
 export type LoginResult =
-  | { ok: true }
+  | { ok: true; redirectTo?: string }
   | { ok: false; reason: 'license_expired'; details: LicenseExpiredError }
   | { ok: false; reason: 'invalid_credentials'; message: string }
   | { ok: false; reason: 'rate_limited'; retryAfterSeconds: number; message: string }
@@ -99,6 +99,20 @@ export const useAuthStore = create<AuthState>((set) => ({
           }
         }
         if (err.response?.status === 401) {
+          // Единая точка входа: клиентская учётка не подошла — пробуем дистрибьютора.
+          // Сессия дистра живёт в cookie (access_token); профиль читает сам
+          // /distributor-portal через /api/auth/distributor/me. Клиентский
+          // user/drugStore не трогаем — дистр не должен попадать в клиентские разделы.
+          try {
+            await api.post('/api/auth/distributor/login', {
+              login: login.trim(),
+              password,
+            })
+            // Дистр заходит в продукт «Аналитика» (свой сайдбар/разделы).
+            return { ok: true, redirectTo: '/analytic' }
+          } catch {
+            /* не дистрибьютор тоже — отдаём invalid_credentials */
+          }
           return {
             ok: false,
             reason: 'invalid_credentials',
@@ -146,6 +160,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     // циклической зависимости shared/auth ↔ shared/stores).
     import('@/shared/stores/useNotificationStore').then((m) => {
       m.useNotificationStore.getState().reset()
+    }).catch(() => {})
+    // Сбрасываем UI-prefs (ширина панели и т.п.) другого пользователя.
+    import('@/shared/stores/useLayoutPrefsStore').then((m) => {
+      m.useLayoutPrefsStore.getState().reset()
     }).catch(() => {})
   },
 }))

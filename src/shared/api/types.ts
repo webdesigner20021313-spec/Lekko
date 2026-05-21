@@ -9,7 +9,7 @@ export interface AuthUser {
   drugStoreId: number | null
   companyId: number | null
   dsRoleId: number | null
-  userType: 'client' | 'manager'
+  userType: 'client' | 'manager' | 'distributor'
   roles: string[]
   avatarObjectName: string | null
 }
@@ -112,6 +112,9 @@ export interface PagedResponse<T> {
 export interface PriceOffer {
   id: number
   itemId?: number
+  /** prices.id — уникален; на один items.id (itemId) может приходиться несколько price-tier строк
+   * (разные type_id / expiry / цена). React-key должен включать priceId, иначе строки коллапсируются. */
+  priceId?: number
   drugId: number
   drugName?: string
   distributorId: number

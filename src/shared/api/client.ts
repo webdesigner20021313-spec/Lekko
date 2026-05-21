@@ -40,24 +40,61 @@ api.interceptors.request.use((cfg: InternalAxiosRequestConfig) => {
   return cfg
 })
 
-// 401 → редирект на /login (кроме самой /login, /distributor-portal — это
-// временная страница без логина, и /api/auth/me — её обрабатывает bootstrap).
+// 401 → пробуем refresh-token; если он валиден — повторяем запрос. Если refresh
+// тоже 401 (вылет с устройства через /sessions/revoke или истёкший refresh) —
+// редирект на /login.
 const PUBLIC_PATHS = ['/login', '/distributor-portal']
 const SILENT_API = ['/api/auth/me', '/api/auth/login', '/api/auth/refresh-token']
 
+// Один in-flight refresh на все параллельные 401-запросы — иначе при первом 401
+// несколько API вызвали бы refresh одновременно и refresh-токен консьюмился N раз.
+let refreshInFlight: Promise<boolean> | null = null
+async function tryRefresh(): Promise<boolean> {
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      try {
+        await api.post('/api/auth/refresh-token', {})
+        return true
+      } catch {
+        return false
+      } finally {
+        // Очищаем после завершения, чтобы следующий 401 не получил кешированный fail.
+        setTimeout(() => { refreshInFlight = null }, 100)
+      }
+    })()
+  }
+  return refreshInFlight
+}
+
 api.interceptors.response.use(
   (r) => r,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
     const status = error.response?.status
     const url = error.config?.url ?? ''
+    const cfg = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined
 
-    if (
-      status === 401 &&
-      typeof window !== 'undefined' &&
-      !PUBLIC_PATHS.includes(window.location.pathname) &&
-      !SILENT_API.some((p) => url.includes(p))
-    ) {
+    if (typeof window === 'undefined') return Promise.reject(error)
+    if (PUBLIC_PATHS.includes(window.location.pathname)) return Promise.reject(error)
+    if (status !== 401) return Promise.reject(error)
+
+    // /me / /login / /refresh-token — не пытаемся рефрешить (зацикливание).
+    if (SILENT_API.some((p) => url.includes(p))) return Promise.reject(error)
+
+    // Не ретраим повторно если уже пробовали — иначе бесконечный цикл при битом refresh.
+    if (cfg?._retry) {
       window.location.assign('/login')
+      return Promise.reject(error)
+    }
+
+    const ok = await tryRefresh()
+    if (!ok) {
+      window.location.assign('/login')
+      return Promise.reject(error)
+    }
+
+    if (cfg) {
+      cfg._retry = true
+      return api.request(cfg)
     }
     return Promise.reject(error)
   },

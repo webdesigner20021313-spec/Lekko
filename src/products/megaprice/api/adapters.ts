@@ -83,6 +83,7 @@ export function mapPriceOfferToProduct(o: PriceOffer): { medicine: Medicine; off
   }
   const offer: SupplierOffer = {
     id: String(o.id),
+    priceId: o.priceId ?? null,
     medicineId: String(o.drugId),
     distributor,
     expiryDate: o.expireDate ?? o.expireDateStr ?? '',
@@ -121,6 +122,7 @@ export function mapPriceOfferToSupplierOffer(o: PriceOffer): SupplierOffer {
   // Здесь подставляем `${o.drugId}` чтобы UI продолжал работать.
   return {
     id: String(o.id),
+    priceId: o.priceId ?? null,
     medicineId: String(o.drugId),
     distributor,
     expiryDate: o.expireDate ?? o.expireDateStr ?? '',

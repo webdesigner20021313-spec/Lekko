@@ -1,0 +1,58 @@
+# Lekko frontend — production deploy.
+#
+# Two-way deploy:
+#   A) "Sidecar" — фронт рядом с бэком на одном хосте, использует docker-network
+#      `abu-network` (создаётся ABU-project compose). NGINX proxy /api+/hub →
+#      service `gateway:8080`.
+#   B) "Standalone" — фронт на отдельном хосте, бэк на другом домене (api.x.com).
+#      В этом случае VITE_API_BASE_URL=https://api.x.com (впекается при build).
+#      proxy в nginx.conf не используется — фронт ходит прямо.
+#
+# Required .env keys: см. .env.example. Минимум:
+#   FRONTEND_PORT          — внешний порт (default 80).
+#   VITE_API_BASE_URL      — для standalone mode; пустой для sidecar.
+#   VITE_TURNSTILE_SITEKEY — Cloudflare Turnstile (CAPTCHA).
+#
+# Запуск:
+#   docker compose -f docker-compose.yml up -d --build
+# Pull новой версии:
+#   docker compose pull && docker compose up -d
+# Логи:
+#   docker compose logs -f lekko-frontend
+services:
+  lekko-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Build-args ⇒ ENV в build-stage ⇒ vite впекает в bundle.
+        # Менять без пересборки нельзя.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+        VITE_TURNSTILE_SITEKEY: ${VITE_TURNSTILE_SITEKEY:-}
+    image: lekko/frontend:${LEKKO_VERSION:-latest}
+    container_name: lekko-frontend
+    ports:
+      # Хост-порт : 80 (внутри nginx). Дефолт 80, можно переопределить под reverse-proxy.
+      - "${FRONTEND_PORT:-80}:80"
+    restart: unless-stopped
+    networks:
+      # external: будет ругаться если abu-network не существует (т.е. ABU-project
+      # не поднят). Для standalone-deploy уберите networks и proxy_pass в nginx.conf.
+      - abu-network
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/healthz"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    # Логи структурированы nginx-stdout. Лимит чтобы хост не утонул.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  abu-network:
+    external: true
+    name: abu-project_abu-network

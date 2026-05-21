@@ -1,9 +1,10 @@
 import { useRef, useState, useCallback } from 'react'
 import { read, utils } from 'xlsx'
 import { useTranslation } from 'react-i18next'
+import { api } from '@/shared/api/client'
 import type { Medicine } from '@/products/megaprice/pages/purchase/types/purchase.types'
 import { ErrorStep } from './ErrorStep'
-import { applyMapping, autoDetect, matchWithCatalog } from './helpers'
+import { applyMapping, autoDetect, buildMatchedMedicines, type ResolveResult } from './helpers'
 import { IdleStep } from './IdleStep'
 import { MappingStep } from './MappingStep'
 import { ResultsStep } from './ResultsStep'
@@ -17,12 +18,12 @@ interface ExcelUploadViewProps {
   onSelect: (medicine: Medicine) => void
   checkedIds: string[]
   onToggleCheck: (id: string) => void
-  cartQtyByMedicine: Record<string, number>
+  cartQtyByDrugId: Record<number, number>
 }
 
 export function ExcelUploadView({
-  medicines, catalogMedicines, onMedicinesLoaded,
-  selectedId, onSelect, checkedIds, onToggleCheck, cartQtyByMedicine,
+  medicines, onMedicinesLoaded,
+  selectedId, onSelect, checkedIds, onToggleCheck, cartQtyByDrugId,
 }: ExcelUploadViewProps) {
   const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -31,6 +32,7 @@ export function ExcelUploadView({
   const [fileName,     setFileName]     = useState('')
   const [isDragging,   setIsDragging]   = useState(false)
   const [errors,       setErrors]       = useState<ParseError[]>([])
+  const [resolving,    setResolving]    = useState(false)
   const [unmatchedIds, setUnmatchedIds] = useState<Set<string>>(new Set())
 
   // Mapping step state
@@ -77,14 +79,27 @@ export function ExcelUploadView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── Apply mapping ──
-  function applyAndLoad() {
+  // ── Apply mapping → резолв через бэкенд (Pricing: resolve-drug-producer) ──
+  async function applyAndLoad() {
     const { rows, errors: errs } = applyMapping(rawData, colMap, t('excel_err_no_name_col'), t('excel_err_no_rows'))
     if (errs.length > 0 && rows.length === 0) { setErrors(errs); setStep('error'); return }
-    const { medicines: matched, unmatchedIds: unmatched } = matchWithCatalog(rows, catalogMedicines)
-    setUnmatchedIds(unmatched)
-    onMedicinesLoaded(matched)
-    setStep('results')
+
+    setResolving(true)
+    try {
+      // 1:1 порядок: бэкенд матчит name(+producer) на канонический справочник.
+      const items = rows.map(r => ({ name: r.name || r.mnn, producer: r.manufacturer || null }))
+      const { data } = await api.post<ResolveResult[]>('/api/pricing/resolve-drug-producer', { items })
+      const results = Array.isArray(data) ? data : []
+      const { medicines: matched, unmatchedIds: unmatched } = buildMatchedMedicines(rows, results)
+      setUnmatchedIds(unmatched)
+      onMedicinesLoaded(matched)
+      setStep('results')
+    } catch {
+      setErrors([{ row: 0, message: t('excel_err_read', { defaultValue: 'Не удалось сопоставить позиции. Попробуйте ещё раз.' }) }])
+      setStep('error')
+    } finally {
+      setResolving(false)
+    }
   }
 
   // ── Clear ──
@@ -128,6 +143,7 @@ export function ExcelUploadView({
       onClear={handleClear}
       onApply={applyAndLoad}
       onFile={handleFile}
+      applying={resolving}
     />
   )
 
@@ -138,7 +154,7 @@ export function ExcelUploadView({
       onSelect={onSelect}
       checkedIds={checkedIds}
       onToggleCheck={onToggleCheck}
-      cartQtyByMedicine={cartQtyByMedicine}
+      cartQtyByDrugId={cartQtyByDrugId}
       unmatchedIds={unmatchedIds}
       fileName={fileName}
       matchedCount={matchedCount}

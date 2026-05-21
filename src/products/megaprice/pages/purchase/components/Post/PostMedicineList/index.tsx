@@ -1,10 +1,9 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
-import { mockMedicines, mockPharmacies, mockSupplierOffers } from '@/products/megaprice/mocks/purchase.mocks'
+import { mockMedicines, mockPharmacies } from '@/products/megaprice/mocks/purchase.mocks'
 import { mockPOSByPharmacy } from '@/products/megaprice/mocks/pos.mocks'
 import { useFavorites } from '@/products/megaprice/pages/purchase/hooks/useFavorites'
-import { usePurchaseCart } from '@/products/megaprice/pages/purchase/hooks/usePurchaseCart'
 import { AutoSelectModal } from '../../AutoSelect/AutoSelectModal'
-import type { Medicine, Pharmacy, SupplierOffer } from '@/products/megaprice/pages/purchase/types/purchase.types'
+import type { Medicine, Pharmacy } from '@/products/megaprice/pages/purchase/types/purchase.types'
 import { AutoSelectBar } from './AutoSelectBar'
 import type { VisibleCols } from './config'
 import { DesktopTable } from './DesktopTable'
@@ -28,7 +27,6 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
   const [visibleCols, setVisibleCols] = useState<VisibleCols>({ stock: true, needed: true })
 
   const { isFavorite, toggle: toggleFavoriteByDrugId } = useFavorites()
-  const { addItem } = usePurchaseCart()
 
   // Конверсия composite-id → drugId для API. У POS-mock данных drugId нет,
   // тогда вызов уходит в no-op (см. useFavorites — defensive check).
@@ -77,16 +75,9 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
     setCheckedIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id])
   }, [])
 
-  // Авто-подбор: добавляем в корзину с нужным количеством
-  function handleAutoSelectConfirm(results: { medicine: Medicine; offer: SupplierOffer | null }[]) {
-    results.forEach(({ medicine, offer }) => {
-      if (!offer) return
-      const posRow = posRows.find((r) => r.medicine.id === medicine.id)
-      const qty = byDemand && posRow && posRow.needed > 0 ? posRow.needed : 1
-      addItem({ offerId: offer.id, medicineId: medicine.id, quantity: qty, offer, medicine })
-    })
-    setCheckedIds([])
-  }
+  // Post-вкладка пока не использует bulk-cart API после ребрендинга AutoSelect —
+  // модалка сама добавляет matched в корзину через /api/cart/items/bulk.
+  // Если понадобится qty-by-needed — расширить onAdded callback.
 
   const checkedMedicines = useMemo(
     () => filtered.filter((r) => checkedIds.includes(r.medicine.id)).map((r) => r.medicine),
@@ -143,9 +134,7 @@ export function PostMedicineList({ selectedMedicine, onSelect, showFavorites }: 
       {showModal && (
         <AutoSelectModal
           medicines={checkedMedicines}
-          offers={mockSupplierOffers}
           onClose={() => setShowModal(false)}
-          onConfirm={handleAutoSelectConfirm}
         />
       )}
 

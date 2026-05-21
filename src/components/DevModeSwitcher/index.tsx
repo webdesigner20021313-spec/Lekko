@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { detectMode, setDevMode, getStoredDevMode } from '@/config/mode'
+import { detectMode, setDevMode } from '@/config/mode'
 
 const OPTIONS: { value: 'portal' | 'megaprice' | 'apteka' | 'analytic'; label: string }[] = [
   { value: 'portal',    label: 'Portal (Lekko)' },
@@ -20,7 +20,6 @@ export function DevModeSwitcher() {
   if (!isDevHost()) return null
 
   const current = detectMode()
-  const stored = getStoredDevMode()
   const currentLabel = current.mode === 'portal' ? 'Portal' : (current.productId ?? 'megaprice')
 
   return (
@@ -31,7 +30,9 @@ export function DevModeSwitcher() {
             Dev mode
           </div>
           {OPTIONS.map((opt) => {
-            const active = stored === opt.value || (!stored && current.mode === 'standalone' && current.productId === opt.value)
+            const active = opt.value === 'portal'
+              ? current.mode === 'portal'
+              : current.mode === 'standalone' && current.productId === opt.value
             return (
               <button
                 key={opt.value}

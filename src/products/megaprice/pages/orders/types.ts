@@ -1,5 +1,5 @@
 // ── Global order status ───────────────────────────────────────────────────────
-export type OrderStatus = 'new' | 'modified' | 'accepted' | 'completed' | 'cancelled'
+export type OrderStatus = 'new' | 'modified' | 'accepted' | 'completed' | 'cancelled' | 'partial'
 
 // ── Per-distributor status inside an order ────────────────────────────────────
 export type DistributorStatus =
@@ -7,7 +7,8 @@ export type DistributorStatus =
   | 'sent'         // отправлен дистрибутору
   | 'partial_sent' // отправлен частично
   | 'offer'        // дистрибутор прислал предложение
-  | 'accepted'     // клиент принял предложение
+  | 'accepted'     // legacy — клиент принял предложение (более не выставляется маппером)
+  | 'completed'    // дистр принял заказ + покупка финализирована
   | 'rejected'     // клиент отклонил предложение
   | 'cancelled'    // отменён
 
@@ -22,6 +23,7 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, OrderStatusConfig> = {
   accepted:  { bg: 'bg-[#D1FAE5] dark:bg-[#064E3B]/40', text: 'text-[#065F46] dark:text-[#6EE7B7]' },
   completed: { bg: 'bg-[#D1FAE5] dark:bg-[#064E3B]/40', text: 'text-[#065F46] dark:text-[#6EE7B7]' },
   cancelled: { bg: 'bg-[#FEE2E2] dark:bg-[#7F1D1D]/40', text: 'text-[#991B1B] dark:text-[#FCA5A5]' },
+  partial:   { bg: 'bg-[#FEF3C7] dark:bg-[#78350F]/40', text: 'text-[#92400E] dark:text-[#FCD34D]' },
 }
 
 export const DISTRIBUTOR_STATUS_CONFIG: Record<DistributorStatus, OrderStatusConfig> = {
@@ -29,7 +31,11 @@ export const DISTRIBUTOR_STATUS_CONFIG: Record<DistributorStatus, OrderStatusCon
   sent:         { bg: 'bg-[#EDE9FE] dark:bg-[#4C1D95]/40', text: 'text-[#5B21B6] dark:text-[#C4B5FD]' },
   partial_sent: { bg: 'bg-[#FEF3C7] dark:bg-[#78350F]/40', text: 'text-[#92400E] dark:text-[#FCD34D]' },
   offer:        { bg: 'bg-[#FEF3C7] dark:bg-[#78350F]/40', text: 'text-[#92400E] dark:text-[#FCD34D]' },
-  accepted:     { bg: 'bg-[#D1FAE5] dark:bg-[#064E3B]/40', text: 'text-[#065F46] dark:text-[#6EE7B7]' },
+  // accepted — промежуточный: клиент принял, но в покупке остаются дистры, которые
+  // ещё не ответили. Когда все ответят, accepted → completed. Цвет — синий,
+  // чтобы визуально отличался от зелёного completed.
+  accepted:     { bg: 'bg-[#DBEAFE] dark:bg-[#1E3A8A]/40', text: 'text-[#1E40AF] dark:text-[#93C5FD]' },
+  completed:    { bg: 'bg-[#D1FAE5] dark:bg-[#064E3B]/40', text: 'text-[#065F46] dark:text-[#6EE7B7]' },
   rejected:     { bg: 'bg-[#FEE2E2] dark:bg-[#7F1D1D]/40', text: 'text-[#991B1B] dark:text-[#FCA5A5]' },
   cancelled:    { bg: 'bg-[#FEE2E2] dark:bg-[#7F1D1D]/40', text: 'text-[#991B1B] dark:text-[#FCA5A5]' },
 }

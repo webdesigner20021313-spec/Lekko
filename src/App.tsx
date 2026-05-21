@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { detectMode } from '@/config/mode'
 import { products } from '@/config/products'
@@ -8,18 +9,21 @@ import { LoginPage } from '@/shared/auth/LoginPage'
 import { Dashboard } from '@/pages/Dashboard'
 import { UsersPage } from '@/pages/Users/UsersPage'
 import { RolesPage } from '@/pages/Users/RolesPage'
-import { DistributorPortalPage } from '@/pages/DistributorPortal/DistributorPortalPage'
+import { analyticRoutes } from '@/pages/Analytic/routes'
+import { ProfilePage } from '@/pages/ProfilePage'
 import { megapriceRoutes } from '@/products/megaprice/routes'
 
 function App() {
-  const appMode = detectMode()
+  // Кэшируем один раз на сессию: detectMode читает ?mode= (теряется при SPA-навигации),
+  // поэтому без кэша режим бы слетал на дефолт при переходах.
+  const appMode = useMemo(() => detectMode(), [])
 
   if (appMode.mode === 'portal') {
     return (
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        {/* Временная страница дистра — без layout/auth (см. ТЗ "временная"). */}
-        <Route path="/distributor-portal" element={<DistributorPortalPage />} />
+        {/* Старый путь кабинета дистра — редирект на продукт «Аналитика». */}
+        <Route path="/distributor-portal" element={<Navigate to="/analytic" replace />} />
         <Route
           element={
             <PrivateRoute>
@@ -29,14 +33,8 @@ function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="megaprice">{megapriceRoutes}</Route>
-          <Route
-            path="analytic"
-            element={
-              <div className="flex h-full items-center justify-center p-8 text-gray-500">
-                Analytic — в разработке
-              </div>
-            }
-          />
+          {/* «Аналитика» — разделы дистра ВНУТРИ портала (как megaprice). */}
+          <Route path="analytic">{analyticRoutes}</Route>
           <Route
             path="apteka"
             element={
@@ -47,6 +45,9 @@ function App() {
           />
           <Route path="users" element={<UsersPage />} />
           <Route path="users/roles" element={<RolesPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          {/* /settings объединён с /profile (вкладка «Аптека») — редирект для старых ссылок */}
+          <Route path="settings" element={<Navigate to="/profile" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
@@ -62,8 +63,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      {/* Временная страница дистра — без layout/auth. */}
-      <Route path="/distributor-portal" element={<DistributorPortalPage />} />
+      <Route path="/distributor-portal" element={<Navigate to="/analytic" replace />} />
       <Route
         element={
           <PrivateRoute>
@@ -73,6 +73,8 @@ function App() {
       >
         {productId === 'megaprice' ? (
           megapriceRoutes
+        ) : productId === 'analytic' ? (
+          analyticRoutes
         ) : (
           <Route
             index
@@ -83,6 +85,8 @@ function App() {
             }
           />
         )}
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="settings" element={<Navigate to="/profile" replace />} />
         <Route path="*" element={<Navigate to={fallbackPath} replace />} />
       </Route>
     </Routes>

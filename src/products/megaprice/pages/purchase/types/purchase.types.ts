@@ -38,6 +38,8 @@ export interface Distributor {
 
 export interface SupplierOffer {
   id: string
+  /** prices.id — для уникального React-key. Один itemId может вернуть N строк (разные price-tiers / expiry). */
+  priceId?: number | null
   medicineId: string
   distributor: Distributor
   expiryDate: string

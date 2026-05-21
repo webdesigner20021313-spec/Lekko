@@ -1,4 +1,4 @@
-import { Navigate, Route } from 'react-router-dom'
+import { Navigate, Outlet, Route } from 'react-router-dom'
 import { PurchasePage } from '@/products/megaprice/pages/purchase/PurchasePage'
 import { OrderHistoryPage } from '@/products/megaprice/pages/orders/OrderHistoryPage'
 import { OrderDetailPage } from '@/products/megaprice/pages/orders/OrderDetailPage'
@@ -6,13 +6,30 @@ import { CartPage } from '@/products/megaprice/pages/cart/CartPage'
 import { NeedPage } from '@/products/megaprice/pages/need/NeedPage'
 import { WholesalersPage } from '@/products/megaprice/pages/wholesalers/WholesalersPage'
 import { ApiTestPage } from '@/products/megaprice/pages/api-test/ApiTestPage'
+import { ReadOnlyBanner } from '@/products/megaprice/components/ReadOnlyBanner'
+
+/**
+ * Обёртка разделов: баннер «только просмотр» дистрибьютору. Flex-колонка, чтобы
+ * баннер «съедал» высоту сверху (shrink-0), а страница (h-full) занимала остаток —
+ * иначе низ страницы (пагинация) уезжает за экран под overflow-hidden main.
+ */
+function MegapriceFrame() {
+  return (
+    <div className="flex h-full flex-col">
+      <ReadOnlyBanner />
+      <div className="min-h-0 flex-1">
+        <Outlet />
+      </div>
+    </div>
+  )
+}
 
 /**
  * Роуты разделов Megaprice. Используются в standalone (под `/`)
  * и в portal (под `/megaprice`). Index-роут редиректит на первый раздел.
  */
 export const megapriceRoutes = (
-  <>
+  <Route element={<MegapriceFrame />}>
     <Route index element={<Navigate to="purchase" replace />} />
     <Route path="purchase" element={<PurchasePage />} />
     <Route path="need" element={<NeedPage />} />
@@ -23,5 +40,5 @@ export const megapriceRoutes = (
     </Route>
     <Route path="wholesalers" element={<WholesalersPage />} />
     <Route path="api-test" element={<ApiTestPage />} />
-  </>
+  </Route>
 )

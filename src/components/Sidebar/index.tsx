@@ -23,6 +23,7 @@ import { cn } from '@/shared/utils/utils'
 import { products, getLogoForMode, getLogoDarkForMode } from '@/config/products'
 import { detectMode, type ProductId } from '@/config/mode'
 import { useUIStore } from '@/shared/stores/useUIStore'
+import { useAuthStore } from '@/shared/auth/useAuthStore'
 
 const iconMap: Record<string, LucideIcon> = {
   Store,
@@ -70,7 +71,16 @@ interface PortalCategory {
   emptyMessage?: string
 }
 
-function buildPortalCategories(): PortalCategory[] {
+function buildPortalCategories(isDistributor = false): PortalCategory[] {
+  // Дистрибьютору «Аналитика» раскрывается на его разделы (Кабинет/Мои аптеки/
+  // Аналитика); обычному пользователю — пусто («в разработке»).
+  const analyticSubs: PortalSubItem[] = isDistributor
+    ? products.analytic.sections.map((s) => ({
+        label: s.label,
+        slug: s.slug,
+        path: `${products.analytic.basePath}/${s.slug}`,
+      }))
+    : []
   return [
     {
       id: 'megaprice',
@@ -90,9 +100,9 @@ function buildPortalCategories(): PortalCategory[] {
       label: products.analytic.name,
       iconName: 'BarChart3',
       domain: products.analytic.domain,
-      defaultPath: products.analytic.basePath,
+      defaultPath: analyticSubs[0]?.path ?? products.analytic.basePath,
       matchPrefix: products.analytic.basePath,
-      subItems: [],
+      subItems: analyticSubs,
     },
     {
       id: 'apteka',
@@ -370,7 +380,8 @@ function PortalSidebar() {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
-  const categories = buildPortalCategories()
+  const isDistributor = useAuthStore((s) => s.user?.userType === 'distributor')
+  const categories = buildPortalCategories(isDistributor)
 
   const activeFromUrl = findActiveCategory(categories, location.pathname)
   const [expandedId, setExpandedId] = useState<PortalCategory['id']>(
@@ -405,6 +416,8 @@ function PortalSidebar() {
   function handleCategoryClick(category: PortalCategory) {
     setExpandedId(category.id)
     if (collapsed) setCollapsed(false)
+    // Переходим на дефолтный путь продукта. Для продуктов без разделов это
+    // страница-заглушка внутри портала (/apteka, /analytic → «в разработке»).
     if (!location.pathname.startsWith(category.matchPrefix)) {
       navigate(category.defaultPath)
     }

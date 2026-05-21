@@ -34,6 +34,9 @@ export function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer,
   useEffect(() => {
     const q = calcRecommendedQty(item, periodDays)
     setQty(q > 0 ? q : 1)
+    // Намеренно зависим только от item.id (не от ссылки item) — пересчёт qty
+    // лишь при смене препарата или периода.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item.id, periodDays])
 
   const oosDays   = item.oosSince

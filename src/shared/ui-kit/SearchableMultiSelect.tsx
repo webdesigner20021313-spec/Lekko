@@ -12,7 +12,7 @@ export interface IdNameOption {
 /**
  * Унифицированный источник данных для select'ов с серверным поиском.
  * Реализуется как небольшой адаптер вокруг useApiQuery — см. примеры в
- * api/hooks.ts (useProducersPaged, useDistributorsPaged).
+ * api/hooks/references.ts (useProducersPaged, useDistributorsPaged).
  */
 export interface SelectSource {
   items: IdNameOption[]

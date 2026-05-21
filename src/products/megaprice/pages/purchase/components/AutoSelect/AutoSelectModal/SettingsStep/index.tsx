@@ -3,18 +3,37 @@ import { cn } from '@/shared/utils/utils'
 import { inputCls, UZ_CITIES } from '../config'
 import { Label } from '../Label'
 import { TagInput } from '../TagInput'
+import { AsyncTagInput } from '../AsyncTagInput'
 import type { Settings, TagOption } from '../types'
 
-/** Шаг 1 — настройка фильтров (город / дистр / производитель / отклонение цены). */
+/**
+ * Шаг 1 — настройка фильтров (город / дистр / производитель / отклонение цены).
+ * Distributor — серверный поиск с пагинацией (через AsyncTagInput).
+ * Manufacturer — клиентский поиск (источник конечный = чекнутые medicines).
+ */
 export function SettingsStep({
   s,
   setS,
-  supplierOptions,
+  // ── Distributor (async) ──
+  distQuery,
+  setDistQuery,
+  distItems,
+  distHasNext,
+  distLoading,
+  distLoadMore,
+  distLabels,
+  // ── Manufacturer (sync) ──
   manufacturerOptions,
 }: {
   s: Settings
   setS: (next: Settings | ((prev: Settings) => Settings)) => void
-  supplierOptions: TagOption[]
+  distQuery: string
+  setDistQuery: (q: string) => void
+  distItems: TagOption[]
+  distHasNext: boolean
+  distLoading: boolean
+  distLoadMore: () => void
+  distLabels: Map<string, string>
   manufacturerOptions: TagOption[]
 }) {
   const { t } = useTranslation()
@@ -28,8 +47,46 @@ export function SettingsStep({
     }))
   }
 
+  // Пресеты возраста прайса. null = «за всё время» (бэк-default 36500 дней).
+  const PRICE_AGE_PRESETS: { value: number | null; labelKey: string; fallback: string }[] = [
+    { value: null, labelKey: 'autoselect_age_all',  fallback: 'Все время' },
+    { value: 7,    labelKey: 'autoselect_age_7d',   fallback: '7 дней' },
+    { value: 30,   labelKey: 'autoselect_age_30d',  fallback: '30 дней' },
+    { value: 90,   labelKey: 'autoselect_age_90d',  fallback: '90 дней' },
+  ]
+
   return (
     <>
+      {/* Дата прайса — пилюли с пресетами */}
+      <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
+        <Label
+          onClear={() => setS(p => ({ ...p, priceAgeDays: null }))}
+          hasValue={s.priceAgeDays !== null}
+        >
+          {t('autoselect_price_age', { defaultValue: 'Дата прайса' })}
+        </Label>
+        <div className="flex flex-wrap gap-1.5">
+          {PRICE_AGE_PRESETS.map((p) => {
+            const active = s.priceAgeDays === p.value
+            return (
+              <button
+                key={String(p.value)}
+                type="button"
+                onClick={() => setS((prev) => ({ ...prev, priceAgeDays: p.value }))}
+                className={cn(
+                  'rounded-full border px-3 py-1 text-[13px] font-medium transition-colors duration-150',
+                  active
+                    ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
+                    : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#222222] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-700',
+                )}
+              >
+                {t(p.labelKey, { defaultValue: p.fallback })}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       {/* Город */}
       <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
         <Label
@@ -60,7 +117,7 @@ export function SettingsStep({
         </div>
       </div>
 
-      {/* Дистрибутор */}
+      {/* Дистрибутор — серверный поиск + пагинация (infinite scroll) */}
       <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
         <Label
           onClear={() => setS(p => ({ ...p, supplierIds: [] }))}
@@ -68,9 +125,15 @@ export function SettingsStep({
         >
           {t('filter_distributor')}
         </Label>
-        <TagInput
-          options={supplierOptions}
+        <AsyncTagInput
+          query={distQuery}
+          setQuery={setDistQuery}
+          items={distItems}
+          hasNext={distHasNext}
+          isLoading={distLoading}
+          onLoadMore={distLoadMore}
           selected={s.supplierIds}
+          selectedLabels={distLabels}
           onAdd={id => setS(p => ({ ...p, supplierIds: p.supplierIds.includes(id) ? p.supplierIds : [...p.supplierIds, id] }))}
           onRemove={id => setS(p => ({ ...p, supplierIds: p.supplierIds.filter(x => x !== id) }))}
           placeholder={t('autoselect_find_distributor')}
