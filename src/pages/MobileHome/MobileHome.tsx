@@ -191,98 +191,93 @@ export function MobileHome({ scope }: MobileHomeProps) {
 // ─── Ad banner ────────────────────────────────────────────────────────────
 
 const BANNERS = [banner1, banner2, banner3]
-const BANNER_INTERVAL_MS = 5000
-const SWIPE_THRESHOLD_PX = 40
 
 function AdBanner() {
   const total = BANNERS.length
-  // Бесконечный карусель: клонируем последний в начало и первый в конец.
-  // Track: [last_clone, ...BANNERS, first_clone]; реальные индексы — 1..total.
+  // Бесконечный скролл: клонируем последний слайд в начало и первый — в конец.
+  // Рендерим [clone-last, ...BANNERS, clone-first]; реальные индексы — 1..total.
   const slides = [BANNERS[total - 1], ...BANNERS, BANNERS[0]]
-  const [trackIndex, setTrackIndex] = useState(1)
-  const [withTransition, setWithTransition] = useState(true)
-  const [dragX, setDragX] = useState(0)
-  const touchStartX = useRef<number | null>(null)
-  const pausedRef = useRef(false)
 
-  const realIndex = ((trackIndex - 1) % total + total) % total
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const scrollEndTimer = useRef<number | null>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
 
-  const next = () => { setWithTransition(true); setTrackIndex((i) => i + 1) }
-  const prev = () => { setWithTransition(true); setTrackIndex((i) => i - 1) }
-  const goTo = (real: number) => { setWithTransition(true); setTrackIndex(real + 1) }
+  // Шаг скролла = ширина одной карточки + gap. Считаем по реальной разметке.
+  const getItemWidth = () => {
+    const el = scrollerRef.current
+    if (!el || el.children.length < 2) return 0
+    const first = el.children[0] as HTMLElement
+    const second = el.children[1] as HTMLElement
+    return second.offsetLeft - first.offsetLeft
+  }
 
-  // Автопрокрутка
+  // Старт: позиционируем на первый реальный слайд (index 1 в track'е) без анимации.
   useEffect(() => {
-    const id = setInterval(() => {
-      if (!pausedRef.current) {
-        setWithTransition(true)
-        setTrackIndex((i) => i + 1)
-      }
-    }, BANNER_INTERVAL_MS)
-    return () => clearInterval(id)
+    const id = requestAnimationFrame(() => {
+      const el = scrollerRef.current
+      const itemW = getItemWidth()
+      if (!el || itemW === 0) return
+      el.scrollLeft = itemW * 1
+    })
+    return () => cancelAnimationFrame(id)
   }, [])
 
-  // После перехода на клон — мгновенно (без анимации) прыгаем на реальный слайд
-  const handleTransitionEnd = () => {
-    if (trackIndex === 0) {
-      setWithTransition(false)
-      setTrackIndex(total)
-    } else if (trackIndex === total + 1) {
-      setWithTransition(false)
-      setTrackIndex(1)
-    }
+  const handleScroll = () => {
+    const el = scrollerRef.current
+    if (!el) return
+    const itemW = getItemWidth()
+    if (itemW === 0) return
+
+    const i = Math.round(el.scrollLeft / itemW)
+    const real = ((i - 1) % total + total) % total
+    if (real !== activeIndex) setActiveIndex(real)
+
+    // После остановки скролла — если оказались на клоне, мгновенно прыгаем на реальный слайд.
+    if (scrollEndTimer.current) window.clearTimeout(scrollEndTimer.current)
+    scrollEndTimer.current = window.setTimeout(() => {
+      if (i === 0) {
+        el.scrollTo({ left: total * itemW, behavior: 'instant' as ScrollBehavior })
+      } else if (i === total + 1) {
+        el.scrollTo({ left: 1 * itemW, behavior: 'instant' as ScrollBehavior })
+      }
+    }, 120)
   }
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX
-    pausedRef.current = true
-  }
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchStartX.current == null) return
-    setDragX(e.touches[0].clientX - touchStartX.current)
-  }
-  const handleTouchEnd = () => {
-    if (touchStartX.current == null) return
-    const dx = dragX
-    touchStartX.current = null
-    setDragX(0)
-    pausedRef.current = false
-    if (dx <= -SWIPE_THRESHOLD_PX) next()
-    else if (dx >= SWIPE_THRESHOLD_PX) prev()
+  const goTo = (real: number) => {
+    const el = scrollerRef.current
+    if (!el) return
+    const itemW = getItemWidth()
+    el.scrollTo({ left: (real + 1) * itemW, behavior: 'smooth' })
   }
 
   return (
-    <div
-      className="relative aspect-[11/6] w-full select-none overflow-hidden rounded-3xl shadow-[0_4px_16px_-8px_rgba(15,23,42,0.15)]"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchEnd}
-    >
-      {/* Slides track */}
+    <div className="relative -mx-4">
       <div
-        className={cn(
-          'flex h-full w-full',
-          dragX === 0 && withTransition && 'transition-transform duration-500 ease-out',
-        )}
-        style={{
-          transform: `translateX(calc(${-trackIndex * 100}% + ${dragX}px))`,
-        }}
-        onTransitionEnd={handleTransitionEnd}
+        ref={scrollerRef}
+        onScroll={handleScroll}
+        className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth gap-2 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {slides.map((src, i) => (
-          <img
+          <div
             key={i}
-            src={src}
-            alt={`Реклама ${i}`}
-            draggable={false}
-            className="h-full w-full shrink-0 object-cover"
-          />
+            className={cn(
+              'relative aspect-[11/6] w-[calc(100vw-32px)] shrink-0 snap-center overflow-hidden rounded-3xl shadow-[0_4px_16px_-8px_rgba(15,23,42,0.15)]',
+              i === 0 && 'ml-4',
+              i === slides.length - 1 && 'mr-4',
+            )}
+          >
+            <img
+              src={src}
+              alt={`Реклама ${i}`}
+              draggable={false}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </div>
         ))}
       </div>
 
-      {/* Dots */}
-      <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+      {/* Dots — по реальным баннерам */}
+      <div className="mt-2 flex justify-center gap-1.5">
         {BANNERS.map((_, i) => (
           <button
             key={i}
@@ -291,7 +286,7 @@ function AdBanner() {
             aria-label={`Баннер ${i + 1}`}
             className={cn(
               'h-1.5 rounded-full transition-all',
-              i === realIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/50',
+              i === activeIndex ? 'w-5 bg-gray-900 dark:bg-gray-100' : 'w-1.5 bg-gray-300 dark:bg-gray-700',
             )}
           />
         ))}
