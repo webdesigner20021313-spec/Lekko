@@ -477,7 +477,7 @@ export function OrderHistoryPage() {
                 >
                   <div className="flex w-full items-start gap-3">
                     <div className="min-w-0 flex-1">
-                      <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{order.number}</span>
+                      <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{order.pharmacyName}</span>
                       <p className="mt-0.5 text-xs tabular-nums text-gray-500 dark:text-[#929292]">{formatDate(order.createdAt)}</p>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-0.5">
@@ -487,7 +487,7 @@ export function OrderHistoryPage() {
                   </div>
                   <div className="my-2.5 h-px w-full bg-gray-100 dark:bg-[#262626]" />
                   <p className="w-full truncate text-sm text-gray-500 dark:text-[#929292]">
-                    <span className="text-gray-900 dark:text-gray-100">{order.pharmacyName}</span>
+                    <span>{order.number}</span>
                     {' / '}{totalItems} {t('orders_pos_short')}
                     {' / '}{t('orders_qty_n', { n: order.totalQty })}
                   </p>

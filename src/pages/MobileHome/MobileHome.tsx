@@ -175,9 +175,8 @@ export function MobileHome({ scope }: MobileHomeProps) {
 
   return (
     <div className="md:hidden h-full overflow-y-auto bg-gray-50 dark:bg-[#0a0a0a]">
-      <div className="px-4 pt-4 pb-10 space-y-6">
-
-        <AdBanner />
+      <AdBanner />
+      <div className="px-4 pt-6 pb-10 space-y-6">
 
         {groups.map((group) => (
           <SectionGroup key={group.key} group={group} />
@@ -251,20 +250,16 @@ function AdBanner() {
   }
 
   return (
-    <div className="relative -mx-4">
+    <div className="relative">
       <div
         ref={scrollerRef}
         onScroll={handleScroll}
-        className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth gap-2 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {slides.map((src, i) => (
           <div
             key={i}
-            className={cn(
-              'relative aspect-[11/6] w-[calc(100vw-32px)] shrink-0 snap-center overflow-hidden rounded-3xl shadow-[0_4px_16px_-8px_rgba(15,23,42,0.15)]',
-              i === 0 && 'ml-4',
-              i === slides.length - 1 && 'mr-4',
-            )}
+            className="relative aspect-[11/6] w-screen shrink-0 snap-center overflow-hidden"
           >
             <img
               src={src}
@@ -276,8 +271,8 @@ function AdBanner() {
         ))}
       </div>
 
-      {/* Dots — по реальным баннерам */}
-      <div className="mt-2 flex justify-center gap-1.5">
+      {/* Dots — поверх баннера */}
+      <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
         {BANNERS.map((_, i) => (
           <button
             key={i}
@@ -286,7 +281,7 @@ function AdBanner() {
             aria-label={`Баннер ${i + 1}`}
             className={cn(
               'h-1.5 rounded-full transition-all',
-              i === activeIndex ? 'w-5 bg-gray-900 dark:bg-gray-100' : 'w-1.5 bg-gray-300 dark:bg-gray-700',
+              i === activeIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/50',
             )}
           />
         ))}
