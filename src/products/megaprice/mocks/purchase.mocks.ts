@@ -44,10 +44,10 @@ export const mockMedicines: Medicine[] = [
 ]
 
 export const mockDistributors = [
-  { id: 'd1',  name: 'Katren',      city: 'Ташкент',   lastPriceDate: '2026-04-18', contactType: 'telegram' as const, contact: '@katren_uz'       },
-  { id: 'd2',  name: 'Protek',      city: 'Ташкент',   lastPriceDate: '2026-04-20', contactType: 'telegram' as const, contact: '@protek_uz'       },
+  { id: 'd1',  name: 'Katren',      city: 'Ташкент',   lastPriceDate: '2026-05-26', contactType: 'telegram' as const, contact: '@katren_uz'       },
+  { id: 'd2',  name: 'Protek',      city: 'Ташкент',   lastPriceDate: '2026-05-26', contactType: 'telegram' as const, contact: '@protek_uz'       },
   { id: 'd3',  name: 'UzbekFarm',   city: 'Самарканд', lastPriceDate: '2026-04-17', contactType: 'email'    as const, contact: 'uzb@pharmopt.uz'  },
-  { id: 'd4',  name: 'Arnika',      city: 'Ташкент',   lastPriceDate: '2026-04-19', contactType: 'telegram' as const, contact: '@arnika_tash'     },
+  { id: 'd4',  name: 'Arnika',      city: 'Ташкент',   lastPriceDate: '2026-05-26', contactType: 'telegram' as const, contact: '@arnika_tash'     },
   { id: 'd5',  name: 'BioFarm',     city: 'Ташкент',   lastPriceDate: '2026-04-16', contactType: 'email'    as const, contact: 'bio@biofarm.uz'   },
   { id: 'd6',  name: 'MedOpt',      city: 'Нукус',     lastPriceDate: '2026-04-14', contactType: 'telegram' as const, contact: '@medopt_nukus'    },
   { id: 'd7',  name: 'Dori-Darmon', city: 'Ташкент',   lastPriceDate: '2026-04-19', contactType: 'telegram' as const, contact: '@doridarmon_uz'   },

@@ -134,7 +134,7 @@ function MobileTabBar({ items }: { items: StandaloneNavItem[] }) {
   const location = useLocation()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-white/10 bg-[#1C1917] pb-safe dark:bg-black md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-white/10 bg-[#090909] pb-safe dark:bg-black md:hidden">
       {items.map((item) => {
         const isActive = item.end
           ? location.pathname === item.path
@@ -194,7 +194,7 @@ function MobilePortalDrawer({ categories }: { categories: PortalCategory[] }) {
 
   return (
     <div className="fixed inset-0 z-50 md:hidden">
-      <div className="flex h-full flex-col bg-white dark:bg-[#111111]">
+      <div className="flex h-full flex-col bg-white dark:bg-[#090909]">
 
         {/* Drawer header */}
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 px-4 dark:border-[#333333]">
@@ -308,7 +308,7 @@ function StandaloneSidebar({ productId }: { productId: ProductId }) {
   return (
     <>
       {/* Desktop sidebar — hidden on mobile */}
-      <aside className="hidden h-screen w-[140px] shrink-0 flex-col bg-[#1C1917] dark:bg-black md:flex">
+      <aside className="hidden h-screen w-[140px] shrink-0 flex-col bg-[#090909] dark:bg-black md:flex">
         <div className="flex h-16 shrink-0 items-center justify-center border-b border-white/10" />
 
         <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3">
@@ -357,8 +357,8 @@ function StandaloneSidebar({ productId }: { productId: ProductId }) {
         </div>
       </aside>
 
-      {/* Mobile tab bar */}
-      <MobileTabBar items={items} />
+      {/* Mobile tab bar — скрыт по запросу. Если понадобится вернуть: раскомментировать строку ниже. */}
+      {/* <MobileTabBar items={items} /> */}
     </>
   )
 }
@@ -415,7 +415,7 @@ function PortalSidebar() {
       {/* Desktop sidebar — hidden on mobile */}
       <aside className="hidden h-screen shrink-0 md:flex">
         {/* Outer icon column */}
-        <div className="flex w-[96px] shrink-0 flex-col bg-[#1C1917] dark:bg-black">
+        <div className="flex w-[96px] shrink-0 flex-col bg-[#090909] dark:bg-black">
           <div className="flex h-16 shrink-0 items-center justify-center border-b border-white/10">
             <button
               type="button"
@@ -482,7 +482,7 @@ function PortalSidebar() {
 
         {/* Expanded sub-items panel */}
         {collapsed ? null : (
-          <div className="flex w-[200px] shrink-0 flex-col border-r border-gray-200 bg-white dark:border-white/10 dark:bg-[#111111]">
+          <div className="flex w-[200px] shrink-0 flex-col border-r border-gray-200 bg-white dark:border-white/10 dark:bg-[#090909]">
             <div className="flex h-16 shrink-0 items-center gap-2 px-3">
               <span className="flex-1 text-[15px] font-semibold text-gray-900 dark:text-white">
                 {getCategoryLabel(expanded)}

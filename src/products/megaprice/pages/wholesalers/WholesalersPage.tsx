@@ -1,8 +1,10 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
-import { Search, Package, Pencil, Send, Phone, X, Percent, Plus } from 'lucide-react'
+import { Search, Package, Pencil, Send, Phone, X, Percent, Plus, ChevronRight, MapPin, Clock, Wallet } from 'lucide-react'
+import { BottomSheet } from '@/shared/ui-kit/BottomSheet'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency } from '@/shared/utils/format'
+import { useMobileHeaderSearch, type HeaderSearch } from '@/shared/stores/useMobileHeaderStore'
 import { mockWholesalers, type Wholesaler } from '@/products/megaprice/mocks/wholesalers.mocks'
 import { useWholesalersStore } from '@/products/megaprice/stores/useWholesalersStore'
 
@@ -38,10 +40,15 @@ function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountMo
   const valid = value.trim() !== '' && !isNaN(parsed) && parsed > 0 && parsed <= 99
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 md:items-center"
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm md:items-center md:p-4"
       onClick={onClose}>
-      <div className="w-full max-w-[360px] rounded-t-2xl bg-white shadow-2xl md:rounded-2xl dark:bg-[#111111] dark:border dark:border-gray-700"
+      <div className="w-full rounded-t-2xl bg-white shadow-2xl md:max-w-[360px] md:rounded-2xl dark:bg-[#090909] dark:border dark:border-gray-700"
         onClick={e => e.stopPropagation()}>
+
+        {/* Drag handle (только mobile) */}
+        <div className="flex justify-center pt-2 pb-1 md:hidden">
+          <div className="h-1 w-9 rounded-full bg-gray-300 dark:bg-[#3a3a3a]" />
+        </div>
 
         <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-gray-700">
           <div>
@@ -72,9 +79,9 @@ function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountMo
               placeholder={t('ws_modal_placeholder')}
               value={value}
               onChange={e => setValue(e.target.value)}
-              className="h-10 flex-1 rounded-xl bg-transparent pl-3 text-sm text-gray-900 focus:outline-none dark:text-gray-100 dark:placeholder-gray-500"
+              className="h-12 flex-1 rounded-xl bg-transparent pl-3 text-base text-gray-900 focus:outline-none md:h-10 md:text-sm dark:text-gray-100 dark:placeholder-gray-500"
             />
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center text-gray-400">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center text-gray-400 md:h-10 md:w-10">
               <Percent className="h-4 w-4" />
             </span>
           </div>
@@ -83,16 +90,16 @@ function DiscountModal({ wholesaler, initialValue, onSave, onClose }: DiscountMo
           )}
         </div>
 
-        <div className="flex items-center gap-2 border-t border-gray-100 px-5 py-4 dark:border-gray-700">
+        <div className="flex items-center gap-2 border-t border-gray-100 px-5 pt-4 pb-2 md:py-4 dark:border-gray-700">
           <button onClick={onClose}
-            className="ml-auto rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800">
+            className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors md:ml-auto md:h-auto md:flex-none md:rounded-lg md:px-4 md:py-2 md:text-sm md:font-normal md:text-gray-600 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 md:dark:text-gray-400">
             {t('ws_modal_cancel')}
           </button>
           <button
             onClick={() => valid && onSave(value)}
             disabled={!valid}
             className={cn(
-              'rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+              'flex h-12 flex-1 items-center justify-center rounded-xl text-sm font-semibold transition-colors md:h-auto md:flex-none md:rounded-lg md:px-4 md:py-2 md:text-sm md:font-medium',
               valid
                 ? 'bg-gray-900 text-white hover:bg-black dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]'
                 : 'cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-[#222222] dark:text-[#929292]',
@@ -157,8 +164,9 @@ export function WholesalersPage() {
     [storeDiscounts],
   )
 
-  const [search,          setSearch]          = useState('')
-  const [modalWholesaler, setModalWholesaler] = useState<Wholesaler | null>(null)
+  const [search,            setSearch]            = useState('')
+  const [modalWholesaler,   setModalWholesaler]   = useState<Wholesaler | null>(null)
+  const [detailsWholesaler, setDetailsWholesaler] = useState<Wholesaler | null>(null)
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
@@ -176,13 +184,21 @@ export function WholesalersPage() {
     setModalWholesaler(null)
   }, [modalWholesaler, setDiscount])
 
-  return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
+  // Поиск в мобильном header'е (лупа → раскрывается на всю ширину).
+  const headerSearch = useMemo<HeaderSearch>(() => ({
+    value: search,
+    onChange: setSearch,
+    placeholder: t('ws_search_ph'),
+  }), [search, t])
+  useMobileHeaderSearch(headerSearch)
 
-      {/* ── Шапка ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
+  return (
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#090909]">
+
+      {/* ── Шапка (desktop) — на мобиле заголовок в глобальном Header, поиск тоже там через useMobileHeaderSearch ── */}
+      <div className="hidden shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:block md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#090909]">
         <div className="md:flex md:items-center md:justify-between">
-          <div className="hidden md:block">
+          <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('ws_title')}</h1>
               <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-[#222222] dark:text-gray-400">
@@ -192,14 +208,6 @@ export function WholesalersPage() {
             <p className="mt-0.5 text-sm text-gray-400 dark:text-[#929292]">{t('ws_subtitle')}</p>
           </div>
 
-          {/* Mobile title row */}
-          <div className="mb-3 flex items-center gap-2 md:hidden">
-            <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">{t('ws_title')}</h1>
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-[#222222] dark:text-gray-400">
-              {wholesalers.length}
-            </span>
-          </div>
-
           <div className="relative md:w-60">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
@@ -207,14 +215,14 @@ export function WholesalersPage() {
               placeholder={t('ws_search_ph')}
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 text-base placeholder-gray-400 focus:border-gray-400 focus:outline-none md:h-9 md:rounded-lg md:pl-9 md:text-sm dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500"
+              className="h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 text-base placeholder-gray-400 focus:border-gray-400 focus:outline-none md:h-9 md:rounded-lg md:pl-9 md:text-sm dark:border-gray-700 dark:bg-[#090909] dark:text-gray-200 dark:placeholder-gray-500"
             />
           </div>
         </div>
       </div>
 
       {/* ── Таблица ── */}
-      <div className="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111111]">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#090909]">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-[#222222]">
@@ -225,58 +233,38 @@ export function WholesalersPage() {
           </div>
         ) : (
           <>
-          {/* Mobile cards */}
+          {/* Mobile cards — компактный вид: имя + город + кнопка скидки. Детали раскрываются в BottomSheet. */}
           <div className="md:hidden divide-y divide-gray-100 dark:divide-[#333333]">
-            {filtered.map((w) => (
-              <div key={w.id} className="px-4 py-3.5">
-                <div className="flex items-start justify-between gap-3">
+            {filtered.map((w) => {
+              const hasDiscount = w.discountPercent !== null
+              return (
+                <div
+                  key={w.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setDetailsWholesaler(w)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDetailsWholesaler(w) } }}
+                  className="flex items-center gap-3 px-4 py-3.5 active:bg-gray-50 dark:active:bg-[#1a1a1a]"
+                >
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-gray-900 dark:text-gray-100">{w.name}</p>
-                    <p className="mt-0.5 text-xs text-gray-500 dark:text-[#929292]">{w.city}</p>
+                    <p className="truncate text-sm font-bold text-gray-900 dark:text-gray-100">{w.name}</p>
+                    <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">{w.city}</p>
                   </div>
-                  <div className="shrink-0">
-                    {w.discountPercent !== null ? (
-                      <button
-                        onClick={() => setModalWholesaler(w)}
-                        className="flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700 dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]"
-                      >
-                        −{w.discountPercent}%
-                        <Pencil className="h-3 w-3" />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => setModalWholesaler(w)}
-                        className="flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 dark:border-gray-700 dark:text-gray-400"
-                      >
-                        <Plus className="h-3 w-3" />
-                        {t('ws_modal_add_title')}
-                      </button>
-                    )}
-                  </div>
-                </div>
 
-                <div className="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1.5">
-                  <a href={`tel:${w.phone}`} className="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300">
-                    <Phone className="h-3 w-3 shrink-0 text-gray-400" />
-                    <span className="truncate">{w.phone}</span>
-                  </a>
-                  {w.telegram ? (
-                    <a href={`https://t.me/${w.telegram.replace(/^@/, '')}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300">
-                      <Send className="h-3 w-3 shrink-0 text-sky-500" />
-                      <span className="truncate">{w.telegram}</span>
-                    </a>
-                  ) : <div />}
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-[#929292]">
-                    <span className="text-gray-400">{t('ws_col_min_order')}:</span>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">{formatCurrency(w.minOrderSum)}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-[#929292]">
-                    <span className="text-gray-400">{t('ws_col_delivery')}:</span>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">{t('ws_delivery_days', { n: w.deliveryDays })}</span>
-                  </div>
+                  {hasDiscount ? (
+                    <span className="shrink-0 rounded-full bg-green-50 px-2.5 py-1 text-xs font-bold tabular-nums text-green-700 dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]">
+                      −{w.discountPercent}%
+                    </span>
+                  ) : (
+                    <span className="shrink-0 text-xs text-gray-400 dark:text-[#929292]">
+                      без скидки
+                    </span>
+                  )}
+
+                  <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 dark:text-gray-600" />
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           {/* Desktop table */}
@@ -352,6 +340,109 @@ export function WholesalersPage() {
           </>
         )}
       </div>
+
+      {/* ── Mobile Details Sheet ── */}
+      <BottomSheet
+        open={!!detailsWholesaler}
+        onClose={() => setDetailsWholesaler(null)}
+        title={detailsWholesaler?.name}
+        footer={
+          detailsWholesaler && (
+            <button
+              onClick={() => {
+                const w = detailsWholesaler
+                setDetailsWholesaler(null)
+                setModalWholesaler(w)
+              }}
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gray-900 text-sm font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900"
+            >
+              {detailsWholesaler.discountPercent !== null ? (
+                <>
+                  <Pencil className="h-4 w-4" />
+                  {t('ws_modal_edit_title')}
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  {t('ws_modal_add_title')}
+                </>
+              )}
+            </button>
+          )
+        }
+      >
+        {detailsWholesaler && (() => {
+          const w = detailsWholesaler
+          return (
+            <div className="px-5 py-4 space-y-4">
+              {/* Город под заголовком + скидка-чип */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-[#929292]">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {w.city}
+                </div>
+                {w.discountPercent !== null && (
+                  <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-bold text-green-700 dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]">
+                    −{w.discountPercent}%
+                  </span>
+                )}
+              </div>
+
+              {/* Quick-actions: тап = действие */}
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={`tel:${w.phone}`}
+                  className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 px-3 py-3.5 active:bg-gray-50 dark:border-gray-700 dark:active:bg-[#1a1a1a]"
+                >
+                  <Phone className="h-5 w-5 text-gray-700 dark:text-gray-200" />
+                  <span className="text-xs font-medium tabular-nums text-gray-700 dark:text-gray-200">{w.phone}</span>
+                  <span className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('ws_col_phone')}</span>
+                </a>
+                {w.telegram ? (
+                  <a
+                    href={`https://t.me/${w.telegram.replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 px-3 py-3.5 active:bg-gray-50 dark:border-gray-700 dark:active:bg-[#1a1a1a]"
+                  >
+                    <Send className="h-5 w-5 text-sky-500" />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-200">{w.telegram}</span>
+                    <span className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">Telegram</span>
+                  </a>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-200 px-3 py-3.5 dark:border-gray-700">
+                    <Send className="h-5 w-5 text-gray-300 dark:text-gray-600" />
+                    <span className="text-xs text-gray-400 dark:text-[#929292]">—</span>
+                    <span className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">Telegram</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Параметры */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl bg-gray-50 px-3 py-2.5 dark:bg-[#1a1a1a]">
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">
+                    <Wallet className="h-3 w-3" />
+                    {t('ws_col_min_order')}
+                  </div>
+                  <p className="mt-1 text-sm font-semibold tabular-nums text-gray-900 dark:text-gray-100">
+                    {formatCurrency(w.minOrderSum)}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-gray-50 px-3 py-2.5 dark:bg-[#1a1a1a]">
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">
+                    <Clock className="h-3 w-3" />
+                    {t('ws_col_delivery')}
+                  </div>
+                  <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    {t('ws_delivery_days', { n: w.deliveryDays })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+      </BottomSheet>
 
       {/* ── Modal ── */}
       {modalWholesaler && (

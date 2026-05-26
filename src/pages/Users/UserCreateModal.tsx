@@ -119,13 +119,13 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
 
   return (
     <Modal open={open} onOpenChange={(v) => { if (!v) onClose() }}>
-      <ModalContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <ModalHeader>
+      <ModalContent className="flex max-h-[90vh] w-full max-w-lg flex-col gap-0 overflow-hidden p-0">
+        <ModalHeader className="shrink-0 border-b border-gray-100 px-6 py-4 dark:border-[#333333]">
           <ModalTitle>{isEdit ? t('user_edit_title') : t('user_create_title')}</ModalTitle>
           <ModalDescription>{t('user_modal_desc')}</ModalDescription>
         </ModalHeader>
 
-        <div className="flex flex-col gap-4 py-2">
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 py-4">
 
           {/* Avatar + status */}
           <div className="flex flex-col items-center gap-3">
@@ -281,7 +281,7 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
         </div>
 
         {/* Pharmacy access */}
-        <div className="flex flex-col gap-3 border-t border-gray-100 dark:border-[#333333] pt-4">
+        <div className="flex flex-col gap-3 border-t border-gray-100 dark:border-[#333333] px-6 py-4">
           {/* Header: title + switch */}
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -337,7 +337,7 @@ export function UserCreateModal({ open, onClose, editUser }: Props) {
           )}
         </div>
 
-        <ModalFooter className="border-t border-gray-100 dark:border-[#333333] pt-4">
+        <ModalFooter className="shrink-0 border-t border-gray-100 px-6 py-4 dark:border-[#333333]">
           <button
             onClick={onClose}
             className="h-9 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-[#222222] px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#333333]"

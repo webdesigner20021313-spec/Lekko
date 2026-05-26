@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { Search, ChevronDown, X, Check, AlignJustify, SlidersHorizontal } from 'lucide-react'
+import { Search, ChevronDown, X, Check, AlignJustify } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import { BottomSheet } from '@/shared/ui-kit/BottomSheet'
@@ -15,6 +15,9 @@ interface MedicineFiltersProps {
   visibleColumns: Record<MedicineColumnKey, boolean>
   onToggleColumn: (key: MedicineColumnKey) => void
   columnOptions?: { key: MedicineColumnKey; label: string }[]
+  /** Controlled-режим мобильного sheet'а: если переданы, открытие/закрытие управляется снаружи (например из global Header action). */
+  mobileSheetOpen?: boolean
+  onMobileSheetOpenChange?: (open: boolean) => void
 }
 
 export function MedicineFilters({
@@ -23,13 +26,18 @@ export function MedicineFilters({
   manufacturers,
   visibleColumns, onToggleColumn,
   columnOptions,
+  mobileSheetOpen,
+  onMobileSheetOpenChange,
 }: MedicineFiltersProps) {
   const { t } = useTranslation()
   const resolvedColumnOptions = columnOptions ?? [{ key: 'mnn' as MedicineColumnKey, label: t('col_mnn') }]
 
   const [open, setOpen] = useState(false)
   const [openCols, setOpenCols] = useState(false)
-  const [mobileSheet, setMobileSheet] = useState(false)
+  // Mobile sheet: controlled (если переданы пропы) либо uncontrolled (локальный state)
+  const [mobileSheetLocal, setMobileSheetLocal] = useState(false)
+  const mobileSheet  = mobileSheetOpen ?? mobileSheetLocal
+  const setMobileSheet = onMobileSheetOpenChange ?? setMobileSheetLocal
   const colsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -76,38 +84,7 @@ export function MedicineFilters({
 
   return (
     <>
-    {/* Mobile: search + filter button */}
-    <div className="md:hidden flex items-center gap-2 px-4 py-3">
-      <div className="relative min-w-0 flex-1">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => onSearch(e.target.value)}
-          placeholder={t('filter_search')}
-          className="h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-9 text-base text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder:text-gray-500"
-        />
-        {search && (
-          <button onClick={() => onSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-400">
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
-      <button
-        onClick={() => setMobileSheet(true)}
-        className={cn(
-          'relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border',
-          hasSelected
-            ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
-            : 'border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400',
-        )}
-      >
-        <SlidersHorizontal className="h-5 w-5" />
-        {hasSelected && (
-          <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-amber-400 ring-2 ring-white dark:ring-[#111111]" />
-        )}
-      </button>
-    </div>
+    {/* Mobile: всё вынесено в глобальный Header (useMobileHeaderSearch + useMobileHeaderActions). */}
 
     <BottomSheet
       open={mobileSheet}
@@ -124,7 +101,7 @@ export function MedicineFilters({
         </div>
       }
     >
-      <div className="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+      <div className="px-5 pt-3 pb-1.5">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
@@ -136,17 +113,16 @@ export function MedicineFilters({
           />
         </div>
       </div>
-      <div className="px-5 py-3">
+      <div>
         {filtered.length === 0 ? (
-          <p className="py-8 text-center text-sm text-gray-400">{t('filter_nothing_found')}</p>
+          <p className="px-5 py-8 text-center text-sm text-gray-400">{t('filter_nothing_found')}</p>
         ) : (
-          <div className="space-y-1.5">
+          <div className="divide-y divide-gray-100 dark:divide-[#262626]">
             {filtered.map(m => {
               const checked = selectedManufacturers.includes(m)
               return (
                 <label key={m} onClick={() => toggleManufacturer(m)}
-                  className={cn('flex h-12 items-center gap-3 rounded-xl border px-3.5',
-                    checked ? 'border-gray-900 bg-gray-50 dark:border-[#f1f1f1] dark:bg-[#222222]' : 'border-gray-200 dark:border-gray-700')}>
+                  className="flex h-12 cursor-pointer items-center gap-3 px-5 active:bg-gray-50 dark:active:bg-[#1a1a1a]">
                   <div className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded border-2', checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1]' : 'border-gray-300 dark:border-gray-600')}>
                     {checked && <Check className="h-3.5 w-3.5 text-white dark:text-gray-900" strokeWidth={3} />}
                   </div>
@@ -160,7 +136,7 @@ export function MedicineFilters({
     </BottomSheet>
 
     {/* Desktop: full inline filters */}
-    <div className="hidden md:flex items-center gap-2 overflow-x-auto px-4 py-3" style={{ scrollbarWidth: 'none' }}>
+    <div className="hidden md:flex items-center gap-2 px-4 py-3">
       {/* Search */}
       <div className="relative min-w-0 flex-1">
         <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
@@ -169,7 +145,7 @@ export function MedicineFilters({
           value={search}
           onChange={(e) => onSearch(e.target.value)}
           placeholder={t('filter_search')}
-          className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-7 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:border-gray-500"
+          className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-7 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-gray-400 dark:border-gray-700 dark:bg-[#090909] dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:border-gray-500"
         />
         {search && (
           <button
@@ -191,7 +167,7 @@ export function MedicineFilters({
               ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-[#222222] dark:text-gray-100'
               : hasSelected
                 ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-[#222222] dark:text-gray-200'
-                : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
+                : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#090909] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
           )}
         >
           <span className="flex-1 truncate text-left">
@@ -201,7 +177,7 @@ export function MedicineFilters({
         </button>
 
         {open && (
-          <div className="absolute left-0 top-10 z-50 w-56 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#111111]">
+          <div className="absolute left-0 top-10 z-50 w-full rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#090909]">
             <div className="p-2 border-b border-gray-100 dark:border-[#333333]">
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
@@ -278,7 +254,7 @@ export function MedicineFilters({
           <AlignJustify className="h-4 w-4" />
         </button>
         {openCols && (
-          <div className="absolute right-0 top-10 z-50 w-40 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
+          <div className="absolute right-0 top-10 z-50 w-40 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#090909]">
             <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('filter_columns_header')}</p>
             {resolvedColumnOptions.map(col => {
               const checked = visibleColumns[col.key]

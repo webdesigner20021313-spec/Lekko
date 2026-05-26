@@ -9,15 +9,14 @@ interface StandaloneLayoutProps {
 
 export function StandaloneLayout({ productId }: StandaloneLayoutProps) {
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-[#111111]">
+    <div className="flex h-screen h-[100dvh] overflow-hidden bg-gray-50 dark:bg-[#090909]">
       <Sidebar mode="standalone" productId={productId} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />
         <main className="flex-1 overflow-hidden">
           <Outlet />
         </main>
-        {/* Spacer so fixed mobile tab bar (incl. iOS safe-area) doesn't cover content */}
-        <div className="h-16 shrink-0 pb-safe md:hidden" />
+        {/* Spacer для мобильного tab bar — убран вместе с самим tab bar в Sidebar. */}
       </div>
     </div>
   )

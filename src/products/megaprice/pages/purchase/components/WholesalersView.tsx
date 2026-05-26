@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { Search, ChevronDown, Check, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { BottomSheet } from '@/shared/ui-kit/BottomSheet'
 import { mockDistributors } from '@/products/megaprice/mocks/purchase.mocks'
 import { formatDate } from '@/shared/utils/format'
 import { cn } from '@/shared/utils/utils'
@@ -9,6 +10,14 @@ import type { Distributor } from '@/products/megaprice/pages/purchase/types/purc
 interface WholesalersViewProps {
   selectedId: string | null
   onSelect: (distributor: Distributor) => void
+  /** Controlled-search: на мобиле инпут живёт в глобальном Header. Если переданы — используем эти, иначе local. */
+  search?: string
+  onSearchChange?: (value: string) => void
+  /** Controlled-режим мобильного city-sheet'а: открытие управляется снаружи (action в глобальном Header). */
+  mobileCitySheetOpen?: boolean
+  onMobileCitySheetOpenChange?: (open: boolean) => void
+  /** Сообщает наружу есть ли активный фильтр городов (для отображения indicator на header-action). */
+  onCityFilterCountChange?: (count: number) => void
 }
 
 function useClickOutside(onClose: () => void) {
@@ -23,11 +32,30 @@ function useClickOutside(onClose: () => void) {
   return ref
 }
 
-export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) {
+export function WholesalersView({
+  selectedId,
+  onSelect,
+  search: searchProp,
+  onSearchChange,
+  mobileCitySheetOpen,
+  onMobileCitySheetOpenChange,
+  onCityFilterCountChange,
+}: WholesalersViewProps) {
   const { t } = useTranslation()
-  const [search,     setSearch]     = useState('')
+  const [searchLocal, setSearchLocal] = useState('')
+  const search    = searchProp ?? searchLocal
+  const setSearch = onSearchChange ?? setSearchLocal
   const [cityFilter, setCityFilter] = useState<string[]>([])
   const [openCity,   setOpenCity]   = useState(false)
+  // Mobile city sheet (controlled, если переданы — иначе local fallback не нужен, в моб версии открывает action)
+  const [mobileCityLocal, setMobileCityLocal] = useState(false)
+  const mobileCityOpen    = mobileCitySheetOpen ?? mobileCityLocal
+  const setMobileCityOpen = onMobileCitySheetOpenChange ?? setMobileCityLocal
+
+  // Сообщаем наружу про count активных фильтров (для indicator на header-action)
+  useEffect(() => {
+    onCityFilterCountChange?.(cityFilter.length)
+  }, [cityFilter.length, onCityFilterCountChange])
 
   const cityRef = useClickOutside(() => setOpenCity(false))
 
@@ -55,17 +83,17 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
   return (
     <div className="flex h-full flex-col overflow-hidden">
 
-      {/* Фильтры */}
-      <div className="flex shrink-0 items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
+      {/* Фильтры — на мобиле полностью вынесены в глобальный Header (search + city action). */}
+      <div className="hidden shrink-0 items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 md:flex dark:border-gray-700 dark:bg-[#090909]">
 
-        {/* Поиск */}
-        <div className="relative flex-1">
+        {/* Поиск — на мобиле перенесён в глобальный Header (useMobileHeaderSearch) */}
+        <div className="relative hidden flex-1 md:block">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('filter_search_inner')}
-            className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:border-gray-500"
+            className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none dark:border-gray-700 dark:bg-[#090909] dark:text-gray-200 dark:placeholder:text-gray-500 dark:focus:border-gray-500"
           />
         </div>
 
@@ -79,7 +107,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
                 ? 'border-gray-400 bg-white text-gray-900 dark:border-gray-500 dark:bg-[#222222] dark:text-gray-100'
                 : cityFilter.length
                   ? 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-[#222222] dark:text-gray-200'
-                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
+                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-[#090909] dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
             )}
           >
             <span className="truncate">{cityFilter.length ? `${t('filter_city')} · ${cityFilter.length}` : t('filter_city')}</span>
@@ -87,7 +115,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
           </button>
 
           {openCity && (
-            <div className="absolute left-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
+            <div className="absolute left-0 top-10 z-50 w-full rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#090909]">
               {allCities.map((city) => {
                 const checked = cityFilter.includes(city)
                 return (
@@ -141,7 +169,7 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
                 onClick={() => onSelect(dist)}
                 className={cn(
                   'relative flex cursor-pointer items-center gap-3 px-4 py-3.5 active:bg-gray-100 dark:active:bg-gray-800',
-                  isSelected ? 'bg-gray-50 dark:bg-[#222222]' : 'bg-white dark:bg-[#111111]',
+                  isSelected ? 'bg-gray-50 dark:bg-[#222222]' : 'bg-white dark:bg-[#090909]',
                 )}
               >
                 {isSelected && <span className="absolute left-0 top-0 bottom-0 w-1 bg-gray-900 dark:bg-[#f1f1f1]" />}
@@ -151,7 +179,10 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
                   </p>
                   <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">{dist.city}</p>
                 </div>
-                <span className="shrink-0 text-xs text-gray-400 dark:text-[#929292]">{formatDate(dist.lastPriceDate)}</span>
+                <div className="shrink-0 text-right">
+                  <p className="text-[10px] text-gray-400 dark:text-[#929292]">{t('col_price_date')}</p>
+                  <p className="mt-0.5 text-xs font-medium tabular-nums text-gray-700 dark:text-gray-300">{formatDate(dist.lastPriceDate)}</p>
+                </div>
               </div>
             )
           })}
@@ -221,6 +252,49 @@ export function WholesalersView({ selectedId, onSelect }: WholesalersViewProps) 
           </tbody>
         </table>
       </div>
+
+      {/* Mobile city filter sheet — открывается из глобального Header-action */}
+      <BottomSheet
+        open={mobileCityOpen}
+        onClose={() => setMobileCityOpen(false)}
+        title={t('filter_city')}
+        footer={
+          <div className="flex gap-3">
+            <button
+              onClick={() => setCityFilter([])}
+              className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300"
+            >
+              {t('filter_reset_all')}
+            </button>
+            <button
+              onClick={() => setMobileCityOpen(false)}
+              className="flex h-12 flex-1 items-center justify-center rounded-xl bg-gray-900 text-sm font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900"
+            >
+              {t('orders_apply')}
+            </button>
+          </div>
+        }
+      >
+        <div className="divide-y divide-gray-100 dark:divide-[#262626]">
+          {allCities.map((city) => {
+            const checked = cityFilter.includes(city)
+            return (
+              <label
+                key={city}
+                onClick={() => toggleCity(city)}
+                className="flex h-12 cursor-pointer items-center gap-3 px-5 active:bg-gray-50 dark:active:bg-[#1a1a1a]"
+              >
+                <div className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded border-2',
+                  checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1]' : 'border-gray-300 dark:border-gray-600')}>
+                  {checked && <Check className="h-3.5 w-3.5 text-white dark:text-gray-900" strokeWidth={3} />}
+                </div>
+                <span className={cn('truncate text-sm',
+                  checked ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300')}>{city}</span>
+              </label>
+            )
+          })}
+        </div>
+      </BottomSheet>
     </div>
   )
 }

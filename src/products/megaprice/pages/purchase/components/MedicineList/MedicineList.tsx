@@ -19,6 +19,12 @@ interface MedicineListProps {
   onToggleCheck: (id: string) => void
   showFavorites: boolean
   onAutoSelect: () => void
+  /** Открытие фильтр-sheet'а из глобального header'а (mobile). */
+  mobileFiltersOpen?: boolean
+  onMobileFiltersOpenChange?: (open: boolean) => void
+  /** Controlled-search: на мобиле инпут живёт в глобальном Header. Если переданы — используем эти, иначе local. */
+  search?: string
+  onSearchChange?: (value: string) => void
 }
 
 export function MedicineList({
@@ -29,9 +35,15 @@ export function MedicineList({
   onToggleCheck,
   showFavorites,
   onAutoSelect,
+  mobileFiltersOpen,
+  onMobileFiltersOpenChange,
+  search: searchProp,
+  onSearchChange,
 }: MedicineListProps) {
   const { t } = useTranslation()
-  const [search, setSearch] = useState('')
+  const [searchLocal, setSearchLocal] = useState('')
+  const search    = searchProp ?? searchLocal
+  const setSearch = onSearchChange ?? setSearchLocal
   const [manufacturerFilter, setManufacturerFilter] = useState<string[]>([])
   const [excelMedicines, setExcelMedicines] = useState<Medicine[]>([])
   const [visibleColumns, setVisibleColumns] = useState<Record<MedicineColumnKey, boolean>>({ mnn: true, stock: false, needed: false })
@@ -98,16 +110,22 @@ export function MedicineList({
         selectedMedicine={selectedMedicine}
         onSelect={(med) => med && onSelect(med)}
         showFavorites={showFavorites}
+        search={search}
+        onSearchChange={setSearch}
       />
     )
   }
 
   // Excel tab
   if (activeTab === 'excel') {
+    const q = search.trim().toLowerCase()
+    const filteredExcel = q
+      ? excelMedicines.filter(m => m.name.toLowerCase().includes(q) || m.manufacturer.toLowerCase().includes(q))
+      : excelMedicines
     return (
       <div className="flex flex-1 flex-col overflow-hidden">
         <ExcelUploadView
-          medicines={excelMedicines}
+          medicines={filteredExcel}
           catalogMedicines={mockMedicines}
           onMedicinesLoaded={setExcelMedicines}
           selectedId={selectedMedicine?.id ?? null}
@@ -117,7 +135,7 @@ export function MedicineList({
           cartQtyByMedicine={cartQtyByMedicine}
         />
         {checkedIds.length >= 2 && (
-          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
+          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#090909]">
             <span className="text-sm text-gray-600 dark:text-gray-400">
               {t('selected_label')} <span className="font-semibold text-gray-900 dark:text-gray-100">{checkedIds.length}</span>
             </span>
@@ -137,7 +155,7 @@ export function MedicineList({
   // Manual / POS tabs
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex-shrink-0 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
+      <div className="flex-shrink-0 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#090909]">
         <MedicineFilters
           search={search}
           onSearch={setSearch}
@@ -146,6 +164,8 @@ export function MedicineList({
           manufacturers={manufacturers}
           visibleColumns={visibleColumns}
           onToggleColumn={toggleColumn}
+          mobileSheetOpen={mobileFiltersOpen}
+          onMobileSheetOpenChange={onMobileFiltersOpenChange}
         />
       </div>
 
@@ -170,7 +190,7 @@ export function MedicineList({
 
       {/* Авто-подбор — показывается когда выбрано 2+ */}
       {checkedIds.length >= 2 && (
-        <div className="flex-shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
+        <div className="flex-shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#090909]">
           <span className="text-sm text-gray-600 dark:text-gray-400">
             Выбрано: <span className="font-semibold text-gray-900 dark:text-gray-100">{checkedIds.length}</span>
           </span>

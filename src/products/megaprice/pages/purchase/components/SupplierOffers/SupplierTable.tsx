@@ -38,7 +38,7 @@ function MobileOfferCard({ offer, avgPrice, quantity, onQuantityChange }: {
 
   return (
     <div className={cn(
-      'overflow-hidden rounded-2xl border bg-white dark:bg-[#111111]',
+      'overflow-hidden rounded-2xl border bg-white dark:bg-[#090909]',
       quantity > 0 ? 'border-gray-900 dark:border-[#f1f1f1]' : 'border-gray-200 dark:border-gray-700',
     )}>
       <div className="flex items-start justify-between gap-3 px-4 pt-3.5 pb-2">
@@ -82,9 +82,11 @@ function MobileOfferCard({ offer, avgPrice, quantity, onQuantityChange }: {
         )}
       </div>
 
-      <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-[#222222]">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">{t('col_quantity')}</span>
-        <QuantityControl value={quantity} onChange={(v) => onQuantityChange(offer.id, v)} />
+      <div className="flex items-center justify-between gap-3 border-t border-gray-100 bg-gray-50 px-4 py-2.5 dark:border-gray-700 dark:bg-[#222222]">
+        <span className="text-xs font-medium text-gray-500 dark:text-[#929292]">{t('col_quantity')}</span>
+        <div className="w-[140px] shrink-0">
+          <QuantityControl value={quantity} onChange={(v) => onQuantityChange(offer.id, v)} />
+        </div>
       </div>
     </div>
   )
@@ -263,7 +265,7 @@ export function SupplierTable({ offers, avgPrice, quantities, onQuantityChange, 
     </div>
 
     {/* Desktop table */}
-    <div className="hidden md:block dark:bg-[#111111]" style={{ height: '100%', overflowX: 'auto', overflowY: 'auto' }}>
+    <div className="hidden md:block dark:bg-[#090909]" style={{ height: '100%', overflowX: 'auto', overflowY: 'auto' }}>
       <table style={{ tableLayout: 'fixed', width: tableWidth, borderCollapse: 'collapse' }}>
         <colgroup>
           <col style={{ width: cols.num }} />

@@ -53,7 +53,56 @@ export function RoleList() {
 
   return (
     <>
-      <div className="overflow-hidden border-b border-gray-200 dark:border-[#333333]">
+      {/* Mobile cards */}
+      <div className="md:hidden">
+        {roles.length === 0 ? (
+          <p className="py-16 text-center text-sm text-gray-400">{t('roles_empty')}</p>
+        ) : (
+          <div className="divide-y divide-gray-100 dark:divide-[#262626]">
+            {roles.map((role) => {
+              const { sections, perms } = getActiveLabels(role, t)
+              return (
+                <div
+                  key={role.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setEditRoleId(role.id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditRoleId(role.id) } }}
+                  className="flex flex-col gap-2 px-4 py-3 active:bg-gray-50 dark:active:bg-[#1a1a1a]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{role.name}</p>
+                      <p className="mt-0.5 text-xs text-gray-500 dark:text-[#929292]">
+                        {t('roles_col_users')}: {getUserCount(role.id)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(role) }}
+                      className="shrink-0 rounded p-1.5 text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {sections.length === 0 && perms.length === 0 ? (
+                    <span className="text-xs text-gray-400">{t('roles_no_access')}</span>
+                  ) : (
+                    <div className="flex gap-1 overflow-hidden">
+                      {[...sections, ...perms].map((label, i) => (
+                        <span key={`${i}-${label}`} className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full bg-gray-100 dark:bg-[#222222] px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300">{label}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden overflow-hidden border-b border-gray-200 md:block dark:border-[#333333]">
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200 dark:border-[#333333] bg-gray-50 dark:bg-[#222222]">
@@ -74,7 +123,7 @@ export function RoleList() {
               roles.map((role, idx) => {
                 const { sections, perms } = getActiveLabels(role, t)
                 return (
-                  <tr key={role.id} className="bg-white dark:bg-[#111111] transition-colors hover:bg-gray-50 dark:hover:bg-[#222222]">
+                  <tr key={role.id} className="bg-white dark:bg-[#090909] transition-colors hover:bg-gray-50 dark:hover:bg-[#222222]">
                     <td className="px-4 py-3 text-center text-xs text-gray-400">{idx + 1}</td>
                     <td className="px-4 py-3">
                       <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{role.name}</span>

@@ -6,8 +6,10 @@ import { StandaloneLayout } from '@/layouts/StandaloneLayout'
 import { PrivateRoute } from '@/shared/auth/PrivateRoute'
 import { LoginPage } from '@/shared/auth/LoginPage'
 import { Dashboard } from '@/pages/Dashboard'
+import { HomeRouter } from '@/pages/MobileHome/HomeRouter'
 import { UsersPage } from '@/pages/Users/UsersPage'
 import { RolesPage } from '@/pages/Users/RolesPage'
+import { ProfilePage } from '@/pages/Profile/ProfilePage'
 import { megapriceRoutes } from '@/products/megaprice/routes'
 
 function App() {
@@ -24,7 +26,7 @@ function App() {
             </PrivateRoute>
           }
         >
-          <Route index element={<Dashboard />} />
+          <Route index element={<HomeRouter scope="all" desktopFallback={<Dashboard />} />} />
           <Route path="megaprice">{megapriceRoutes}</Route>
           <Route
             path="analytic"
@@ -44,6 +46,7 @@ function App() {
           />
           <Route path="users" element={<UsersPage />} />
           <Route path="users/roles" element={<RolesPage />} />
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

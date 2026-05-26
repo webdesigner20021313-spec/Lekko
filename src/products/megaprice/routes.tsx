@@ -5,14 +5,19 @@ import { OrderDetailPage } from '@/products/megaprice/pages/orders/OrderDetailPa
 import { CartPage } from '@/products/megaprice/pages/cart/CartPage'
 import { NeedPage } from '@/products/megaprice/pages/need/NeedPage'
 import { WholesalersPage } from '@/products/megaprice/pages/wholesalers/WholesalersPage'
+import { HomeRouter } from '@/pages/MobileHome/HomeRouter'
 
 /**
  * Роуты разделов Megaprice. Используются в standalone (под `/`)
- * и в portal (под `/megaprice`). Index-роут редиректит на первый раздел.
+ * и в portal (под `/megaprice`). Index-роут на мобиле показывает
+ * сетку разделов, на десктопе — редирект на первый раздел.
  */
 export const megapriceRoutes = (
   <>
-    <Route index element={<Navigate to="purchase" replace />} />
+    <Route
+      index
+      element={<HomeRouter scope="megaprice" desktopFallback={<Navigate to="purchase" replace />} />}
+    />
     <Route path="purchase" element={<PurchasePage />} />
     <Route path="need" element={<NeedPage />} />
     <Route path="cart" element={<CartPage />} />

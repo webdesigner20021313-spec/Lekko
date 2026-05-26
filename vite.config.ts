@@ -10,4 +10,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    host: true,   // слушать на всех интерфейсах — открывается с телефона по локальной сети
+  },
 })

@@ -28,7 +28,7 @@ export function MedicineRow({
       onClick={onSelect}
       className={cn(
         'group cursor-pointer border-b border-gray-100 dark:border-[#333333] transition-colors',
-        isSelected ? 'bg-gray-100 dark:bg-[#222222]' : 'bg-white hover:bg-gray-50 dark:bg-[#111111] dark:hover:bg-gray-800',
+        isSelected ? 'bg-gray-100 dark:bg-[#222222]' : 'bg-white hover:bg-gray-50 dark:bg-[#090909] dark:hover:bg-gray-800',
       )}
     >
       {/* Checkbox — sticky left */}
@@ -40,7 +40,7 @@ export function MedicineRow({
         }}
         className={cn(
           'transition-colors',
-          isSelected ? 'bg-gray-100 dark:bg-[#222222]' : 'bg-white group-hover:bg-gray-50 dark:bg-[#111111] dark:group-hover:bg-gray-800',
+          isSelected ? 'bg-gray-100 dark:bg-[#222222]' : 'bg-white group-hover:bg-gray-50 dark:bg-[#090909] dark:group-hover:bg-gray-800',
         )}
       >
         {isSelected && (
@@ -103,7 +103,7 @@ export function MedicineRow({
         }}
         className={cn(
           'transition-colors',
-          isSelected ? 'bg-gray-100 dark:bg-[#222222]' : 'bg-white group-hover:bg-gray-50 dark:bg-[#111111] dark:group-hover:bg-gray-800',
+          isSelected ? 'bg-gray-100 dark:bg-[#222222]' : 'bg-white group-hover:bg-gray-50 dark:bg-[#090909] dark:group-hover:bg-gray-800',
         )}
       >
         <div style={{ height: ROW_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

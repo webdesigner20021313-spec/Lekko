@@ -152,7 +152,7 @@ export function SupplierRow({ offer, index, avgPrice, quantity, onQuantityChange
   }
 
   return (
-    <tr className="group border-b border-gray-100 bg-white transition-colors hover:bg-gray-50 dark:border-[#333333] dark:bg-[#111111] dark:hover:bg-gray-800">
+    <tr className="group border-b border-gray-100 bg-white transition-colors hover:bg-gray-50 dark:border-[#333333] dark:bg-[#090909] dark:hover:bg-gray-800">
       {/* № */}
       <td style={{ ...tdBase, borderRight: '1px solid var(--table-cell-border)' }}>
         <div style={cellDiv({ alignItems: 'center' })}>

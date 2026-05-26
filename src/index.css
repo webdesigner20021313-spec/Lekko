@@ -12,9 +12,9 @@
   --need-oos-row-bg: #FFF8F8;
   --chart-bar: #E5E7EB;
   --chart-bar-last: #111827;
-  --chart-bar-hover: #111111;
+  --chart-bar-hover: #090909;
   --chart-text: #9CA3AF;
-  --chart-tooltip-bg: #111111;
+  --chart-tooltip-bg: #090909;
   --chart-tooltip-color: #ffffff;
 }
 
@@ -22,18 +22,18 @@
   color-scheme: dark;
   --table-header-bg: #222222;
   --table-border: #333333;
-  --table-row-bg: #111111;
+  --table-row-bg: #090909;
   --table-cell-border: #333333;
   --selection-indicator: #f1f1f1;
   --need-open-row-bg: #222222;
-  --need-oos-row-bg: #111111;
+  --need-oos-row-bg: #090909;
   --chart-bar: #222222;
   --chart-bar-last: #444444;
   --chart-bar-hover: #444444;
   --chart-text: #929292;
   --chart-tooltip-bg: #f1f1f1;
-  --chart-tooltip-color: #111111;
-  background-color: #111111;
+  --chart-tooltip-color: #090909;
+  background-color: #090909;
 }
 
 body {
@@ -46,7 +46,7 @@ body {
 }
 
 .dark body {
-  background-color: #111111;
+  background-color: #090909;
 }
 
 .dark input[type="checkbox"],
@@ -55,10 +55,13 @@ body {
   accent-color: #e5e7eb;
 }
 
-/* iOS safe-area helpers — applied to mobile sticky bars */
-.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+/* iOS safe-area helpers — applied to mobile sticky bars.
+   pb-safe = max(safe-area, 8px) — даёт визуальный отступ даже на устройствах без home indicator
+   (Android, старые iPhone, desktop preview). На iPhone с home indicator всё равно ~34px. */
+.pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 0.5rem); }
 .bottom-safe { bottom: env(safe-area-inset-bottom); }
-.bottom-tabbar { bottom: calc(64px + env(safe-area-inset-bottom)); }
+/* Раньше отступ был для MobileTabBar (h-16). Tab bar скрыт — позиционируем по нижнему краю с safe-area. */
+.bottom-tabbar { bottom: 0; padding-bottom: env(safe-area-inset-bottom); }
 
 /* Disable text selection / callouts on tap for cards-as-buttons (mobile) */
 @media (hover: none) {

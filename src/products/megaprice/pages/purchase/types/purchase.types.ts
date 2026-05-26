@@ -52,6 +52,10 @@ export interface CartItem {
   quantity: number
   offer: SupplierOffer
   medicine: Medicine
+  /** Цена, по которой товар был добавлен в корзину, если у дистрибутора она с тех пор изменилась. */
+  priceChangedFrom?: number
+  /** Товар больше недоступен у этого дистрибутора. */
+  unavailable?: boolean
 }
 
 export interface AutoSelectSettings {

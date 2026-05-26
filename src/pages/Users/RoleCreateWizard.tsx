@@ -219,7 +219,7 @@ export function RoleCreateWizard({ open, onClose }: Props) {
                         onClick={() => toggleItem(item)}
                         className={cn(
                           'flex flex-col gap-1 rounded-xl border-2 p-4 text-left transition-all duration-150',
-                          sel ? 'border-gray-900 bg-gray-50 dark:bg-[#222222]' : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-[#111111] hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-[#222222]'
+                          sel ? 'border-gray-900 bg-gray-50 dark:bg-[#222222]' : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-[#090909] hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-[#222222]'
                         )}
                       >
                         <div className="flex items-center gap-2.5">
@@ -253,7 +253,7 @@ export function RoleCreateWizard({ open, onClose }: Props) {
                         onClick={() => toggleItem(item)}
                         className={cn(
                           'flex items-center gap-2.5 rounded-xl border-2 p-4 text-left transition-all duration-150',
-                          sel ? 'border-gray-900 bg-gray-50 dark:bg-[#222222]' : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-[#111111] hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-[#222222]'
+                          sel ? 'border-gray-900 bg-gray-50 dark:bg-[#222222]' : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-[#090909] hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-[#222222]'
                         )}
                       >
                         <div className={cn(

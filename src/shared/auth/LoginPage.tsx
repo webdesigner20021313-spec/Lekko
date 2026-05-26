@@ -47,7 +47,7 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
         className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-[#111111]">
+      <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-[#090909]">
         <button
           type="button"
           onClick={onClose}
@@ -203,7 +203,7 @@ export function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#F9FAFB] px-4 dark:bg-gray-950">
 
       {/* card */}
-      <div className="w-full max-w-[420px] rounded-2xl bg-white px-8 py-8 shadow-sm dark:bg-[#111111]">
+      <div className="w-full max-w-[420px] rounded-2xl bg-white px-8 py-8 shadow-sm dark:bg-[#090909]">
 
         {/* logo inside card */}
         <div className="mb-6 flex justify-center">
@@ -320,20 +320,6 @@ export function LoginPage() {
           </Button>
         </form>
 
-        {/* divider */}
-        <div className="my-5 flex items-center gap-3">
-          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
-          <span className="text-xs text-gray-400">{t('login_or')}</span>
-          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
-        </div>
-
-        {/* register link */}
-        <p className="text-center text-sm text-gray-500">
-          {t('login_no_account')}{' '}
-          <span className="cursor-pointer font-medium text-blue-600 hover:text-blue-800 transition-colors">
-            {t('login_request')}
-          </span>
-        </p>
       </div>
 
       {/* footer */}

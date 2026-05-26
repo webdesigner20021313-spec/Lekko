@@ -148,7 +148,7 @@ function TagInput({
 
       {/* Выпадающий список */}
       {open && (
-        <div className="mt-1 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-[#111111]">
+        <div className="mt-1 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-[#090909]">
           {filtered.length === 0 ? (
             <p className="px-3 py-3 text-center text-sm text-gray-400">
               {query
@@ -332,7 +332,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} />
 
       <div
-        className="relative z-10 flex h-full max-h-[100vh] w-full flex-col overflow-hidden bg-white shadow-xl md:h-auto md:max-h-[90vh] md:max-w-lg md:rounded-xl md:border md:border-gray-200 dark:bg-[#111111] dark:md:border-gray-700"
+        className="relative z-10 flex h-full max-h-[100vh] w-full flex-col overflow-hidden bg-white shadow-xl md:h-auto md:max-h-[90vh] md:max-w-lg md:rounded-xl md:border md:border-gray-200 dark:bg-[#090909] dark:md:border-gray-700"
       >
 
         {/* ── Шапка ──────────────────────────────────────────────────────────── */}
@@ -489,7 +489,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                     <CheckCircle2 className="h-4 w-4 text-[#22C55E]" />
                     <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{t('autoselect_section_matched', { count: matched.length })}</p>
                   </div>
-                  <div className="max-h-56 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-[#333333] dark:bg-[#111111]">
+                  <div className="max-h-56 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-[#333333] dark:bg-[#090909]">
                     {matched.map(r => (
                       <div key={r.medicine.id} className="flex h-[52px] items-center gap-3 px-4">
                         <div className="min-w-0 flex-1">
@@ -521,7 +521,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                     <AlertTriangle className="h-4 w-4 text-gray-400" />
                     <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">{t('autoselect_section_no_offers', { count: noOffers.length })}</p>
                   </div>
-                  <div className="max-h-28 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-[#333333] dark:bg-[#111111]">
+                  <div className="max-h-28 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-[#333333] dark:bg-[#090909]">
                     {noOffers.map(r => (
                       <p key={r.medicine.id} className="flex h-9 items-center px-4 text-sm text-gray-600 dark:text-gray-400">
                         {r.medicine.name}
@@ -538,7 +538,7 @@ export function AutoSelectModal({ medicines, offers, onClose, onConfirm }: AutoS
                     <AlertTriangle className="h-4 w-4 text-gray-400" />
                     <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">{t('autoselect_section_excluded', { count: filtered.length })}</p>
                   </div>
-                  <div className="max-h-28 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-[#333333] dark:bg-[#111111]">
+                  <div className="max-h-28 divide-y divide-gray-100 overflow-y-auto bg-white dark:divide-[#333333] dark:bg-[#090909]">
                     {filtered.map(r => (
                       <p key={r.medicine.id} className="flex h-9 items-center px-4 text-sm text-gray-600 dark:text-gray-400">
                         {r.medicine.name}

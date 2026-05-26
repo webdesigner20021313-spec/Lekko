@@ -19,7 +19,7 @@ export function Dashboard() {
               <Link
                 key={id}
                 to={target}
-                className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#111111] dark:hover:border-gray-600 dark:hover:bg-gray-800"
+                className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-[#090909] dark:hover:border-gray-600 dark:hover:bg-gray-800"
               >
                 <img src={product.logo} alt={product.name} className="h-10 w-auto" />
                 <p className="text-sm text-gray-500">
@@ -32,7 +32,7 @@ export function Dashboard() {
           })}
         </div>
 
-        <div className="mt-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-[#111111]">
+        <div className="mt-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-[#090909]">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Администрирование</h2>
           <Link
             to="/users"

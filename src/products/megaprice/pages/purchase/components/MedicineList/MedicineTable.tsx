@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Heart, ChevronRight } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import { cn } from '@/shared/utils/utils'
 import { MedicineRow } from './MedicineRow'
 import type { Medicine } from '@/products/megaprice/pages/purchase/types/purchase.types'
@@ -68,7 +68,7 @@ export function MedicineTable({
             onClick={() => onSelect(medicine)}
             className={cn(
               'relative flex cursor-pointer items-center gap-3 px-3 py-3 active:bg-gray-100 dark:active:bg-gray-800',
-              isSelected ? 'bg-gray-50 dark:bg-[#222222]' : 'bg-white dark:bg-[#111111]',
+              isSelected ? 'bg-gray-50 dark:bg-[#222222]' : 'bg-white dark:bg-[#090909]',
             )}
           >
             {isSelected && <span className="absolute left-0 top-0 bottom-0 w-1 bg-gray-900 dark:bg-[#f1f1f1]" />}
@@ -106,7 +106,6 @@ export function MedicineTable({
                 </span>
               )}
             </button>
-            <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 dark:text-gray-600" />
           </div>
         )
       })}

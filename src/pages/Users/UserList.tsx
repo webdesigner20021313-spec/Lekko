@@ -20,7 +20,63 @@ export function UserList({ onEditUser }: Props) {
 
   return (
     <>
-      <div className="overflow-hidden border-b border-gray-200 dark:border-gray-700">
+      {/* Mobile cards — компактный вид: аватар + имя + статус + дата. Детали → BottomSheet */}
+      <div className="md:hidden">
+        {users.length === 0 ? (
+          <p className="py-16 text-center text-sm text-gray-400">{t('users_empty')}</p>
+        ) : (
+          <div className="divide-y divide-gray-100 dark:divide-[#262626]">
+            {users.map((user) => {
+              const role = getRole(user.roleId)
+              return (
+                <div
+                  key={user.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onEditUser(user)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEditUser(user) } }}
+                  className="flex items-center gap-3 px-4 py-3 active:bg-gray-50 dark:active:bg-[#1a1a1a]"
+                >
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="h-10 w-10 shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                      {user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{user.name}</p>
+                    <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">
+                      {role?.name ?? <span className="text-gray-400 dark:text-[#5e5e5e]">—</span>}
+                    </p>
+                  </div>
+
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <span className={cn(
+                      'rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                      user.isActive
+                        ? 'bg-[#D1FAE5] text-[#065F46] dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]'
+                        : 'bg-[#FEE2E2] text-[#991B1B] dark:bg-[#7F1D1D]/40 dark:text-[#FCA5A5]',
+                    )}>
+                      {user.isActive ? t('user_active') : t('user_inactive')}
+                    </span>
+                    <span className="text-[11px] tabular-nums text-gray-400 dark:text-[#929292]">{formatDate(user.createdAt)}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+
+      {/* Desktop table */}
+      <div className="hidden overflow-hidden border-b border-gray-200 md:block dark:border-gray-700">
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#222222]">
@@ -46,7 +102,7 @@ export function UserList({ onEditUser }: Props) {
               users.map((user, idx) => {
                 const role = getRole(user.roleId)
                 return (
-                  <tr key={user.id} className="bg-white dark:bg-[#111111] transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr key={user.id} className="bg-white dark:bg-[#090909] transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
 
                     <td className="px-4 py-3 text-center text-xs text-gray-400">{idx + 1}</td>
 

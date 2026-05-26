@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import {
   Search, X, Package, Building2,
-  ChevronDown, Check, Zap, TrendingDown, Plus, Download, Star, Calendar,
+  ChevronDown, ChevronRight, Check, Zap, TrendingDown, Plus, Minus, Download, Star, Calendar,
   Sparkles, ArrowRightLeft, AlertTriangle, ShoppingCart as CartIcon, SlidersHorizontal,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
@@ -10,6 +10,7 @@ import { cn } from '@/shared/utils/utils'
 import { formatCurrency } from '@/shared/utils/format'
 import { useToast } from '@/shared/ui-kit/Toaster'
 import { BottomSheet } from '@/shared/ui-kit/BottomSheet'
+import { useMobileHeaderActions, useMobileHeaderSearch, type HeaderAction, type HeaderSearch } from '@/shared/stores/useMobileHeaderStore'
 import { mockNeedItems, type NeedItem, type NeedStatus } from '@/products/megaprice/mocks/need.mocks'
 import { mockSupplierOffers } from '@/products/megaprice/mocks/purchase.mocks'
 import type { SupplierOffer } from '@/products/megaprice/pages/purchase/types/purchase.types'
@@ -335,10 +336,15 @@ function OffersModal({ item, currentOfferId, onSelectOffer, onClose }: {
   ]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 md:items-center"
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 md:items-center md:p-4"
       onClick={onClose}>
-      <div className="flex h-full max-h-[100vh] w-full flex-col overflow-hidden bg-white shadow-2xl md:h-auto md:max-h-[80vh] md:w-[760px] md:rounded-xl dark:bg-[#111111] dark:md:border dark:md:border-gray-700"
+      <div className="flex max-h-[88vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl md:max-h-[80vh] md:w-[760px] md:rounded-xl dark:bg-[#090909] dark:md:border dark:md:border-gray-700"
         onClick={e => e.stopPropagation()}>
+
+        {/* Drag handle на мобиле */}
+        <div className="flex shrink-0 justify-center pt-2 pb-1 md:hidden">
+          <div className="h-1 w-9 rounded-full bg-gray-300 dark:bg-[#3a3a3a]" />
+        </div>
 
         <div className="shrink-0 border-b border-gray-200 p-4 dark:border-gray-700">
           <div className="flex items-start justify-between gap-3">
@@ -360,77 +366,145 @@ function OffersModal({ item, currentOfferId, onSelectOffer, onClose }: {
               <p className="text-sm text-gray-400 dark:text-[#929292]">{t('need_offers_empty')}</p>
             </div>
           ) : (
-            <table className="w-full" style={{ borderCollapse: 'collapse' }}>
-              <thead>
-                <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]" style={{ position: 'sticky', top: 0, zIndex: 1 }}>
-                  <th className="w-8 px-3 py-2.5" />
-                  {colHeaders.map(h => (
-                    <th key={h} className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292] whitespace-nowrap">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              {/* Mobile cards — каждое предложение отдельной карточкой */}
+              <div className="md:hidden space-y-2 p-3">
                 {offers.map(offer => {
                   const isBest     = offer.priceWithVat === bestPrice
                   const isSelected = (currentOfferId ?? offers[0]?.id) === offer.id
                   return (
-                    <tr key={offer.id}
+                    <button
+                      key={offer.id}
                       onClick={() => { onSelectOffer(offer); onClose() }}
                       className={cn(
-                        'cursor-pointer border-b border-gray-100 last:border-0 transition-colors hover:bg-gray-50 dark:border-[#333333] dark:hover:bg-gray-800',
-                        isBest && !isSelected ? 'bg-green-50 dark:bg-green-900/20' : 'bg-white dark:bg-[#111111]',
-                      )}>
-                      <td className="px-3 py-3">
-                        <div className={cn('h-4 w-4 rounded-full border-2 flex items-center justify-center',
+                        'flex w-full flex-col gap-2 rounded-xl border bg-white p-3 text-left transition-colors active:bg-gray-50 dark:bg-[#171717] dark:active:bg-[#222222]',
+                        isSelected
+                          ? 'border-gray-900 ring-1 ring-gray-900 dark:border-[#f1f1f1] dark:ring-[#f1f1f1]'
+                          : 'border-gray-200 dark:border-[#262626]'
+                      )}
+                    >
+                      {/* Top: radio + name + best badge */}
+                      <div className="flex items-start gap-2.5">
+                        <div className={cn('mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 flex items-center justify-center',
                           isSelected ? 'border-gray-900 dark:border-gray-200' : 'border-gray-300 dark:border-gray-600')}>
                           {isSelected && <div className="h-2 w-2 rounded-full bg-gray-900 dark:bg-gray-200" />}
                         </div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">{offer.distributor.name}</span>
-                          {isBest && (
-                            <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                              <Star className="h-2.5 w-2.5" />
-                              {t('need_offers_best')}
-                            </span>
-                          )}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{offer.distributor.name}</span>
+                            {isBest && (
+                              <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                <Star className="h-2.5 w-2.5" />
+                                {t('need_offers_best')}
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-0.5 text-xs text-gray-500 dark:text-[#929292]">{offer.distributor.city}</p>
                         </div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <span className="text-xs text-gray-600 dark:text-gray-400">{offer.distributor.city}</span>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="flex flex-col">
-                          <span className={cn('text-xs font-bold tabular-nums', isBest ? 'text-green-700 dark:text-green-400' : 'text-gray-900 dark:text-gray-100')}>
+                        <div className="shrink-0 text-right">
+                          <p className={cn('text-base font-bold tabular-nums leading-tight', isBest ? 'text-green-700 dark:text-green-400' : 'text-gray-900 dark:text-gray-100')}>
                             {formatCurrency(offer.priceWithVat)}
-                          </span>
+                          </p>
                           {offer.originalPrice && (
-                            <span className="text-[10px] text-gray-400 tabular-nums line-through dark:text-gray-600">
+                            <p className="text-[11px] text-gray-400 tabular-nums line-through dark:text-gray-600">
                               {formatCurrency(offer.originalPrice)}
-                            </span>
+                            </p>
                           )}
                         </div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <span className="text-xs text-gray-500 dark:text-[#929292]">{offer.distributor.lastPriceDate}</span>
-                      </td>
-                      <td className="px-3 py-3">
-                        <span className="text-xs text-gray-500 dark:text-[#929292]">{offer.expiryDate}</span>
-                      </td>
-                      <td className="px-3 py-3">
-                        {offer.bonus
-                          ? <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">{offer.bonus.label}</span>
-                          : <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
-                        }
-                      </td>
-                    </tr>
+                      </div>
+
+                      {/* Bottom: meta — date · expiry · bonus */}
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 border-t border-gray-100 pt-2 text-[11px] text-gray-500 dark:border-[#262626] dark:text-[#929292]">
+                        <span>{t('col_price_date')}: <span className="text-gray-700 dark:text-gray-300">{offer.distributor.lastPriceDate}</span></span>
+                        <span className="text-gray-300 dark:text-gray-600">·</span>
+                        <span>{t('need_col_expiry_date')}: <span className="text-gray-700 dark:text-gray-300">{offer.expiryDate}</span></span>
+                        {offer.bonus && (
+                          <>
+                            <span className="text-gray-300 dark:text-gray-600">·</span>
+                            <span className="inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                              {offer.bonus.label}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </button>
                   )
                 })}
-              </tbody>
-            </table>
+              </div>
+
+              {/* Desktop table */}
+              <table className="hidden md:table w-full" style={{ borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]" style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+                    <th className="w-8 px-3 py-2.5" />
+                    {colHeaders.map(h => (
+                      <th key={h} className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292] whitespace-nowrap">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {offers.map(offer => {
+                    const isBest     = offer.priceWithVat === bestPrice
+                    const isSelected = (currentOfferId ?? offers[0]?.id) === offer.id
+                    return (
+                      <tr key={offer.id}
+                        onClick={() => { onSelectOffer(offer); onClose() }}
+                        className={cn(
+                          'cursor-pointer border-b border-gray-100 last:border-0 transition-colors hover:bg-gray-50 dark:border-[#333333] dark:hover:bg-gray-800',
+                          isBest && !isSelected ? 'bg-green-50 dark:bg-green-900/20' : 'bg-white dark:bg-[#090909]',
+                        )}>
+                        <td className="px-3 py-3">
+                          <div className={cn('h-4 w-4 rounded-full border-2 flex items-center justify-center',
+                            isSelected ? 'border-gray-900 dark:border-gray-200' : 'border-gray-300 dark:border-gray-600')}>
+                            {isSelected && <div className="h-2 w-2 rounded-full bg-gray-900 dark:bg-gray-200" />}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">{offer.distributor.name}</span>
+                            {isBest && (
+                              <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                <Star className="h-2.5 w-2.5" />
+                                {t('need_offers_best')}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3">
+                          <span className="text-xs text-gray-600 dark:text-gray-400">{offer.distributor.city}</span>
+                        </td>
+                        <td className="px-3 py-3">
+                          <div className="flex flex-col">
+                            <span className={cn('text-xs font-bold tabular-nums', isBest ? 'text-green-700 dark:text-green-400' : 'text-gray-900 dark:text-gray-100')}>
+                              {formatCurrency(offer.priceWithVat)}
+                            </span>
+                            {offer.originalPrice && (
+                              <span className="text-[10px] text-gray-400 tabular-nums line-through dark:text-gray-600">
+                                {formatCurrency(offer.originalPrice)}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3">
+                          <span className="text-xs text-gray-500 dark:text-[#929292]">{offer.distributor.lastPriceDate}</span>
+                        </td>
+                        <td className="px-3 py-3">
+                          <span className="text-xs text-gray-500 dark:text-[#929292]">{offer.expiryDate}</span>
+                        </td>
+                        <td className="px-3 py-3">
+                          {offer.bonus
+                            ? <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">{offer.bonus.label}</span>
+                            : <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
+                          }
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </>
           )}
         </div>
       </div>
@@ -484,7 +558,7 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
   ]
 
   return (
-    <div className="fixed inset-0 z-50 flex h-full flex-col overflow-hidden border-l border-gray-200 bg-white shadow-2xl md:relative md:inset-auto md:w-[580px] md:min-w-[580px] md:shrink-0 dark:border-gray-700 dark:bg-[#111111]">
+    <div className="fixed inset-0 z-50 flex h-full flex-col overflow-hidden border-l border-gray-200 bg-white shadow-2xl md:relative md:inset-auto md:w-[580px] md:min-w-[580px] md:shrink-0 dark:border-gray-700 dark:bg-[#090909]">
 
       <div className="shrink-0 border-b border-gray-200 p-4 dark:border-gray-700">
         <div className="flex items-start justify-between gap-2">
@@ -573,8 +647,8 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
 
         <div className="mx-4 mt-6 mb-6">
           <p className="mb-2 text-xs font-semibold text-gray-900 dark:text-gray-100">{t('need_ph_title')}</p>
-          <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-            <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+          <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+            <table className="w-full min-w-[420px]" style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]">
                   <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_ph_col_pharmacy')}</th>
@@ -588,9 +662,9 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
                   const phStyle = STATUS_STYLE[ph.status]
                   return (
                     <tr key={ph.id}
-                      className={cn('border-b border-gray-100 last:border-0 dark:border-[#333333]', idx % 2 === 1 ? 'bg-gray-50/50 dark:bg-[#222222]/50' : 'bg-white dark:bg-[#111111]')}>
+                      className={cn('border-b border-gray-100 last:border-0 dark:border-[#333333]', idx % 2 === 1 ? 'bg-gray-50/50 dark:bg-[#222222]/50' : 'bg-white dark:bg-[#090909]')}>
                       <td className="px-3 py-2.5">
-                        <p className="truncate text-xs font-medium text-gray-800 dark:text-gray-300" style={{ maxWidth: 130 }}>{ph.name}</p>
+                        <p className="whitespace-nowrap text-xs font-medium text-gray-800 dark:text-gray-300">{ph.name}</p>
                       </td>
                       <td className="px-3 py-2.5 text-right tabular-nums">
                         <span className={cn('text-xs font-semibold', ph.stock === 0 ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300')}>
@@ -614,18 +688,27 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
         </div>
       </div>
 
-      <div className="shrink-0 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-[#111111]" style={{ boxShadow: '0 -4px 12px rgba(0,0,0,0.06)' }}>
+      <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-2.5 dark:border-gray-700 dark:bg-[#090909]" style={{ boxShadow: '0 -4px 12px rgba(0,0,0,0.06)' }}>
         {recQty > 0 ? (
           <>
             {bestOffer && (
-              <div className="mb-2 flex items-center gap-2">
-                <button onClick={() => setQty(q => Math.max(1, q - 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 transition-colors text-sm font-bold dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-500">−</button>
-                <input type="number" min={1} value={qty}
-                  onChange={e => setQty(Math.max(1, Number(e.target.value)))}
-                  className="h-8 w-16 rounded-lg border border-gray-200 bg-white text-center text-sm font-semibold tabular-nums outline-none focus:border-gray-900 dark:border-gray-700 dark:bg-[#222222] dark:text-gray-100 dark:focus:border-gray-400" />
-                <button onClick={() => setQty(q => q + 1)}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 transition-colors text-sm font-bold dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-500">+</button>
+              <div className="mb-1 flex items-center gap-2">
+                {/* Сегментированный stepper в едином стиле с корзиной */}
+                <div className="flex w-[112px] shrink-0 items-center rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#090909]">
+                  <button
+                    onClick={() => setQty(q => Math.max(1, q - 1))}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-l-lg text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </button>
+                  <span className="flex-1 text-center text-[13px] font-semibold tabular-nums text-gray-900 dark:text-gray-100">{qty}</span>
+                  <button
+                    onClick={() => setQty(q => q + 1)}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-r-lg text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
+                </div>
                 <span className="ml-auto text-[18px] font-bold text-gray-900 dark:text-gray-100">{formatCurrency(orderCost)}</span>
               </div>
             )}
@@ -635,11 +718,9 @@ function NeedDrawer({ item, periodDays, selectedPharmacyIds, activeOffer, onClos
               return (
                 <button
                   onClick={() => onShowOffers(item)}
-                  className="mb-3 flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 text-left text-xs text-gray-500 hover:bg-gray-50 transition-colors dark:text-gray-400 dark:hover:bg-gray-800">
+                  className="mb-2.5 flex w-full items-center gap-1.5 rounded-lg px-2 py-1 text-left text-xs text-gray-500 hover:bg-gray-50 transition-colors dark:text-gray-400 dark:hover:bg-gray-800">
                   <span className="shrink-0">{isActuallyBest ? t('need_best_price_label') : t('need_selected_dist_label')}</span>
                   <span className="font-medium text-gray-700 dark:text-gray-300">{bestOffer.distributor.name}</span>
-                  <span className="text-gray-400 dark:text-gray-600">·</span>
-                  <span className="text-gray-500 dark:text-[#929292]">{bestOffer.distributor.city}</span>
                   <span className="text-gray-400 dark:text-gray-600">·</span>
                   <span className="font-semibold text-gray-700 tabular-nums dark:text-gray-300">{formatCurrency(bestOffer.priceWithVat)}/шт.</span>
                   {OFFER_COUNT[item.id] > 1 && (
@@ -851,9 +932,13 @@ function AIAdviceModal({ item, onClose }: { item: NeedItem; onClose: () => void 
     <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center md:p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
       <div
-        className="relative flex h-full max-h-[100vh] w-full flex-col overflow-hidden bg-white shadow-2xl md:h-auto md:max-h-[88vh] md:max-w-[460px] md:rounded-2xl dark:bg-[#111111] dark:md:border dark:md:border-gray-700"
+        className="relative flex max-h-[88vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl md:max-w-[460px] md:rounded-2xl dark:bg-[#090909] dark:md:border dark:md:border-gray-700"
         onClick={e => e.stopPropagation()}
       >
+        {/* Drag handle — индикатор «потянуть, чтобы закрыть» на мобиле */}
+        <div className="flex shrink-0 justify-center pt-2 pb-1 md:hidden">
+          <div className="h-1 w-9 rounded-full bg-gray-300 dark:bg-[#3a3a3a]" />
+        </div>
         <div className="shrink-0 flex items-center justify-between gap-3 px-5 py-4 border-b border-gray-100 dark:border-[#333333]">
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-900 dark:bg-gray-700">
@@ -913,7 +998,7 @@ function AIAdviceModal({ item, onClose }: { item: NeedItem; onClose: () => void 
                             </div>
                           )}
                           {rec.tableRows.map((row, ri) => (
-                            <div key={ri} className={cn('grid grid-cols-3 px-3 py-2 bg-white dark:bg-[#111111]', ri < rec.tableRows!.length - 1 && 'border-b border-gray-100 dark:border-[#333333]')}>
+                            <div key={ri} className={cn('grid grid-cols-3 px-3 py-2 bg-white dark:bg-[#090909]', ri < rec.tableRows!.length - 1 && 'border-b border-gray-100 dark:border-[#333333]')}>
                               <p className="truncate text-xs font-medium text-gray-700 dark:text-gray-300">{row[0]}</p>
                               <p className="text-right text-xs text-gray-500 dark:text-[#929292]">{row[1]}</p>
                               <p className="text-right text-xs font-semibold text-gray-900 dark:text-gray-100">{row[2]}</p>
@@ -940,7 +1025,7 @@ function AIAdviceModal({ item, onClose }: { item: NeedItem; onClose: () => void 
           )}
         </div>
 
-        <div className="shrink-0 border-t border-gray-100 bg-white px-5 py-3 dark:border-[#333333] dark:bg-[#111111]">
+        <div className="shrink-0 border-t border-gray-100 bg-white px-5 py-3 dark:border-[#333333] dark:bg-[#090909]">
           <button onClick={onClose} className="h-10 w-full rounded-lg bg-gray-900 text-sm font-semibold text-white transition-all duration-200 hover:bg-black dark:bg-gray-700 dark:hover:bg-gray-600">
             {t('need_ai_ok_btn')}
           </button>
@@ -1079,6 +1164,8 @@ export function NeedPage() {
   const [groupOpen,    setGroupOpen]   = useState(false)
   const [statusFilter, setStatusFilter] = useState<NeedStatus[]>([])
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const [pharmacyPickerOpen, setPharmacyPickerOpen] = useState(false)
+  const [pharmacyPickerSearch, setPharmacyPickerSearch] = useState('')
 
   const [checkedIds,      setCheckedIds]      = useState<string[]>([])
   const [drawerItem,      setDrawerItem]      = useState<NeedItem | null>(null)
@@ -1263,6 +1350,27 @@ export function NeedPage() {
     XLSX.writeFile(wb, `${t('need_excel_sheet')} — ${pharmacyName} — ${new Date().toLocaleDateString('ru')}.xlsx`)
   }
 
+  // ─── Мобильный header: поиск + фильтр ────────────────────────────────────
+  const sheetFiltersActive = selectedPharmacyIds.length > 0 || !!groupFilter || period !== '30d'
+  const headerActions = useMemo<HeaderAction[]>(() => [
+    {
+      id: 'filters',
+      icon: SlidersHorizontal,
+      onClick: () => setMobileFiltersOpen(true),
+      ariaLabel: t('orders_filters'),
+      variant: sheetFiltersActive ? 'active' : 'default',
+      indicator: sheetFiltersActive,
+    },
+  ], [sheetFiltersActive, t])
+  useMobileHeaderActions(headerActions)
+
+  const headerSearch = useMemo<HeaderSearch>(() => ({
+    value: search,
+    onChange: setSearch,
+    placeholder: t('need_search_ph'),
+  }), [search, t])
+  useMobileHeaderSearch(headerSearch)
+
   const thBase: React.CSSProperties = {
     position: 'sticky', top: 0, zIndex: 2, height: 48,
     background: 'var(--table-header-bg)', borderBottom: '1px solid var(--table-border)',
@@ -1342,49 +1450,14 @@ export function NeedPage() {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]"
+    <div className="flex h-full flex-col overflow-hidden bg-gray-50 md:bg-white dark:bg-[#0a0a0a] md:dark:bg-[#090909]"
       onClick={() => { setGroupOpen(false); setPharmacyOpen(false) }}>
 
-      {/* Mobile top controls */}
-      <div className="md:hidden shrink-0 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
-        <div className="flex items-center gap-2">
-          <div className="relative h-11 flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder={t('need_search_ph')}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="h-full w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 text-base outline-none focus:border-gray-400 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500"
-            />
-          </div>
-          <button
-            onClick={(e) => { e.stopPropagation(); setMobileFiltersOpen(true) }}
-            className={cn(
-              'relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border',
-              (selectedPharmacyIds.length > 0 || groupFilter || period !== '30d')
-                ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
-                : 'border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400',
-            )}
-          >
-            <SlidersHorizontal className="h-5 w-5" />
-            {(selectedPharmacyIds.length > 0 || groupFilter || period !== '30d') && (
-              <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-amber-400 ring-2 ring-white dark:ring-[#111111]" />
-            )}
-          </button>
-          <button
-            onClick={handleExport}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-green-600 bg-green-600 text-white"
-          >
-            <Download className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
+      {/* Mobile: search и filter перенесены в app-header через useMobileHeader*; Excel доступен на десктопе */}
 
       {/* Top controls (desktop) */}
-      <div className="hidden md:block shrink-0 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-[#111111]">
-        <div className="flex items-center gap-2 overflow-x-auto pb-0.5"
-             style={{ scrollbarWidth: 'none' }}>
+      <div className="hidden md:block shrink-0 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-[#090909]">
+        <div className="flex flex-wrap items-center gap-2">
 
           {/* Pharmacy multi-select */}
           <div className="relative shrink-0" onClick={e => e.stopPropagation()}>
@@ -1400,7 +1473,7 @@ export function NeedPage() {
               <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 text-gray-400 transition-transform', pharmacyOpen && 'rotate-180')} />
             </button>
             {pharmacyOpen && (
-              <div className="absolute left-0 top-10 z-50 w-64 rounded-xl border border-gray-200 bg-white py-1 shadow-lg max-h-72 overflow-y-auto dark:border-gray-700 dark:bg-[#111111]">
+              <div className="absolute left-0 top-10 z-50 w-64 rounded-xl border border-gray-200 bg-white py-1 shadow-lg max-h-72 overflow-y-auto dark:border-gray-700 dark:bg-[#090909]">
                 {PHARMACIES.map(ph => {
                   const checked = selectedPharmacyIds.includes(ph.id)
                   return (
@@ -1432,11 +1505,11 @@ export function NeedPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input type="text" placeholder={t('need_search_ph')} value={search}
               onChange={e => setSearch(e.target.value)}
-              className="h-full w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm outline-none transition-colors focus:border-gray-400 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500" />
+              className="h-full w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm outline-none transition-colors focus:border-gray-400 dark:border-gray-700 dark:bg-[#090909] dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500" />
           </div>
 
-          {/* Group filter */}
-          <div className="relative shrink-0" onClick={e => e.stopPropagation()}>
+          {/* Group filter — ml-auto pushes rest to right */}
+          <div className="relative ml-auto shrink-0" onClick={e => e.stopPropagation()}>
             <button onClick={() => setGroupOpen(v => !v)}
               className={cn(
                 'flex h-9 w-[180px] items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors',
@@ -1448,7 +1521,7 @@ export function NeedPage() {
               <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', groupOpen && 'rotate-180')} />
             </button>
             {groupOpen && (
-              <div className="absolute right-0 top-10 z-50 w-52 rounded-xl border border-gray-200 bg-white py-1 shadow-lg max-h-64 overflow-y-auto dark:border-gray-700 dark:bg-[#111111]">
+              <div className="absolute right-0 top-10 z-50 w-52 rounded-xl border border-gray-200 bg-white py-1 shadow-lg max-h-64 overflow-y-auto dark:border-gray-700 dark:bg-[#090909]">
                 <button onClick={() => { setGroupFilter(null); setGroupOpen(false) }}
                   className={cn('flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800', !groupFilter ? 'font-medium text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-[#929292]')}>
                   {t('need_group_all')}
@@ -1469,7 +1542,7 @@ export function NeedPage() {
             <button
               onClick={() => setPeriodOpen(v => !v)}
               className={cn(
-                'flex h-9 w-[260px] items-center gap-2 rounded-lg border bg-white px-3 text-sm transition-colors dark:bg-[#111111]',
+                'flex h-9 w-[260px] items-center gap-2 rounded-lg border bg-white px-3 text-sm transition-colors dark:bg-[#090909]',
                 periodOpen
                   ? 'border-gray-400 ring-2 ring-gray-900/20 dark:border-gray-500'
                   : 'border-gray-200 text-gray-700 hover:border-gray-300 dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600',
@@ -1488,7 +1561,7 @@ export function NeedPage() {
             {periodOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setPeriodOpen(false)} />
-                <div className="absolute left-0 top-10 z-50 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#111111]">
+                <div className="absolute left-0 top-10 z-50 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-[#090909]">
                   <div className="py-1">
                     {PERIODS.map(p => (
                       <button key={p.key}
@@ -1528,68 +1601,99 @@ export function NeedPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="shrink-0 border-b border-gray-200 px-4 py-3 md:px-6 md:py-4 dark:border-gray-700">
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="shrink-0 px-4 py-3 md:border-b md:border-gray-200 md:px-6 md:py-4 md:dark:border-gray-700">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-4 md:gap-3 md:overflow-visible md:px-0 md:pb-0 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
 
           <div onClick={() => handleKpiClick(['oos'])}
-            className={cn('flex flex-col rounded-xl border bg-white p-4 cursor-pointer transition-all dark:bg-[#222222]',
+            className={cn('flex flex-col rounded-xl border bg-white shrink-0 w-40 p-2.5 md:w-auto md:p-4 cursor-pointer transition-all dark:bg-[#222222]',
               isKpiActive(['oos']) ? 'border-gray-900 ring-1 ring-gray-900 dark:border-[#f1f1f1] dark:ring-[#f1f1f1]' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600')}>
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_kpi_oos_title')}</p>
+            {/* Mobile: компактный одно-рядный layout (title слева, value справа); desktop: двухуровневый */}
+            <div className="flex flex-col gap-2 md:hidden">
+              <p className="text-xs font-semibold tracking-wide text-gray-400 dark:text-[#929292]">{t('need_kpi_oos_title')}</p>
+              <p className={cn('text-base font-bold tabular-nums leading-none', kpi.oos.length > 0 ? 'text-red-500' : 'text-gray-900 dark:text-gray-100')}>
+                {kpi.oos.length === 1 ? t('need_kpi_count_1', { n: kpi.oos.length }) : t('need_kpi_count_many', { n: kpi.oos.length })}
+              </p>
+            </div>
+            <p className="mt-1 truncate text-[11px] text-gray-500 leading-tight dark:text-gray-400 md:hidden">
+              {kpi.oos.length > 0 ? t('need_kpi_oos_losses', { amount: formatCurrency(kpi.lostPerDay * periodDays), n: periodDays }) : t('need_kpi_oos_ok')}
+            </p>
+            <div className="hidden md:flex items-center justify-between">
+              <p className="text-xs font-semibold tracking-wide text-gray-400 dark:text-[#929292]">{t('need_kpi_oos_title')}</p>
               <InfoTooltip text={t('need_kpi_oos_tooltip')} />
             </div>
-            <div className="mt-auto flex items-end justify-between gap-1 pt-3">
+            <div className="hidden mt-auto md:flex flex-row items-end justify-between gap-1 pt-3">
               <p className={cn('text-2xl font-bold tabular-nums leading-none', kpi.oos.length > 0 ? 'text-red-500' : 'text-gray-900 dark:text-gray-100')}>
                 {kpi.oos.length === 1 ? t('need_kpi_count_1', { n: kpi.oos.length }) : t('need_kpi_count_many', { n: kpi.oos.length })}
               </p>
-              <p className="text-xs text-gray-500 text-right leading-tight dark:text-gray-400">
+              <p className="text-xs text-gray-500 leading-tight dark:text-gray-400 text-right">
                 {kpi.oos.length > 0 ? t('need_kpi_oos_losses', { amount: formatCurrency(kpi.lostPerDay * periodDays), n: periodDays }) : t('need_kpi_oos_ok')}
               </p>
             </div>
           </div>
 
           <div onClick={() => handleKpiClick(['critical'])}
-            className={cn('flex flex-col rounded-xl border bg-white p-4 cursor-pointer transition-all dark:bg-[#222222]',
+            className={cn('flex flex-col rounded-xl border bg-white shrink-0 w-40 p-2.5 md:w-auto md:p-4 cursor-pointer transition-all dark:bg-[#222222]',
               isKpiActive(['critical']) ? 'border-gray-900 ring-1 ring-gray-900 dark:border-[#f1f1f1] dark:ring-[#f1f1f1]' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600')}>
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_kpi_critical_title')}</p>
+            <div className="flex flex-col gap-2 md:hidden">
+              <p className="text-xs font-semibold tracking-wide text-gray-400 dark:text-[#929292]">{t('need_kpi_critical_title')}</p>
+              <p className={cn('text-base font-bold tabular-nums leading-none', kpi.critical.length > 0 ? 'text-amber-500' : 'text-gray-900 dark:text-gray-100')}>
+                {kpi.critical.length === 1 ? t('need_kpi_count_1', { n: kpi.critical.length }) : t('need_kpi_count_many', { n: kpi.critical.length })}
+              </p>
+            </div>
+            <p className="mt-1 truncate text-[11px] text-gray-500 leading-tight dark:text-gray-400 md:hidden">{t('need_kpi_critical_sub')}</p>
+            <div className="hidden md:flex items-center justify-between">
+              <p className="text-xs font-semibold tracking-wide text-gray-400 dark:text-[#929292]">{t('need_kpi_critical_title')}</p>
               <InfoTooltip text={t('need_kpi_critical_tooltip')} />
             </div>
-            <div className="mt-auto flex items-end justify-between gap-1 pt-3">
+            <div className="hidden mt-auto md:flex flex-row items-end justify-between gap-1 pt-3">
               <p className={cn('text-2xl font-bold tabular-nums leading-none', kpi.critical.length > 0 ? 'text-amber-500' : 'text-gray-900 dark:text-gray-100')}>
                 {kpi.critical.length === 1 ? t('need_kpi_count_1', { n: kpi.critical.length }) : t('need_kpi_count_many', { n: kpi.critical.length })}
               </p>
-              <p className="text-xs text-gray-500 text-right leading-tight dark:text-gray-400">{t('need_kpi_critical_sub')}</p>
+              <p className="text-xs text-gray-500 leading-tight dark:text-gray-400 text-right">{t('need_kpi_critical_sub')}</p>
             </div>
           </div>
 
           <div onClick={() => handleKpiClick(['oos', 'critical'])}
-            className={cn('flex flex-col rounded-xl border bg-white p-4 cursor-pointer transition-all dark:bg-[#222222]',
+            className={cn('flex flex-col rounded-xl border bg-white shrink-0 w-40 p-2.5 md:w-auto md:p-4 cursor-pointer transition-all dark:bg-[#222222]',
               isKpiActive(['oos', 'critical']) ? 'border-gray-900 ring-1 ring-gray-900 dark:border-[#f1f1f1] dark:ring-[#f1f1f1]' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600')}>
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_kpi_urgent_title')}</p>
+            <div className="flex flex-col gap-2 md:hidden">
+              <p className="text-xs font-semibold tracking-wide text-gray-400 dark:text-[#929292]">{t('need_kpi_urgent_title')}</p>
+              <p className={cn('text-base font-bold tabular-nums leading-none', kpi.urgentTotal > 0 ? 'text-red-500' : 'text-gray-900 dark:text-gray-100')}>
+                {formatCurrency(kpi.urgentTotal)}
+              </p>
+            </div>
+            <p className="mt-1 truncate text-[11px] text-gray-500 leading-tight dark:text-gray-400 md:hidden">
+              {t('need_kpi_urgent_sub', { n: kpi.urgentCount })}
+            </p>
+            <div className="hidden md:flex items-center justify-between">
+              <p className="text-xs font-semibold tracking-wide text-gray-400 dark:text-[#929292]">{t('need_kpi_urgent_title')}</p>
               <InfoTooltip text={t('need_kpi_urgent_tooltip')} />
             </div>
-            <div className="mt-auto flex items-end justify-between gap-1 pt-3">
+            <div className="hidden mt-auto md:flex flex-row items-end justify-between gap-1 pt-3">
               <p className={cn('text-2xl font-bold tabular-nums leading-none', kpi.urgentTotal > 0 ? 'text-red-500' : 'text-gray-900 dark:text-gray-100')}>
                 {formatCurrency(kpi.urgentTotal)}
               </p>
-              <p className="text-xs text-gray-500 text-right leading-tight dark:text-gray-400">
+              <p className="text-xs text-gray-500 leading-tight dark:text-gray-400 text-right">
                 {t('need_kpi_urgent_sub', { n: kpi.urgentCount })}
               </p>
             </div>
           </div>
 
           <div onClick={() => handleKpiClick(['overstock', 'dead'])}
-            className={cn('flex flex-col rounded-xl border bg-white p-4 cursor-pointer transition-all dark:bg-[#222222]',
+            className={cn('flex flex-col rounded-xl border bg-white shrink-0 w-40 p-2.5 md:w-auto md:p-4 cursor-pointer transition-all dark:bg-[#222222]',
               isKpiActive(['overstock', 'dead']) ? 'border-gray-900 ring-1 ring-gray-900 dark:border-[#f1f1f1] dark:ring-[#f1f1f1]' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600')}>
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_kpi_frozen_title')}</p>
+            <div className="flex flex-col gap-2 md:hidden">
+              <p className="text-xs font-semibold tracking-wide text-gray-400 dark:text-[#929292]">{t('need_kpi_frozen_title')}</p>
+              <p className="text-base font-bold tabular-nums leading-none text-blue-500">{formatCurrency(kpi.frozenTotal)}</p>
+            </div>
+            <p className="mt-1 truncate text-[11px] text-gray-500 leading-tight dark:text-gray-400 md:hidden">{t('need_kpi_frozen_sub', { n: kpi.overstock.length })}</p>
+            <div className="hidden md:flex items-center justify-between">
+              <p className="text-xs font-semibold tracking-wide text-gray-400 dark:text-[#929292]">{t('need_kpi_frozen_title')}</p>
               <InfoTooltip text={t('need_kpi_frozen_tooltip')} />
             </div>
-            <div className="mt-auto flex items-end justify-between gap-1 pt-3">
+            <div className="hidden mt-auto md:flex flex-row items-end justify-between gap-1 pt-3">
               <p className="text-2xl font-bold tabular-nums leading-none text-blue-500">{formatCurrency(kpi.frozenTotal)}</p>
-              <p className="text-xs text-gray-500 text-right leading-tight dark:text-gray-400">{t('need_kpi_frozen_sub', { n: kpi.overstock.length })}</p>
+              <p className="text-xs text-gray-500 leading-tight dark:text-gray-400 text-right">{t('need_kpi_frozen_sub', { n: kpi.overstock.length })}</p>
             </div>
           </div>
 
@@ -1610,7 +1714,7 @@ export function NeedPage() {
                 <p className="text-sm text-gray-400 dark:text-[#929292]">{t('need_empty_filtered')}</p>
               </div>
             ) : (
-              <div className="space-y-2 px-3 py-3">
+              <div className="space-y-2 px-3 pb-3">
                 {filtered.map(item => {
                   const cfg       = STATUS_STYLE[item.status]
                   const isChecked = checkedIds.includes(item.id)
@@ -1619,60 +1723,52 @@ export function NeedPage() {
                     <div
                       key={item.id}
                       onClick={() => setDrawerItem(item)}
-                      className="relative flex cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-white active:bg-gray-50 dark:border-gray-700 dark:bg-[#111111]"
+                      className="relative flex cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-white active:bg-gray-50 dark:border-gray-700 dark:bg-[#090909]"
                     >
                       <span className="absolute left-0 top-0 bottom-0 w-1" style={{ background: cfg.borderColor }} />
-                      <div className="flex flex-1 items-start gap-2.5 px-3.5 py-3 pl-4">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onClick={e => e.stopPropagation()}
-                          onChange={(e) => toggleCheck(item.id, e as unknown as React.MouseEvent)}
-                          className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 accent-gray-900"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className={cn('flex-1 truncate text-sm font-semibold', item.status === 'dead' ? 'text-gray-400 dark:text-gray-600' : 'text-gray-900 dark:text-gray-100')}>
-                              {item.name}
-                            </p>
-                            <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap', cfg.badgeCls)}>
-                              {t(`need_status_${item.status}`)}
-                            </span>
-                          </div>
-                          <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">{item.manufacturer} · {item.country}</p>
-
-                          <div className="mt-2.5 grid grid-cols-4 gap-1.5">
-                            <div className="rounded-lg bg-gray-50 px-2 py-1.5 dark:bg-[#222222]">
-                              <p className="text-[9px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_th_stock')}</p>
-                              <p className={cn('mt-0.5 text-sm font-bold tabular-nums', item.stock === 0 ? 'text-red-500' : 'text-gray-900 dark:text-gray-100')}>
-                                {item.stock === 0 ? '—' : item.stock}
-                              </p>
-                            </div>
-                            <div className="rounded-lg bg-gray-50 px-2 py-1.5 dark:bg-[#222222]">
-                              <p className="text-[9px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_th_doc')}</p>
-                              <p className="mt-0.5 text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">
-                                {item.daysOfCover > 0 ? Math.round(item.daysOfCover) : '—'}
-                              </p>
-                            </div>
-                            <div className="rounded-lg bg-gray-50 px-2 py-1.5 dark:bg-[#222222]">
-                              <p className="text-[9px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_th_sales')}</p>
-                              <p className="mt-0.5 text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{item.avgDailySales.toFixed(1)}</p>
-                            </div>
-                            <div className={cn('rounded-lg px-2 py-1.5', recQty > 0 ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-gray-50 dark:bg-[#222222]')}>
-                              <p className="text-[9px] uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('need_th_need')}</p>
-                              <p className={cn('mt-0.5 text-sm font-bold tabular-nums', recQty > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-gray-300 dark:text-gray-600')}>
-                                {recQty > 0 ? recQty : '—'}
-                              </p>
-                            </div>
-                          </div>
+                      <div className="flex flex-1 flex-col px-3.5 py-3 pl-4">
+                        {/* Header: name + status badge */}
+                        <div className="flex items-start justify-between gap-3">
+                          <p className={cn('flex-1 truncate text-sm font-semibold', item.status === 'dead' ? 'text-gray-400 dark:text-gray-600' : 'text-gray-900 dark:text-gray-100')}>
+                            {item.name}
+                          </p>
+                          <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap', cfg.badgeCls)}>
+                            {t(`need_status_${item.status}`)}
+                          </span>
                         </div>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setAiItem(item) }}
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-400 dark:border-gray-700"
-                          aria-label="AI"
-                        >
-                          <Sparkles className="h-4 w-4" />
-                        </button>
+                        <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">{item.manufacturer} · {item.country}</p>
+
+                        {/* Supporting stats — inline meta, без боксов */}
+                        <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] text-gray-500 dark:text-[#929292]">
+                          <span>
+                            {t('need_th_stock')} <span className={cn('font-semibold tabular-nums', item.stock === 0 ? 'text-red-500' : 'text-gray-900 dark:text-gray-100')}>{item.stock === 0 ? '—' : item.stock}</span>
+                          </span>
+                          <span className="text-gray-300 dark:text-gray-600">·</span>
+                          <span>
+                            {t('need_th_doc')} <span className="font-semibold tabular-nums text-gray-900 dark:text-gray-100">{item.daysOfCover > 0 ? Math.round(item.daysOfCover) : '—'}</span>
+                          </span>
+                          <span className="text-gray-300 dark:text-gray-600">·</span>
+                          <span>
+                            {t('need_th_sales')} <span className="font-semibold tabular-nums text-gray-900 dark:text-gray-100">{item.avgDailySales.toFixed(1)}</span>
+                          </span>
+                        </div>
+
+                        {/* Hero action row: "Нужно заказать" + AI кнопка — без заливки, отделено линией */}
+                        <div className="mt-2.5 flex items-center justify-between gap-3 border-t border-gray-100 pt-2.5 dark:border-[#262626]">
+                          <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-[#929292]">{t('need_th_need')}</p>
+                            <p className={cn('text-base font-bold tabular-nums leading-tight', recQty > 0 ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-600')}>
+                              {recQty > 0 ? `${recQty} ${t('orders_kpi_pcs')}` : '—'}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setAiItem(item) }}
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-[#222222] dark:hover:text-gray-200"
+                            aria-label="AI"
+                          >
+                            <Sparkles className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )
@@ -1784,7 +1880,7 @@ export function NeedPage() {
           </div>
 
           {checkedIds.length >= 1 && (
-            <div className="shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-[#111111]">
+            <div className="shrink-0 flex items-center justify-between border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-[#090909]">
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 {t('need_bulk_selected')} <span className="font-semibold text-gray-900 dark:text-gray-100">{checkedIds.length}</span>
               </span>
@@ -1858,24 +1954,42 @@ export function NeedPage() {
         <div className="px-5 py-4 space-y-5">
           <div>
             <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('filter_pharmacy')}</p>
-            <div className="space-y-1.5">
-              {PHARMACIES.map(ph => {
-                const checked = selectedPharmacyIds.includes(ph.id)
-                return (
-                  <label
-                    key={ph.id}
-                    onClick={() => setSelectedPharmacyIds(prev => checked ? prev.filter(id => id !== ph.id) : [...prev, ph.id])}
-                    className={cn('flex h-12 items-center gap-3 rounded-xl border px-3.5',
-                      checked ? 'border-gray-900 bg-gray-50 dark:border-[#f1f1f1] dark:bg-[#222222]' : 'border-gray-200 dark:border-gray-700')}
-                  >
-                    <div className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded border-2', checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1]' : 'border-gray-300 dark:border-gray-600')}>
-                      {checked && <Check className="h-3.5 w-3.5 text-white dark:text-gray-900" strokeWidth={3} />}
-                    </div>
-                    <span className={cn('truncate text-sm', checked ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300')}>{ph.name}</span>
-                  </label>
-                )
-              })}
-            </div>
+            {(() => {
+              const total = PHARMACIES.length
+              const sel = selectedPharmacyIds.length
+              const label = sel === 0
+                ? t('need_all_pharmacies', { n: total })
+                : sel === 1
+                  ? (PHARMACIES.find(ph => ph.id === selectedPharmacyIds[0])?.name ?? '')
+                  : sel === total
+                    ? t('need_all_pharmacies', { n: total })
+                    : `${sel} из ${total}`
+              const isCustom = sel > 0 && sel !== total
+              return (
+                <button
+                  type="button"
+                  onClick={() => { setPharmacyPickerSearch(''); setPharmacyPickerOpen(true) }}
+                  className={cn(
+                    'flex h-12 w-full items-center gap-3 rounded-xl border px-3.5 text-left',
+                    isCustom
+                      ? 'border-gray-900 bg-gray-50 dark:border-[#f1f1f1] dark:bg-[#222222]'
+                      : 'border-gray-200 dark:border-gray-700',
+                  )}
+                >
+                  <Building2 className="h-5 w-5 shrink-0 text-gray-400 dark:text-[#929292]" />
+                  <span className={cn('flex-1 truncate text-sm',
+                    isCustom ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300')}>
+                    {label}
+                  </span>
+                  {isCustom && (
+                    <span className="shrink-0 rounded-full bg-gray-900 px-2 py-0.5 text-[11px] font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900">
+                      {sel}
+                    </span>
+                  )}
+                  <ChevronRight className="h-4 w-4 shrink-0 text-gray-400 dark:text-[#929292]" />
+                </button>
+              )
+            })()}
           </div>
 
           <div>
@@ -1884,7 +1998,7 @@ export function NeedPage() {
               <button
                 onClick={() => setGroupFilter(null)}
                 className={cn('h-10 rounded-full px-3.5 text-xs font-semibold',
-                  !groupFilter ? 'bg-gray-900 text-white dark:bg-[#f1f1f1] dark:text-gray-900' : 'border border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300')}
+                  !groupFilter ? 'bg-gray-900 text-white dark:bg-[#f1f1f1] dark:text-gray-900' : 'border border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#090909] dark:text-gray-300')}
               >
                 {t('need_group_all')}
               </button>
@@ -1893,7 +2007,7 @@ export function NeedPage() {
                   key={g}
                   onClick={() => setGroupFilter(g)}
                   className={cn('h-10 rounded-full px-3.5 text-xs font-semibold',
-                    groupFilter === g ? 'bg-gray-900 text-white dark:bg-[#f1f1f1] dark:text-gray-900' : 'border border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300')}
+                    groupFilter === g ? 'bg-gray-900 text-white dark:bg-[#f1f1f1] dark:text-gray-900' : 'border border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#090909] dark:text-gray-300')}
                 >
                   {g}
                 </button>
@@ -1909,13 +2023,122 @@ export function NeedPage() {
                   key={p.key}
                   onClick={() => setPeriod(p.key)}
                   className={cn('h-11 rounded-xl border text-sm font-medium',
-                    period === p.key ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300')}
+                    period === p.key ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900' : 'border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#090909] dark:text-gray-300')}
                 >
                   {p.label}
                 </button>
               ))}
             </div>
           </div>
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+        open={pharmacyPickerOpen}
+        onClose={() => setPharmacyPickerOpen(false)}
+        title={t('filter_pharmacy')}
+        footer={
+          <div className="flex gap-3">
+            <button
+              onClick={() => setSelectedPharmacyIds([])}
+              className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300"
+            >
+              {t('filter_reset_all')}
+            </button>
+            <button
+              onClick={() => setPharmacyPickerOpen(false)}
+              className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-xl bg-gray-900 text-sm font-semibold text-white dark:bg-[#f1f1f1] dark:text-gray-900"
+            >
+              {t('need_period_apply')}
+              {selectedPharmacyIds.length > 0 && (
+                <span className="rounded-full bg-white/20 px-1.5 text-xs tabular-nums dark:bg-gray-900/20">
+                  {selectedPharmacyIds.length}
+                </span>
+              )}
+            </button>
+          </div>
+        }
+      >
+        <div className="flex flex-col px-5 pt-4 pb-2">
+          {/* Поиск */}
+          <div className="relative mb-3">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-[#929292]" />
+            <input
+              type="search"
+              value={pharmacyPickerSearch}
+              onChange={(e) => setPharmacyPickerSearch(e.target.value)}
+              placeholder="Поиск аптеки"
+              className="h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:outline-none dark:border-gray-700 dark:bg-[#171717] dark:text-gray-100 dark:placeholder:text-[#929292] dark:focus:border-[#f1f1f1]"
+            />
+            {pharmacyPickerSearch && (
+              <button
+                type="button"
+                onClick={() => setPharmacyPickerSearch('')}
+                className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Выбрать все / Снять все */}
+          {(() => {
+            const allSelected = selectedPharmacyIds.length === PHARMACIES.length
+            return (
+              <div className="mb-2 flex items-center justify-between px-1">
+                <span className="text-xs text-gray-500 dark:text-[#929292]">
+                  {selectedPharmacyIds.length > 0
+                    ? `Выбрано ${selectedPharmacyIds.length} из ${PHARMACIES.length}`
+                    : `Всего ${PHARMACIES.length}`}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPharmacyIds(allSelected ? [] : PHARMACIES.map(p => p.id))}
+                  className="text-xs font-semibold text-gray-900 dark:text-[#f1f1f1]"
+                >
+                  {allSelected ? 'Снять все' : 'Выбрать все'}
+                </button>
+              </div>
+            )
+          })()}
+        </div>
+
+        {/* Список аптек — занимает остаток высоты sheet и скроллится */}
+        <div className="px-5 pb-4 space-y-1.5">
+          {(() => {
+            const q = pharmacyPickerSearch.trim().toLowerCase()
+            const filtered = q
+              ? PHARMACIES.filter(ph => ph.name.toLowerCase().includes(q))
+              : PHARMACIES
+            if (filtered.length === 0) {
+              return (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Search className="mb-2 h-6 w-6 text-gray-300 dark:text-gray-600" />
+                  <p className="text-sm text-gray-400 dark:text-[#929292]">Ничего не найдено</p>
+                </div>
+              )
+            }
+            return filtered.map(ph => {
+              const checked = selectedPharmacyIds.includes(ph.id)
+              return (
+                <label
+                  key={ph.id}
+                  onClick={() => setSelectedPharmacyIds(prev => checked ? prev.filter(id => id !== ph.id) : [...prev, ph.id])}
+                  className={cn('flex h-12 items-center gap-3 rounded-xl border px-3.5',
+                    checked ? 'border-gray-900 bg-gray-50 dark:border-[#f1f1f1] dark:bg-[#222222]' : 'border-gray-200 dark:border-gray-700')}
+                >
+                  <div className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded border-2',
+                    checked ? 'border-gray-900 bg-gray-900 dark:border-[#f1f1f1] dark:bg-[#f1f1f1]' : 'border-gray-300 dark:border-gray-600')}>
+                    {checked && <Check className="h-3.5 w-3.5 text-white dark:text-gray-900" strokeWidth={3} />}
+                  </div>
+                  <span className={cn('truncate text-sm',
+                    checked ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300')}>
+                    {ph.name}
+                  </span>
+                </label>
+              )
+            })
+          })()}
         </div>
       </BottomSheet>
     </div>

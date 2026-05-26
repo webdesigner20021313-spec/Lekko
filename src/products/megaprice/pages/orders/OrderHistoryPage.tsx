@@ -1,11 +1,12 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Package, Download, Calendar, AlertCircle, ChevronDown, ChevronRight, X, SlidersHorizontal } from 'lucide-react'
+import { Search, Package, Download, Calendar, AlertCircle, ChevronDown, X, SlidersHorizontal } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency, formatDate } from '@/shared/utils/format'
 import { BottomSheet } from '@/shared/ui-kit/BottomSheet'
+import { useMobileHeaderActions, useMobileHeaderSearch, type HeaderAction, type HeaderSearch } from '@/shared/stores/useMobileHeaderStore'
 import { useOrdersStore } from '@/products/megaprice/stores/useOrdersStore'
 import { mp } from '@/products/megaprice/utils/path'
 import {
@@ -278,46 +279,35 @@ export function OrderHistoryPage() {
     prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
   )
 
+  // Иконка-фильтр в header'е активна только если выбран фильтр из bottom-sheet'а
+  // (статус или дата). Поиск — отдельный UI, его наличие не подсвечивает фильтр.
+  const sheetFiltersActive = statusFilter !== 'all' || !!dateRange.trim()
+  const headerActions = useMemo<HeaderAction[]>(() => [
+    {
+      id: 'filters',
+      icon: SlidersHorizontal,
+      onClick: () => setMobileFiltersOpen(true),
+      ariaLabel: t('orders_filters'),
+      variant: sheetFiltersActive ? 'active' : 'default',
+      indicator: sheetFiltersActive,
+    },
+  ], [sheetFiltersActive, t])
+  useMobileHeaderActions(headerActions)
+
+  // Поиск в мобильном header'е (лупа → раскрывается на всю ширину).
+  const headerSearch = useMemo<HeaderSearch>(() => ({
+    value: search,
+    onChange: setSearch,
+    placeholder: t('orders_search_ph'),
+  }), [search, t])
+  useMobileHeaderSearch(headerSearch)
+
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#090909]">
 
       {/* ── Шапка ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
-        {/* Mobile header — search full width + filter button + Excel */}
-        <div className="flex items-center gap-2 md:hidden">
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder={t('orders_search_ph')}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 text-base placeholder-gray-400 focus:border-gray-400 focus:outline-none dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500"
-            />
-          </div>
-          <button
-            onClick={() => setMobileFiltersOpen(true)}
-            className={cn(
-              'relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border',
-              hasFilters
-                ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
-                : 'border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400',
-            )}
-            aria-label={t('orders_filters')}
-          >
-            <SlidersHorizontal className="h-5 w-5" />
-            {hasFilters && (
-              <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-amber-400 ring-2 ring-white dark:ring-[#111111]" />
-            )}
-          </button>
-          <button
-            onClick={() => exportToExcel(filteredOrders, t)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-green-600 bg-green-600 text-white"
-            aria-label="Excel"
-          >
-            <Download className="h-5 w-5" />
-          </button>
-        </div>
+      <div className="hidden shrink-0 border-b border-gray-200 bg-white md:block md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#090909]">
+        {/* Mobile: поиск/фильтр/Excel — всё перенесено в шапку приложения через useMobileHeader* */}
 
         {/* Desktop header */}
         <div className="hidden md:flex md:flex-wrap md:items-center md:gap-3">
@@ -329,14 +319,14 @@ export function OrderHistoryPage() {
                 placeholder={t('orders_search_ph')}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500"
+                className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:border-gray-700 dark:bg-[#090909] dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-gray-500"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 md:ml-auto">
             <div className="relative" ref={calendarRef}>
-              <div className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 dark:border-gray-700 dark:bg-[#111111]">
+              <div className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 dark:border-gray-700 dark:bg-[#090909]">
                 <input
                   type="text"
                   placeholder={t('orders_date_ph')}
@@ -404,7 +394,7 @@ export function OrderHistoryPage() {
       </div>
 
       {/* ── KPI Cards (desktop only — горизонтальный grid) ── */}
-      <div className="hidden md:block shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#111111]">
+      <div className="hidden md:block shrink-0 border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-[#090909]">
         <div className="grid grid-cols-4 gap-3">
           {KPI_CARDS.map(({ status, labelKey }) => {
             const { count, total } = stats[status]
@@ -432,7 +422,7 @@ export function OrderHistoryPage() {
       </div>
 
       {/* ── KPI Status pills (mobile only — компактные таблетки-фильтры) ── */}
-      <div className="md:hidden shrink-0 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
+      <div className="md:hidden shrink-0 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#090909]">
         <div className="flex gap-2 overflow-x-auto px-4 py-3" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setStatusFilter('all')}
@@ -440,7 +430,7 @@ export function OrderHistoryPage() {
               'flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all',
               statusFilter === 'all'
                 ? 'bg-gray-900 text-white dark:bg-[#f1f1f1] dark:text-gray-900'
-                : 'border border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400',
+                : 'border border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#090909] dark:text-gray-400',
             )}
           >
             {t('orders_filter_all')}
@@ -457,7 +447,7 @@ export function OrderHistoryPage() {
                   'flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all',
                   isActive
                     ? 'bg-gray-900 text-white dark:bg-[#f1f1f1] dark:text-gray-900'
-                    : 'border border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-400',
+                    : 'border border-gray-200 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#090909] dark:text-gray-400',
                 )}
               >
                 {t(labelKey)}
@@ -469,13 +459,13 @@ export function OrderHistoryPage() {
       </div>
 
       {/* ── Список ── */}
-      <div className="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111111]">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#090909]">
         {filteredOrders.length === 0 ? (
           <EmptyState hasFilters={hasFilters} />
         ) : (
           <>
-          {/* Mobile cards */}
-          <div className="md:hidden divide-y divide-gray-100 dark:divide-[#333333]">
+          {/* Mobile cards — отдельные карточки на фоне страницы. min-h-full чтобы серый фон тянулся на всю высоту, даже когда заказов мало. */}
+          <div className="md:hidden min-h-full space-y-2 bg-gray-50 p-3 dark:bg-[#0a0a0a]">
             {filteredOrders.map((order) => {
               const totalItems  = order.groups.reduce((s, g) => s + g.items.length, 0)
               const hasProposal = order.groups.some(g => g.distributorStatus === 'offer')
@@ -483,46 +473,34 @@ export function OrderHistoryPage() {
                 <button
                   key={order.id}
                   onClick={() => navigate(mp(`/orders/${order.id}`))}
-                  className="flex w-full items-start gap-3 px-4 py-3.5 text-left active:bg-gray-50 dark:active:bg-gray-800"
+                  className="flex w-full flex-col rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-left transition-colors active:bg-gray-50 dark:border-[#262626] dark:bg-[#171717] dark:active:bg-[#222222]"
                 >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                  <div className="flex w-full items-start gap-3">
+                    <div className="min-w-0 flex-1">
                       <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{order.number}</span>
+                      <p className="mt-0.5 text-xs tabular-nums text-gray-500 dark:text-[#929292]">{formatDate(order.createdAt)}</p>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-0.5">
                       <StatusBadge status={order.status} />
-                      {hasProposal && (
-                        <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-                      )}
-                    </div>
-                    <p className="mt-1 truncate text-sm font-medium text-gray-900 dark:text-gray-100">{order.pharmacyName}</p>
-                    <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#929292]">
-                      {order.groups.length === 1
-                        ? `${order.groups[0].distributorName} · ${order.pharmacyCity}`
-                        : `${t('orders_n_distributors', { n: order.groups.length })} · ${order.pharmacyCity}`}
-                    </p>
-                    <div className="mt-2 flex items-center gap-3 text-[11px] text-gray-400 dark:text-[#929292]">
-                      <span>{formatDate(order.createdAt)}</span>
-                      <span>·</span>
-                      <span>{totalItems} {t('orders_kpi_pcs')}</span>
-                      <span>·</span>
-                      <span>{t('orders_qty_n', { n: order.totalQty })}</span>
+                      <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(order.totalSum)}</span>
                     </div>
                   </div>
-                  <div className="flex shrink-0 flex-col items-end justify-between self-stretch">
-                    <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{formatCurrency(order.totalSum)}</span>
-                    <ChevronRight className="h-4 w-4 text-gray-300 dark:text-gray-600" />
-                  </div>
+                  <div className="my-2.5 h-px w-full bg-gray-100 dark:bg-[#262626]" />
+                  <p className="w-full truncate text-sm text-gray-500 dark:text-[#929292]">
+                    <span className="text-gray-900 dark:text-gray-100">{order.pharmacyName}</span>
+                    {' / '}{totalItems} {t('orders_pos_short')}
+                    {' / '}{t('orders_qty_n', { n: order.totalQty })}
+                  </p>
                 </button>
               )
             })}
-            <div className="bg-gray-50 px-4 py-2.5 dark:bg-[#222222]">
-              <p className="text-xs text-gray-400 dark:text-[#929292]">
-                {t('orders_shown_n_of_m', { n: filteredOrders.length, m: orders.length })}
-              </p>
-            </div>
+            <p className="pt-1 text-center text-xs text-gray-400 dark:text-[#929292]">
+              {t('orders_shown_n_of_m', { n: filteredOrders.length, m: orders.length })}
+            </p>
           </div>
 
           {/* Desktop table */}
-          <div className="hidden md:block overflow-x-auto border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]">
+          <div className="hidden md:block overflow-x-auto border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-[#090909]">
             <table className="w-full" style={{ minWidth: 700 }}>
               <thead>
                 <tr className="h-14 border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#222222]">
@@ -647,7 +625,7 @@ export function OrderHistoryPage() {
                 setDateRange('')
                 setSearch('')
               }}
-              className="flex h-12 flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300"
+              className="flex h-12 flex-1 items-center justify-center rounded-xl border border-red-600 bg-transparent text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-900/20"
             >
               {t('orders_date_clear')}
             </button>
@@ -660,9 +638,8 @@ export function OrderHistoryPage() {
           </div>
         }
       >
-        <div className="px-5 py-4 space-y-5 pb-8">
-          <div>
-            <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('orders_col_date')}</p>
+        <div className="px-5 py-4 pb-8">
+          <div className="pb-5">
             <RangeCalendar
               from={calFrom}
               to={calTo}
@@ -678,8 +655,10 @@ export function OrderHistoryPage() {
             />
           </div>
 
-          <div>
-            <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#929292]">{t('orders_col_status')}</p>
+          {/* Разделитель между секциями */}
+          <div className="-mx-5 border-t border-gray-200 dark:border-[#262626]" />
+
+          <div className="pt-5">
             <div className="grid grid-cols-2 gap-2">
               {KPI_CARDS.map(({ status, labelKey }) => {
                 const { count } = stats[status]
@@ -692,7 +671,7 @@ export function OrderHistoryPage() {
                       'flex h-11 items-center justify-between rounded-xl border px-4 text-sm font-medium',
                       isActive
                         ? 'border-gray-900 bg-gray-900 text-white dark:border-[#f1f1f1] dark:bg-[#f1f1f1] dark:text-gray-900'
-                        : 'border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300',
+                        : 'border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#090909] dark:text-gray-300',
                     )}
                   >
                     <span>{t(labelKey)}</span>

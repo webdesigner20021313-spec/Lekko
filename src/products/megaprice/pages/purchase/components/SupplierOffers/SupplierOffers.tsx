@@ -9,9 +9,19 @@ import type { Medicine, SortField, SortDirection, BonusType, ColumnKey } from '@
 
 interface SupplierOffersProps {
   medicine: Medicine | null
+  /** Controlled-режим мобильного фильтр-sheet'а (открывается из глобального Header-action). */
+  mobileFiltersOpen?: boolean
+  onMobileFiltersOpenChange?: (open: boolean) => void
+  /** Сообщает наружу количество активных фильтров (для indicator на header-action). */
+  onFilterCountChange?: (count: number) => void
 }
 
-export function SupplierOffers({ medicine }: SupplierOffersProps) {
+export function SupplierOffers({
+  medicine,
+  mobileFiltersOpen,
+  onMobileFiltersOpenChange,
+  onFilterCountChange,
+}: SupplierOffersProps) {
   const { t } = useTranslation()
   const [distributorFilter, setDistributorFilter] = useState<string[]>([])
   const [cityFilter, setCityFilter] = useState<string[]>([])
@@ -34,6 +44,11 @@ export function SupplierOffers({ medicine }: SupplierOffersProps) {
     setCityFilter([])
     setBonusFilter([])
   }, [medicine?.id])
+
+  // Сообщаем наружу количество активных фильтров (для indicator на header-action)
+  useEffect(() => {
+    onFilterCountChange?.(distributorFilter.length + cityFilter.length + bonusFilter.length)
+  }, [distributorFilter.length, cityFilter.length, bonusFilter.length, onFilterCountChange])
 
   const offersForMedicine = useMemo(() => {
     if (!medicine) return []
@@ -123,6 +138,8 @@ export function SupplierOffers({ medicine }: SupplierOffersProps) {
         cities={cities}
         visibleColumns={visibleColumns}
         onToggleColumn={handleToggleColumn}
+        mobileSheetOpen={mobileFiltersOpen}
+        onMobileSheetOpenChange={onMobileFiltersOpenChange}
       />
       <div className="min-h-0 flex-1">
         <SupplierTable

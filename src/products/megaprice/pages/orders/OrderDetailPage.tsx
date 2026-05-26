@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, MapPin, Calendar, Wallet,
   Download, FileText, CheckCircle2, XCircle,
-  MoreVertical, Mail, MessageCircle,
+  MoreVertical,
   AlertCircle, Check, X,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 import logoSvgRaw from '@/assets/logos/megaprice-logo.svg?raw'
 import { cn } from '@/shared/utils/utils'
 import { formatCurrency, formatDate, formatDateTime } from '@/shared/utils/format'
+import { useMobileHeaderTitle, useMobileHeaderActions, type HeaderAction } from '@/shared/stores/useMobileHeaderStore'
 import { useOrdersStore } from '@/products/megaprice/stores/useOrdersStore'
 import { mp } from '@/products/megaprice/utils/path'
 import {
@@ -269,13 +270,13 @@ function ConfirmModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
-      <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-[#111111] dark:border dark:border-gray-700">
-        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-[#929292]">{description}</p>
+      <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-[#090909] dark:border dark:border-gray-700">
+        <h3 className="text-center text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+        <p className="mt-2 text-center text-sm leading-relaxed text-gray-500 dark:text-[#929292]">{description}</p>
         <div className="mt-5 flex gap-2.5">
           <button
             onClick={onClose}
-            className="flex-1 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300 dark:hover:bg-gray-800"
+            className="flex-1 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-[#090909] dark:text-gray-300 dark:hover:bg-gray-800"
           >
             {backLabel}
           </button>
@@ -407,28 +408,29 @@ function DistributorCard({
 
   return (
     <div className={cn(
-      'overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#111111]',
+      'overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-[#262626] dark:bg-[#171717]',
       isCancelled && 'opacity-60',
     )}>
 
       {/* ── Card header ── */}
-      <div className="flex items-start gap-4 border-b border-gray-200 bg-gray-50 px-5 py-4 dark:border-gray-700 dark:bg-[#222222]">
+      <div className="flex items-start gap-3 border-b border-gray-200 bg-gray-50 px-4 py-3 md:px-5 md:py-4 dark:border-[#262626] dark:bg-[#1f1f1f]">
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{group.distributorName}</p>
-            <span className="text-xs text-gray-400 dark:text-[#929292]">{group.distributorCity}</span>
-            <DistributorStatusBadge status={group.distributorStatus} />
+          {/* Имя дистрибутора + статус на одной строке */}
+          <div className="flex items-center gap-2">
+            <p className="truncate text-base font-bold text-gray-900 dark:text-gray-100">{group.distributorName}</p>
+            <span className="shrink-0">
+              <DistributorStatusBadge status={group.distributorStatus} />
+            </span>
           </div>
-          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-            {group.contactType === 'telegram'
-              ? <MessageCircle className="h-3 w-3 text-[#1E40AF] dark:text-blue-400" />
-              : <Mail className="h-3 w-3 text-gray-400" />
-            }
-            <span className="text-xs text-gray-500 dark:text-[#929292]">{group.contact}</span>
+          {/* Meta-строка: город + контакт + дата отправки */}
+          <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-gray-500 dark:text-[#929292]">
+            <span>{group.distributorCity}</span>
+            <span className="text-gray-300 dark:text-gray-600">·</span>
+            <span>{group.contact}</span>
             {group.sentAt && (
               <>
                 <span className="text-gray-300 dark:text-gray-600">·</span>
-                <span className="text-xs text-gray-400 dark:text-[#929292]">{t('orders_sent_date', { date: formatDate(group.sentAt) })}</span>
+                <span>{t('orders_sent_date', { date: formatDate(group.sentAt) })}</span>
               </>
             )}
           </div>
@@ -438,15 +440,16 @@ function DistributorCard({
         <div className="relative shrink-0">
           <button
             onClick={() => setShowMenu(m => !m)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-white dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700"
+            className="flex h-5 w-5 items-center justify-center text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            aria-label="Действия"
           >
-            <MoreVertical className="h-4 w-4" />
+            <MoreVertical className="h-5 w-5" />
           </button>
 
           {showMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-              <div className="absolute right-0 top-full z-20 mt-1.5 w-52 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#111111]">
+              <div className="absolute right-0 top-full z-20 mt-1.5 w-52 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#090909]">
                 <button
                   onClick={() => { onDownloadExcel(); setShowMenu(false) }}
                   className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
@@ -495,20 +498,21 @@ function DistributorCard({
           <div className="py-10 text-center text-sm text-gray-400">{t('orders_no_items')}</div>
         ) : (
           <>
-          {/* Mobile cards */}
-          <div className="md:hidden divide-y divide-gray-100 dark:divide-[#333333]">
+          {/* Mobile cards: name+manufacturer слева, итог + qty×price справа */}
+          <div className="md:hidden divide-y divide-gray-100 dark:divide-[#262626]">
             {group.items.map(item => (
-              <div key={item.id} className="px-4 py-3">
-                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{item.medicineName}</p>
-                <p className="mt-0.5 text-xs text-gray-500 dark:text-[#929292]">{item.manufacturer} · {item.country}</p>
-                <div className="mt-2 flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-xs">
-                    <span className="text-gray-500 dark:text-[#929292]">{item.quantity} ×</span>
-                    <span className="text-gray-500 dark:text-[#929292]">{formatCurrency(item.priceWithVat)}</span>
-                  </div>
-                  <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">
+              <div key={item.id} className="flex items-start gap-3 px-4 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.medicineName}</p>
+                  <p className="mt-0.5 text-xs text-gray-500 dark:text-[#929292]">{item.manufacturer} · {item.country}</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">
                     {formatCurrency(item.quantity * item.priceWithVat)}
-                  </span>
+                  </p>
+                  <p className="mt-0.5 text-xs tabular-nums text-gray-500 dark:text-[#929292]">
+                    {item.quantity} {t('orders_kpi_pcs')} × {formatCurrency(item.priceWithVat)}
+                  </p>
                 </div>
               </div>
             ))}
@@ -557,7 +561,7 @@ function DistributorCard({
       </div>
 
       {/* ── Card footer ── */}
-      <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-5 py-3.5 dark:border-gray-700 dark:bg-[#222222]">
+      <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-4 py-3 md:px-5 dark:border-[#262626] dark:bg-[#1f1f1f]">
         <span className="text-sm text-gray-500 dark:text-[#929292]">
           {isCancelled ? (
             <span className="text-red-400">{t('orders_cancelled_label')}</span>
@@ -585,7 +589,7 @@ export function OrderDetailPage() {
 
   if (!rawOrder) {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-white dark:bg-[#111111]">
+      <div className="flex h-full flex-col items-center justify-center bg-white dark:bg-[#090909]">
         <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t('orders_not_found')}</p>
         <button
           onClick={() => navigate(mp('/orders'))}
@@ -609,6 +613,28 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
 
   const [order, setOrder] = useState<Order>(initialOrder)
   const [modal, setModal] = useState<ModalState | null>(null)
+
+  // В app-header'е на мобиле показываем номер заказа вместо общего "Заказы".
+  useMobileHeaderTitle(order.number)
+
+  // Action'ы в app-header'е на мобиле: Инвойс (документ) + Excel (зелёный).
+  const headerActions = useMemo<HeaderAction[]>(() => [
+    {
+      id: 'invoice',
+      icon: FileText,
+      onClick: () => printFullInvoice(order),
+      ariaLabel: t('orders_invoice_btn'),
+      variant: 'default',
+    },
+    {
+      id: 'excel',
+      icon: Download,
+      onClick: () => downloadFullExcel(order, t),
+      ariaLabel: 'Excel',
+      variant: 'success',
+    },
+  ], [order, t])
+  useMobileHeaderActions(headerActions)
 
   const isOrderActive = order.status === 'new' || order.status === 'modified'
   const totalItems    = order.groups.reduce((s, g) => s + g.items.length, 0)
@@ -730,27 +756,29 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#111111]">
+    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-[#090909]">
 
-      {/* ── Header ── */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-3 py-3 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
+      {/* ── Header — только на десктопе; на мобиле всё уехало в app-header ── */}
+      <div className="hidden shrink-0 border-b border-gray-200 bg-white md:block md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#090909]">
         <div className="flex items-center gap-2 md:gap-4">
+          {/* На мобиле back перенесён в app-header (стрелка слева в шапке приложения). */}
           <button
             onClick={() => navigate(mp('/orders'))}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 md:flex dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
 
           <div className="flex min-w-0 flex-1 items-center gap-2 md:gap-3">
-            <h1 className="font-mono text-base font-bold text-gray-900 md:text-xl dark:text-gray-100">{order.number}</h1>
+            {/* На мобиле номер заказа отображается в app-header'е. */}
+            <h1 className="hidden font-mono text-base font-bold text-gray-900 md:block md:text-xl dark:text-gray-100">{order.number}</h1>
             <GlobalStatusBadge status={order.status} />
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={() => printFullInvoice(order)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 md:w-auto md:gap-1.5 md:px-3 md:text-sm md:font-medium dark:border-gray-700 dark:bg-[#111111] dark:text-gray-300 dark:hover:bg-gray-800"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 md:w-auto md:gap-1.5 md:px-3 md:text-sm md:font-medium dark:border-gray-700 dark:bg-[#090909] dark:text-gray-300 dark:hover:bg-gray-800"
               aria-label={t('orders_invoice_btn')}
             >
               <FileText className="h-4 w-4" />
@@ -769,11 +797,61 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
       </div>
 
       {/* ── Content ── */}
-      <div className={cn('min-h-0 flex-1 overflow-y-auto bg-gray-50/40 px-3 py-4 md:px-6 md:py-5 dark:bg-[#111111]', isOrderActive && 'pb-32 md:pb-24')}>
+      <div className={cn('min-h-0 flex-1 overflow-y-auto bg-gray-50 px-3 py-3 md:px-6 md:py-5 dark:bg-[#0a0a0a]', isOrderActive && 'pb-32 md:pb-24')}>
         <div className="mx-auto max-w-4xl space-y-4">
 
-          {/* Info cards */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {/* Mobile — info-секция: чёрный hero-блок для максимального контраста с белыми cards ниже */}
+          <div className="md:hidden rounded-xl bg-gray-900 p-4 dark:bg-black">
+            {/* Шапка: сумма (hero) + название аптеки слева, статус + дата справа.
+                items-stretch + justify-between справа выравнивает: badge сверху, дата снизу. */}
+            <div className="flex items-stretch justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-lg font-bold leading-tight tabular-nums text-white">
+                  {formatCurrency(order.totalSum)}
+                </p>
+                <p className="mt-1 text-sm text-gray-400">
+                  {order.pharmacyName.replace(/^Аптека\s+/i, '')}
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-col items-end justify-between">
+                <GlobalStatusBadge status={order.status} />
+                <p className="text-xs tabular-nums text-gray-400">
+                  {formatDateTime(order.createdAt)}
+                </p>
+              </div>
+            </div>
+
+            {/* Подписанная сводка ключ-значение: шт./поз → дистрибуторов → адрес */}
+            <div className="mt-3 divide-y divide-gray-800 border-t border-gray-800 [&>div:last-child]:pb-0">
+              <div className="flex items-center justify-between gap-3 py-2.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                  {t('orders_kpi_pcs')} / {t('orders_pos_short')}
+                </span>
+                <p className="text-sm tabular-nums text-gray-200">
+                  {t('orders_units_pos', { qty: order.totalQty, pos: totalItems })}
+                </p>
+              </div>
+              <div className="flex items-center justify-between gap-3 py-2.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                  {t('orders_info_distributors')}
+                </span>
+                <p className="text-sm tabular-nums text-gray-200">
+                  {order.groups.length}
+                </p>
+              </div>
+              <div className="flex items-center justify-between gap-3 py-2.5">
+                <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                  {t('orders_info_address')}
+                </span>
+                <p className="min-w-0 text-right text-sm text-gray-200">
+                  {order.pharmacyAddress}, {order.pharmacyCity}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop — три отдельные info-карточки */}
+          <div className="hidden gap-3 md:grid md:grid-cols-3">
             <InfoCard
               icon={<MapPin className="h-4 w-4" />}
               label={t('orders_info_pharmacy')}
@@ -840,14 +918,16 @@ function OrderDetailContent({ order: initialOrder }: { order: Order }) {
 
       {/* ── Fixed bottom action bar — выше таб-бара на мобиле ── */}
       {isOrderActive && (
-        <div className="fixed bottom-tabbar left-0 right-0 z-40 flex items-center gap-2 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:bottom-0 md:left-[140px] md:justify-end md:gap-4 md:px-6 md:py-4 dark:border-gray-700 dark:bg-[#111111]">
+        <div className="fixed bottom-tabbar left-0 right-0 z-40 flex items-center gap-2 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:bottom-0 md:left-[140px] md:justify-end md:gap-3 md:px-6 md:py-4 dark:border-[#262626] dark:bg-[#171717]">
+          {/* Cancel — ghost/destructive */}
           <button
             onClick={() => setModal({ kind: 'cancel_order' })}
-            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-red-500 px-3 text-sm font-semibold text-white transition-colors hover:bg-red-600 md:h-9 md:flex-none md:px-4"
+            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-red-600 bg-transparent px-4 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 md:h-9 md:flex-none dark:border-red-400 dark:text-red-400 dark:hover:bg-red-900/20"
           >
             <X className="h-4 w-4" />
             {t('orders_cancel_btn')}
           </button>
+          {/* Complete — Primary: главное действие */}
           <button
             onClick={() => setModal({ kind: 'complete' })}
             className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-gray-900 px-3 text-sm font-semibold text-white transition-colors hover:bg-black md:h-9 md:flex-none md:px-4 dark:bg-[#f1f1f1] dark:text-gray-900 dark:hover:bg-[#e0e0e0]"

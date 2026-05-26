@@ -14,7 +14,7 @@ export function PharmacySelector({ selected, onChange }: PharmacySelectorProps) 
   }
 
   return (
-    <div className="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#111111]">
+    <div className="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-[#090909]">
       <div className="flex items-center gap-2">
         <Building2 className="h-4 w-4 flex-shrink-0 text-gray-400" />
         <select

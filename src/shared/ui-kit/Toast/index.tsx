@@ -28,12 +28,12 @@ const toastVariants = cva(
       variant: {
         default: "border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#222222] dark:text-gray-300",
         success:
-          "border-[#D1FAE5] bg-[#D1FAE5]/60 text-[#065F46] [&>button]:text-[#065F46] dark:border-[#064E3B] dark:bg-[#064E3B]/40 dark:text-[#6EE7B7] dark:[&>button]:text-[#6EE7B7]",
+          "border-[#D1FAE5] bg-[#D1FAE5] text-[#065F46] [&>button]:text-[#065F46] dark:border-[#064E3B] dark:bg-[#064E3B] dark:text-[#6EE7B7] dark:[&>button]:text-[#6EE7B7]",
         warning:
-          "border-[#FEF3C7] bg-[#FEF3C7]/70 text-[#92400E] [&>button]:text-[#92400E] dark:border-[#78350F] dark:bg-[#78350F]/40 dark:text-[#FCD34D] dark:[&>button]:text-[#FCD34D]",
+          "border-[#FEF3C7] bg-[#FEF3C7] text-[#92400E] [&>button]:text-[#92400E] dark:border-[#78350F] dark:bg-[#78350F] dark:text-[#FCD34D] dark:[&>button]:text-[#FCD34D]",
         danger:
-          "border-[#FEE2E2] bg-[#FEE2E2]/70 text-[#991B1B] [&>button]:text-[#991B1B] dark:border-[#7F1D1D] dark:bg-[#7F1D1D]/40 dark:text-[#FCA5A5] dark:[&>button]:text-[#FCA5A5]",
-        info: "border-[#DBEAFE] bg-[#DBEAFE]/60 text-[#1E40AF] [&>button]:text-[#1E40AF] dark:border-[#1E3A8A] dark:bg-[#1E3A8A]/40 dark:text-[#93C5FD] dark:[&>button]:text-[#93C5FD]",
+          "border-[#FEE2E2] bg-[#FEE2E2] text-[#991B1B] [&>button]:text-[#991B1B] dark:border-[#7F1D1D] dark:bg-[#7F1D1D] dark:text-[#FCA5A5] dark:[&>button]:text-[#FCA5A5]",
+        info: "border-[#DBEAFE] bg-[#DBEAFE] text-[#1E40AF] [&>button]:text-[#1E40AF] dark:border-[#1E3A8A] dark:bg-[#1E3A8A] dark:text-[#93C5FD] dark:[&>button]:text-[#93C5FD]",
       },
     },
     defaultVariants: {
